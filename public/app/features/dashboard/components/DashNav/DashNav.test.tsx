@@ -32,7 +32,6 @@ describe('Public dashboard title tag', () => {
             <DashNav
               {...props}
               dashboard={dashboard}
-              hideTimePicker={true}
               isFullscreen={false}
               onAddPanel={() => {}}
               title="test"

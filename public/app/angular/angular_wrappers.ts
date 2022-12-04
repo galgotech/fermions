@@ -143,7 +143,6 @@ export function registerAngularDirectives() {
     ['onTimeZoneChange', { watchDepth: 'reference', wrapApply: true }],
     ['onRefreshIntervalChange', { watchDepth: 'reference', wrapApply: true }],
     ['onNowDelayChange', { watchDepth: 'reference', wrapApply: true }],
-    ['onHideTimePickerChange', { watchDepth: 'reference', wrapApply: true }],
   ]);
 
   react2AngularDirective('clipboardButton', ClipboardButton, [

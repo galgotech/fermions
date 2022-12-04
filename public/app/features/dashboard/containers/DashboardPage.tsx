@@ -357,7 +357,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
           folderTitle={dashboard.meta.folderTitle}
           isFullscreen={!!viewPanel}
           onAddPanel={this.onAddPanel}
-          hideTimePicker={dashboard.timepicker.hidden}
           shareModalActiveTab={this.props.queryParams.shareView}
         />
       </header>

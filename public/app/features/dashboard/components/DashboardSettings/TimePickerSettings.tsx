@@ -12,10 +12,8 @@ interface Props {
   onTimeZoneChange: (timeZone: TimeZone) => void;
   onRefreshIntervalChange: (interval: string[]) => void;
   onNowDelayChange: (nowDelay: string) => void;
-  onHideTimePickerChange: (hide: boolean) => void;
   onLiveNowChange: (liveNow: boolean) => void;
   refreshIntervals: string[];
-  timePickerHidden: boolean;
   nowDelay: string;
   timezone: TimeZone;
   weekStart: string;
@@ -43,10 +41,6 @@ export class TimePickerSettings extends PureComponent<Props, State> {
     }
 
     this.setState({ isNowDelayValid: false });
-  };
-
-  onHideTimePickerChange = () => {
-    this.props.onHideTimePickerChange(!this.props.timePickerHidden);
   };
 
   onLiveNowChange = () => {
@@ -95,13 +89,6 @@ export class TimePickerSettings extends PureComponent<Props, State> {
             placeholder="0m"
             onChange={this.onNowDelayChange}
             defaultValue={this.props.nowDelay}
-          />
-        </Field>
-        <Field label="Hide time picker">
-          <Switch
-            id="hide-time-picker-toggle"
-            value={!!this.props.timePickerHidden}
-            onChange={this.onHideTimePickerChange}
           />
         </Field>
         <Field

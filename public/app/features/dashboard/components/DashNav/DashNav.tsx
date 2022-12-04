@@ -30,7 +30,6 @@ import { getDashboardSrv } from '../../services/DashboardSrv';
 import { DashboardModel } from '../../state';
 
 import { DashNavButton } from './DashNavButton';
-import { DashNavTimeControls } from './DashNavTimeControls';
 
 const mapDispatchToProps = {
   setStarred,
@@ -44,7 +43,6 @@ const selectors = e2eSelectors.pages.Dashboard.DashNav;
 export interface OwnProps {
   dashboard: DashboardModel;
   isFullscreen: boolean;
-  hideTimePicker: boolean;
   folderTitle?: string;
   title: string;
   shareModalActiveTab?: string;
@@ -194,18 +192,6 @@ export const DashNav = React.memo<Props>((props) => {
     return buttons;
   };
 
-  const renderTimeControls = () => {
-    const { dashboard, updateTimeZoneForSession, hideTimePicker } = props;
-
-    if (hideTimePicker) {
-      return null;
-    }
-
-    return (
-      <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} key="time-controls" />
-    );
-  };
-
   const renderRightActions = () => {
     const { dashboard, onAddPanel, isFullscreen } = props;
     const { canSave, canEdit, showSettings } = dashboard.meta;
@@ -253,8 +239,6 @@ export const DashNav = React.memo<Props>((props) => {
     }
 
     addCustomContent(customRightActions, buttons);
-
-    buttons.push(renderTimeControls());
 
     if (config.featureToggles.scenes) {
       buttons.push(

@@ -55,11 +55,6 @@ export function GeneralSettingsUnconnected({
     dashboard.timepicker.nowDelay = nowDelay;
   };
 
-  const onHideTimePickerChange = (hide: boolean) => {
-    dashboard.timepicker.hidden = hide;
-    setRenderCounter(renderCounter + 1);
-  };
-
   const onLiveNowChange = (v: boolean) => {
     dashboard.liveNow = v;
     setRenderCounter(renderCounter + 1);
@@ -134,10 +129,8 @@ export function GeneralSettingsUnconnected({
           onWeekStartChange={onWeekStartChange}
           onRefreshIntervalChange={onRefreshIntervalChange}
           onNowDelayChange={onNowDelayChange}
-          onHideTimePickerChange={onHideTimePickerChange}
           onLiveNowChange={onLiveNowChange}
           refreshIntervals={dashboard.timepicker.refresh_intervals}
-          timePickerHidden={dashboard.timepicker.hidden}
           nowDelay={dashboard.timepicker.nowDelay}
           timezone={dashboard.timezone}
           weekStart={dashboard.weekStart}

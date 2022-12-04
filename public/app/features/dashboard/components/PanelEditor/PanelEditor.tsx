@@ -39,7 +39,6 @@ import { isPanelModelLibraryPanel } from '../../../library-panels/guard';
 import { getVariablesByKey } from '../../../variables/state/selectors';
 import { DashboardPanel } from '../../dashgrid/DashboardPanel';
 import { DashboardModel, PanelModel } from '../../state';
-import { DashNavTimeControls } from '../DashNav/DashNavTimeControls';
 import { SaveDashboardDrawer } from '../SaveDashboard/SaveDashboardDrawer';
 
 import { OptionsPane } from './OptionsPane';
@@ -284,7 +283,7 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
   }
 
   renderPanelToolbar(styles: EditorStyles) {
-    const { dashboard, uiState, variables, updateTimeZoneForSession, panel, tableViewEnabled } = this.props;
+    const { uiState, variables, panel, tableViewEnabled } = this.props;
 
     return (
       <div className={styles.panelToolbar}>
@@ -300,7 +299,6 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
               aria-label={selectors.components.PanelEditor.toggleTableView}
             />
             <RadioButtonGroup value={uiState.mode} options={displayModes} onChange={this.onDisplayModeChange} />
-            <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} isOnCanvas={true} />
             {!uiState.isPanelOptionsVisible && <VisualizationButton panel={panel} />}
           </Stack>
         </HorizontalGroup>
