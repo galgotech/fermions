@@ -38,10 +38,7 @@
       "formatted-data-description": "Les données du tableau sont formatées avec les options définies dans les onglets Champ et Remplacer.",
       "formatted-data-label": "Données formatées",
       "panel-transforms": "Transformations du panneau",
-      "series-to-columns": "Séries jointes par une chronologie",
-      "transformation": "Séries jointes par une chronologie",
-      "transformations-description": "Les données du tableau sont affichées avec les transformations définies dans l'onglet Transformations du panneau.",
-      "transformations-label": "Appliquer les transformations du panneau"
+      "series-to-columns": "Séries jointes par une chronologie"
     },
     "inspect-json": {
       "dataframe-description": "Données brutes sans transformations et configuration de champ appliquée. ",

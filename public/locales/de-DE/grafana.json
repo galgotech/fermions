@@ -38,10 +38,7 @@
       "formatted-data-description": "Tabellendaten werden mit den in den Tabs „Feld“ und „Überschreiben“ definierten Optionen formatiert",
       "formatted-data-label": "Formatierte Daten",
       "panel-transforms": "Panel-Transformationen",
-      "series-to-columns": "Serie durch Zeit verbunden",
-      "transformation": "Serie durch Zeit verbunden",
-      "transformations-description": "Tabellendaten werden mit den im Tab „Panel-Transformationen“ definierten Transformationen angezeigt.",
-      "transformations-label": "Panel-Transformationen anwenden"
+      "series-to-columns": "Serie durch Zeit verbunden"
     },
     "inspect-json": {
       "dataframe-description": "Rohdaten ohne Transformationen und angewendete Feldkonfiguration. ",

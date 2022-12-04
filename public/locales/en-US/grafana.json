@@ -38,10 +38,7 @@
       "formatted-data-description": "Table data is formatted with options defined in the Field and Override tabs.",
       "formatted-data-label": "Formatted data",
       "panel-transforms": "Panel transforms",
-      "series-to-columns": "Series joined by time",
-      "transformation": "Series joined by time",
-      "transformations-description": "Table data is displayed with transformations defined in the panel Transform tab.",
-      "transformations-label": "Apply panel transformations"
+      "series-to-columns": "Series joined by time"
     },
     "inspect-json": {
       "dataframe-description": "Raw data without transformations and field config applied. ",

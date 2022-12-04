@@ -38,10 +38,7 @@
       "formatted-data-description": "Ŧäþľę đäŧä įş ƒőřmäŧŧęđ ŵįŧĥ őpŧįőŉş đęƒįŉęđ įŉ ŧĥę Fįęľđ äŉđ Øvęřřįđę ŧäþş.",
       "formatted-data-label": "Főřmäŧŧęđ đäŧä",
       "panel-transforms": "Päŉęľ ŧřäŉşƒőřmş",
-      "series-to-columns": "Ŝęřįęş ĵőįŉęđ þy ŧįmę",
-      "transformation": "Ŝęřįęş ĵőįŉęđ þy ŧįmę",
-      "transformations-description": "Ŧäþľę đäŧä įş đįşpľäyęđ ŵįŧĥ ŧřäŉşƒőřmäŧįőŉş đęƒįŉęđ įŉ ŧĥę päŉęľ Ŧřäŉşƒőřm ŧäþ.",
-      "transformations-label": "Åppľy päŉęľ ŧřäŉşƒőřmäŧįőŉş"
+      "series-to-columns": "Ŝęřįęş ĵőįŉęđ þy ŧįmę"
     },
     "inspect-json": {
       "dataframe-description": "Ŗäŵ đäŧä ŵįŧĥőūŧ ŧřäŉşƒőřmäŧįőŉş äŉđ ƒįęľđ čőŉƒįģ äppľįęđ. ",

@@ -38,10 +38,7 @@
       "formatted-data-description": "Los datos de la tabla están formateados con opciones definidas en las pestañas Campo y Anulación.",
       "formatted-data-label": "Datos formateados",
       "panel-transforms": "Transformaciones de panel",
-      "series-to-columns": "Series unidas por el tiempo",
-      "transformation": "Series unidas por el tiempo",
-      "transformations-description": "Los datos de la tabla se muestran con transformaciones definidas en la pestaña Transformar del panel.",
-      "transformations-label": "Aplicar transformaciones de panel"
+      "series-to-columns": "Series unidas por el tiempo"
     },
     "inspect-json": {
       "dataframe-description": "Datos brutos sin transformaciones y configuración de campo aplicada. ",

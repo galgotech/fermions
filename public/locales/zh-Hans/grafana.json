@@ -38,10 +38,7 @@
       "formatted-data-description": "按照\"字段\"和\"覆盖\"选项卡中定义的选项将表格数据格式化。",
       "formatted-data-label": "格式化数据",
       "panel-transforms": "面板转换",
-      "series-to-columns": "按时间拼接的系列",
-      "transformation": "按时间拼接的系列",
-      "transformations-description": "显示的表格数据包含在面板转换选项卡中定义的转换。",
-      "transformations-label": "应用面板转换"
+      "series-to-columns": "按时间拼接的系列"
     },
     "inspect-json": {
       "dataframe-description": "未应用转换和字段配置的原始数据。",
