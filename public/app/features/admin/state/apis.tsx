@@ -12,8 +12,6 @@ export interface ServerStat {
   datasources: number;
   editors: number;
   orgs: number;
-  playlists: number;
-  snapshots: number;
   stars: number;
   tags: number;
   users: number;

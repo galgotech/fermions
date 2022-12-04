@@ -10,8 +10,7 @@ follow_symlinks = true
 watch_dirs = [
   "$WORKDIR/pkg",
   "$WORKDIR/public/views",
-  "$WORKDIR/conf",
-  "$WORKDIR/devenv/dev-dashboards",
+  "$WORKDIR/conf"
 ]
 watch_exts = [".go", ".ini", ".toml", ".template.html"]
 ignore_files = [".*_gen.go"]

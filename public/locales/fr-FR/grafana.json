@@ -310,11 +310,6 @@
       "title": "Utilisateurs"
     }
   },
-  "navigation": {
-    "kiosk": {
-      "tv-alert": "Appuyez sur ESC pour quitter le mode kiosque"
-    }
-  },
   "news": {
     "title": "Dernières nouvelles sur le blog"
   },

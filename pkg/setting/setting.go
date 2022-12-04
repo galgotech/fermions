@@ -87,12 +87,6 @@ var (
 	CookieSameSiteDisabled bool
 	CookieSameSiteMode     http.SameSite
 
-	// Snapshots
-	ExternalSnapshotUrl   string
-	ExternalSnapshotName  string
-	ExternalEnabled       bool
-	SnapShotRemoveExpired bool
-
 	// Dashboard history
 	DashboardVersionsToKeep int
 	MinRefreshInterval      string
@@ -403,9 +397,6 @@ type Cfg struct {
 
 	// Data sources
 	DataSourceLimit int
-
-	// Snapshots
-	SnapshotPublicMode bool
 
 	ErrTemplateName string
 
@@ -970,10 +961,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 	}
 
 	if err := readSecuritySettings(iniFile, cfg); err != nil {
-		return err
-	}
-
-	if err := readSnapshotsSettings(cfg, iniFile); err != nil {
 		return err
 	}
 
@@ -1630,19 +1617,6 @@ func readGRPCServerSettings(cfg *Cfg, iniFile *ini.File) error {
 // It's safe to be used only after readAlertingSettings() and ReadUnifiedAlertingSettings() are executed.
 func IsLegacyAlertingEnabled() bool {
 	return AlertingEnabled != nil && *AlertingEnabled
-}
-
-func readSnapshotsSettings(cfg *Cfg, iniFile *ini.File) error {
-	snapshots := iniFile.Section("snapshots")
-
-	ExternalSnapshotUrl = valueAsString(snapshots, "external_snapshot_url", "")
-	ExternalSnapshotName = valueAsString(snapshots, "external_snapshot_name", "")
-
-	ExternalEnabled = snapshots.Key("external_enabled").MustBool(true)
-	SnapShotRemoveExpired = snapshots.Key("snapshot_remove_expired").MustBool(true)
-	cfg.SnapshotPublicMode = snapshots.Key("public_mode").MustBool(false)
-
-	return nil
 }
 
 func (cfg *Cfg) readServerSettings(iniFile *ini.File) error {

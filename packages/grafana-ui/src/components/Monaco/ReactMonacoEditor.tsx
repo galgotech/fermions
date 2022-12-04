@@ -14,7 +14,7 @@ function initMonaco() {
 
   monacoEditorLoader.config({
     paths: {
-      vs: (window.__grafana_public_path__ ?? 'public/') + 'lib/monaco/min/vs',
+      vs: (window.__fermions_public_path__ ?? 'public/') + 'lib/monaco/min/vs',
     },
   });
   initalized = true;

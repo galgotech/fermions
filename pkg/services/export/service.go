@@ -14,12 +14,10 @@ import (
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/dashboardsnapshots"
 	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/live"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/playlist"
 	"github.com/grafana/grafana/pkg/services/store"
 	"github.com/grafana/grafana/pkg/services/store/entity"
 	"github.com/grafana/grafana/pkg/setting"
@@ -90,12 +88,6 @@ var exporters = []Exporter{
 				process:     exportSystemStars,
 			},
 			{
-				Key:         "system_playlists",
-				Name:        "Playlists",
-				Description: "Playlists",
-				process:     exportSystemPlaylists,
-			},
-			{
 				Key:         "system_kv_store",
 				Name:        "Key Value store",
 				Description: "Internal KV store",
@@ -139,12 +131,6 @@ var exporters = []Exporter{
 		Description: "archive current usage stats",
 		process:     exportUsage,
 	},
-	// {
-	// 	Key:         "snapshots",
-	// 	Name:        "Snapshots",
-	// 	Description: "write snapshots",
-	// 	process:     exportSnapshots,
-	// },
 }
 
 type StandardExport struct {
@@ -154,35 +140,31 @@ type StandardExport struct {
 	dataDir string
 
 	// Services
-	db                        db.DB
-	dashboardsnapshotsService dashboardsnapshots.Service
-	playlistService           playlist.Service
-	orgService                org.Service
-	datasourceService         datasources.DataSourceService
-	store                     entity.EntityStoreServer
+	db                db.DB
+	orgService        org.Service
+	datasourceService datasources.DataSourceService
+	store             entity.EntityStoreServer
 
 	// updated with mutex
 	exportJob Job
 }
 
 func ProvideService(db db.DB, features featuremgmt.FeatureToggles, gl *live.GrafanaLive, cfg *setting.Cfg,
-	dashboardsnapshotsService dashboardsnapshots.Service, playlistService playlist.Service, orgService org.Service,
+	orgService org.Service,
 	datasourceService datasources.DataSourceService, store entity.EntityStoreServer) ExportService {
 	if !features.IsEnabled(featuremgmt.FlagExport) {
 		return &StubExport{}
 	}
 
 	return &StandardExport{
-		glive:                     gl,
-		logger:                    log.New("export_service"),
-		dashboardsnapshotsService: dashboardsnapshotsService,
-		playlistService:           playlistService,
-		orgService:                orgService,
-		datasourceService:         datasourceService,
-		exportJob:                 &stoppedJob{},
-		dataDir:                   cfg.DataPath,
-		store:                     store,
-		db:                        db,
+		glive:             gl,
+		logger:            log.New("export_service"),
+		orgService:        orgService,
+		datasourceService: datasourceService,
+		exportJob:         &stoppedJob{},
+		dataDir:           cfg.DataPath,
+		store:             store,
+		db:                db,
 	}
 }
 
@@ -234,13 +216,13 @@ func (ex *StandardExport) HandleRequestExport(c *models.ReqContext) response.Res
 	case "dummy":
 		job, err = startDummyExportJob(cfg, broadcast)
 	case "entityStore":
-		job, err = startEntityStoreJob(ctx, cfg, broadcast, ex.db, ex.playlistService, ex.store, ex.dashboardsnapshotsService)
+		job, err = startEntityStoreJob(ctx, cfg, broadcast, ex.db, ex.store)
 	case "git":
 		dir := filepath.Join(ex.dataDir, "export_git", fmt.Sprintf("git_%d", time.Now().Unix()))
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			return response.Error(http.StatusBadRequest, "Error creating export folder", nil)
 		}
-		job, err = startGitExportJob(ctx, cfg, ex.db, ex.dashboardsnapshotsService, dir, c.OrgID, broadcast, ex.playlistService, ex.orgService, ex.datasourceService)
+		job, err = startGitExportJob(ctx, cfg, ex.db, dir, c.OrgID, broadcast, ex.orgService, ex.datasourceService)
 	default:
 		return response.Error(http.StatusBadRequest, "Unsupported job format", nil)
 	}

@@ -164,21 +164,6 @@ func AdminOrEditorAndFeatureEnabled(enabled bool) web.Handler {
 	}
 }
 
-// SnapshotPublicModeOrSignedIn creates a middleware that allows access
-// if snapshot public mode is enabled or if user is signed in.
-func SnapshotPublicModeOrSignedIn(cfg *setting.Cfg) web.Handler {
-	return func(c *models.ReqContext) {
-		if cfg.SnapshotPublicMode {
-			return
-		}
-
-		if !c.IsSignedIn {
-			notAuthorized(c)
-			return
-		}
-	}
-}
-
 func ReqNotSignedIn(c *models.ReqContext) {
 	if c.IsSignedIn {
 		c.Redirect(setting.AppSubUrl + "/")

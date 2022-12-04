@@ -251,7 +251,7 @@
         }
       };
 
-      window.__grafana_load_failed = function() {
+      window.__fermions_load_failed = function() {
         var preloader = document.getElementsByClassName("preloader");
         if (preloader.length) {
           preloader[0].className = "preloader preloader--done";
@@ -260,10 +260,10 @@
 
       // In case the js files fails to load the code below will show an info message.
       window.onload = function() {
-        if (window.__grafana_app_bundle_loaded) {
+        if (window.__fermions_app_bundle_loaded) {
           return;
         }
-        window.__grafana_load_failed();
+        window.__fermions_load_failed();
       };
 
       [[if .ContentDeliveryURL]]

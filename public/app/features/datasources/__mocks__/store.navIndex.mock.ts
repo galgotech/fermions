@@ -17,12 +17,6 @@ export const navIndex: NavIndex = {
         url: '/dashboards',
       },
       {
-        id: 'playlists',
-        text: 'Playlists',
-        icon: 'presentation-play',
-        url: '/playlists',
-      },
-      {
         id: 'snapshots',
         text: 'Snapshots',
         icon: 'camera',
@@ -87,85 +81,6 @@ export const navIndex: NavIndex = {
           text: 'Browse',
           icon: 'sitemap',
           url: '/dashboards',
-        },
-        {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
-        },
-        {
-          id: 'snapshots',
-          text: 'Snapshots',
-          icon: 'camera',
-          url: '/dashboard/snapshots',
-        },
-        {
-          id: 'library-panels',
-          text: 'Library panels',
-          icon: 'library-panel',
-          url: '/library-panels',
-        },
-        {
-          id: 'divider',
-          text: 'Divider',
-          divider: true,
-          hideFromTabs: true,
-        },
-        {
-          id: 'new-dashboard',
-          text: 'New dashboard',
-          icon: 'plus',
-          url: '/dashboard/new',
-          hideFromTabs: true,
-          showIconInNavbar: true,
-        },
-        {
-          id: 'new-folder',
-          text: 'New folder',
-          subTitle: 'Create a new folder to organize your dashboards',
-          icon: 'plus',
-          url: '/dashboards/folder/new',
-          hideFromTabs: true,
-          showIconInNavbar: true,
-        },
-        {
-          id: 'import',
-          text: 'Import',
-          subTitle: 'Import dashboard from file or Grafana.com',
-          icon: 'plus',
-          url: '/dashboard/import',
-          hideFromTabs: true,
-          showIconInNavbar: true,
-        },
-      ],
-    },
-  },
-  playlists: {
-    id: 'playlists',
-    text: 'Playlists',
-    icon: 'presentation-play',
-    url: '/playlists',
-    parentItem: {
-      id: 'dashboards',
-      text: 'Dashboards',
-      section: NavSection.Core,
-      subTitle: 'Manage dashboards and folders',
-      icon: 'apps',
-      url: '/dashboards',
-      sortWeight: -1800,
-      children: [
-        {
-          id: 'manage-dashboards',
-          text: 'Browse',
-          icon: 'sitemap',
-          url: '/dashboards',
-        },
-        {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
         },
         {
           id: 'snapshots',
@@ -235,12 +150,6 @@ export const navIndex: NavIndex = {
           url: '/dashboards',
         },
         {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
-        },
-        {
           id: 'snapshots',
           text: 'Snapshots',
           icon: 'camera',
@@ -306,12 +215,6 @@ export const navIndex: NavIndex = {
           text: 'Browse',
           icon: 'sitemap',
           url: '/dashboards',
-        },
-        {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
         },
         {
           id: 'snapshots',
@@ -451,12 +354,6 @@ export const navIndex: NavIndex = {
           url: '/dashboards',
         },
         {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
-        },
-        {
           id: 'snapshots',
           text: 'Snapshots',
           icon: 'camera',
@@ -527,12 +424,6 @@ export const navIndex: NavIndex = {
           url: '/dashboards',
         },
         {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
-        },
-        {
           id: 'snapshots',
           text: 'Snapshots',
           icon: 'camera',
@@ -601,12 +492,6 @@ export const navIndex: NavIndex = {
           text: 'Browse',
           icon: 'sitemap',
           url: '/dashboards',
-        },
-        {
-          id: 'playlists',
-          text: 'Playlists',
-          icon: 'presentation-play',
-          url: '/playlists',
         },
         {
           id: 'snapshots',

@@ -20,7 +20,6 @@ import {
   ZoomOutEvent,
   AbsoluteTimeEvent,
 } from '../../types/events';
-import { AppChromeService } from '../components/AppChrome/AppChromeService';
 import { HelpModal } from '../components/help/HelpModal';
 import { contextSrv } from '../core';
 
@@ -28,7 +27,7 @@ import { toggleTheme } from './toggleTheme';
 import { withFocusedPanel } from './withFocusedPanelId';
 
 export class KeybindingSrv {
-  constructor(private locationService: LocationService, private chromeService: AppChromeService) {}
+  constructor(private locationService: LocationService) {}
 
   clearAndInitGlobalBindings() {
     Mousetrap.reset();
@@ -140,11 +139,6 @@ export class KeybindingSrv {
     if (search.viewPanel) {
       this.locationService.partial({ viewPanel: null, tab: null });
       return;
-    }
-
-    const { kioskMode } = this.chromeService.state.getValue();
-    if (kioskMode) {
-      this.chromeService.exitKioskMode();
     }
 
     if (search.search) {
@@ -336,10 +330,6 @@ export class KeybindingSrv {
 
     this.bind('d s', () => {
       this.showDashEditView();
-    });
-
-    this.bind('d k', () => {
-      this.chromeService.onToggleKioskMode();
     });
 
     //Autofit panels

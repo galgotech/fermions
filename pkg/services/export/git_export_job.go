@@ -14,22 +14,18 @@ import (
 
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/services/dashboardsnapshots"
 	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/playlist"
 )
 
 var _ Job = new(gitExportJob)
 
 type gitExportJob struct {
-	logger                    log.Logger
-	sql                       db.DB
-	dashboardsnapshotsService dashboardsnapshots.Service
-	datasourceService         datasources.DataSourceService
-	playlistService           playlist.Service
-	orgService                org.Service
-	rootDir                   string
+	logger            log.Logger
+	sql               db.DB
+	datasourceService datasources.DataSourceService
+	orgService        org.Service
+	rootDir           string
 
 	statusMu    sync.Mutex
 	status      ExportStatus
@@ -39,19 +35,17 @@ type gitExportJob struct {
 }
 
 func startGitExportJob(ctx context.Context, cfg ExportConfig, sql db.DB,
-	dashboardsnapshotsService dashboardsnapshots.Service, rootDir string, orgID int64,
-	broadcaster statusBroadcaster, playlistService playlist.Service, orgService org.Service,
+	rootDir string, orgID int64,
+	broadcaster statusBroadcaster, orgService org.Service,
 	datasourceService datasources.DataSourceService) (Job, error) {
 	job := &gitExportJob{
-		logger:                    log.New("git_export_job"),
-		cfg:                       cfg,
-		sql:                       sql,
-		dashboardsnapshotsService: dashboardsnapshotsService,
-		playlistService:           playlistService,
-		orgService:                orgService,
-		datasourceService:         datasourceService,
-		rootDir:                   rootDir,
-		broadcaster:               broadcaster,
+		logger:            log.New("git_export_job"),
+		cfg:               cfg,
+		sql:               sql,
+		orgService:        orgService,
+		datasourceService: datasourceService,
+		rootDir:           rootDir,
+		broadcaster:       broadcaster,
 		status: ExportStatus{
 			Running: true,
 			Target:  "git export",
@@ -182,13 +176,6 @@ func (e *gitExportJob) doExportWithHistory(ctx context.Context) error {
 }
 
 func (e *gitExportJob) process(exporters []Exporter) error {
-	if false { // NEEDS a real user ID first
-		err := exportSnapshots(e.helper, e)
-		if err != nil {
-			return err
-		}
-	}
-
 	for _, exp := range exporters {
 		if e.cfg.Exclude[exp.Key] {
 			continue

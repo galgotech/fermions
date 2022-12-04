@@ -167,12 +167,8 @@ export class GrafanaApp {
       ]);
 
       // initialize chrome service
-      const queryParams = locationService.getSearchObject();
       const chromeService = new AppChromeService();
-      const keybindingsService = new KeybindingSrv(locationService, chromeService);
-
-      // Read initial kiosk mode from url at app startup
-      chromeService.setKioskModeFromUrl(queryParams.kiosk);
+      const keybindingsService = new KeybindingSrv(locationService);
 
       this.context = {
         backend: backendSrv,
@@ -190,7 +186,7 @@ export class GrafanaApp {
       );
     } catch (error) {
       console.error('Failed to start Grafana', error);
-      window.__grafana_load_failed();
+      window.__fermions_load_failed();
     }
   }
 }

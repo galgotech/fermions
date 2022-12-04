@@ -310,11 +310,6 @@
       "title": "Users"
     }
   },
-  "navigation": {
-    "kiosk": {
-      "tv-alert": "Press ESC to exit kiosk mode"
-    }
-  },
   "news": {
     "title": "Latest from the blog"
   },

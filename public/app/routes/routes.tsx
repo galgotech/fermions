@@ -100,7 +100,7 @@ export function getAppRoutes(): RouteDescriptor[] {
         () => import(/* webpackChunkName: "SoloPanelPage" */ '../features/dashboard/containers/SoloPanelPage')
       ),
     },
-    // This route handles embedding of snapshot/scripted dashboard panels
+    // This route handles embedding of scripted dashboard panels
     {
       path: '/dashboard-solo/:type/:slug',
       pageClass: 'dashboard-solo',
@@ -430,36 +430,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       chromeless: true,
     },
     {
-      path: '/dashboard/snapshots',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "SnapshotListPage" */ 'app/features/manage-dashboards/SnapshotListPage')
-      ),
-    },
-    {
-      path: '/playlists',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "PlaylistPage"*/ 'app/features/playlist/PlaylistPage')
-      ),
-    },
-    {
-      path: '/playlists/play/:uid',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "PlaylistStartPage"*/ 'app/features/playlist/PlaylistStartPage')
-      ),
-    },
-    {
-      path: '/playlists/new',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "PlaylistNewPage"*/ 'app/features/playlist/PlaylistNewPage')
-      ),
-    },
-    {
-      path: '/playlists/edit/:uid',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "PlaylistEditPage"*/ 'app/features/playlist/PlaylistEditPage')
-      ),
-    },
-    {
       path: '/sandbox/benchmarks',
       component: SafeDynamicImport(
         () => import(/* webpackChunkName: "BenchmarksPage"*/ 'app/features/sandbox/BenchmarksPage')
@@ -511,8 +481,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       path: '/*',
       component: ErrorPage,
     },
-    // TODO[Router]
-    // ...playlistRoutes,
   ];
 }
 

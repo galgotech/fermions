@@ -47,8 +47,6 @@ export const ServerStats = () => {
             content={[
               { name: 'Dashboards (starred)', value: `${stats.dashboards} (${stats.stars})` },
               { name: 'Tags', value: stats.tags },
-              { name: 'Playlists', value: stats.playlists },
-              { name: 'Snapshots', value: stats.snapshots },
             ]}
             footer={
               <LinkButton href={'/dashboards'} variant={'secondary'}>

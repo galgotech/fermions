@@ -15,7 +15,6 @@ import { TOP_BAR_LEVEL_HEIGHT } from './types';
 export interface Props {
   onToggleSearchBar(): void;
   onToggleMegaMenu(): void;
-  onToggleKioskMode(): void;
   searchBarHidden?: boolean;
   sectionNav: NavModelItem;
   pageNav?: NavModelItem;
@@ -29,7 +28,6 @@ export function NavToolbar({
   pageNav,
   onToggleMegaMenu,
   onToggleSearchBar,
-  onToggleKioskMode,
 }: Props) {
   const homeNav = useSelector((state) => state.navIndex)[HOME_NAV_ID];
   const styles = useStyles2(getStyles);
@@ -44,9 +42,6 @@ export function NavToolbar({
       <div className={styles.actions}>
         {actions}
         {actions && <NavToolbarSeparator />}
-        {searchBarHidden && (
-          <ToolbarButton onClick={onToggleKioskMode} narrow title="Enable kiosk mode" icon="monitor" />
-        )}
         <ToolbarButton onClick={onToggleSearchBar} narrow title="Toggle top search bar">
           <Icon name={searchBarHidden ? 'angle-down' : 'angle-up'} size="xl" />
         </ToolbarButton>

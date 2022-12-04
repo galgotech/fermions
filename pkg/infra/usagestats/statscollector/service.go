@@ -121,7 +121,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.editors.count"] = statsQuery.Result.Editors
 	m["stats.viewers.count"] = statsQuery.Result.Viewers
 	m["stats.orgs.count"] = statsQuery.Result.Orgs
-	m["stats.playlist.count"] = statsQuery.Result.Playlists
 	m["stats.plugins.apps.count"] = s.appCount(ctx)
 	m["stats.plugins.panels.count"] = s.panelCount(ctx)
 	m["stats.plugins.datasources.count"] = s.dataSourceCount(ctx)
@@ -143,7 +142,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.dashboard_permissions.count"] = statsQuery.Result.DashboardPermissions
 	m["stats.folder_permissions.count"] = statsQuery.Result.FolderPermissions
 	m["stats.provisioned_dashboards.count"] = statsQuery.Result.ProvisionedDashboards
-	m["stats.snapshots.count"] = statsQuery.Result.Snapshots
 	m["stats.teams.count"] = statsQuery.Result.Teams
 	m["stats.total_auth_token.count"] = statsQuery.Result.AuthTokens
 	m["stats.dashboard_versions.count"] = statsQuery.Result.DashboardVersions
@@ -334,7 +332,6 @@ func (s *Service) updateTotalStats(ctx context.Context) bool {
 	metrics.MStatTotalFolders.Set(float64(statsQuery.Result.Folders))
 	metrics.MStatTotalUsers.Set(float64(statsQuery.Result.Users))
 	metrics.MStatActiveUsers.Set(float64(statsQuery.Result.ActiveUsers))
-	metrics.MStatTotalPlaylists.Set(float64(statsQuery.Result.Playlists))
 	metrics.MStatTotalOrgs.Set(float64(statsQuery.Result.Orgs))
 	metrics.StatsTotalViewers.Set(float64(statsQuery.Result.Viewers))
 	metrics.StatsTotalActiveViewers.Set(float64(statsQuery.Result.ActiveViewers))

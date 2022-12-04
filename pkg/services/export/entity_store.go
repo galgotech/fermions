@@ -9,12 +9,9 @@ import (
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/dashboardsnapshots"
-	"github.com/grafana/grafana/pkg/services/playlist"
 	"github.com/grafana/grafana/pkg/services/sqlstore/session"
 	"github.com/grafana/grafana/pkg/services/store"
 	"github.com/grafana/grafana/pkg/services/store/entity"
-	"github.com/grafana/grafana/pkg/services/store/kind/snapshot"
 	"github.com/grafana/grafana/pkg/services/user"
 )
 
@@ -30,19 +27,15 @@ type entityStoreJob struct {
 	stopRequested bool
 	ctx           context.Context
 
-	sess               *session.SessionDB
-	playlistService    playlist.Service
-	store              entity.EntityStoreServer
-	dashboardsnapshots dashboardsnapshots.Service
+	sess  *session.SessionDB
+	store entity.EntityStoreServer
 }
 
 func startEntityStoreJob(ctx context.Context,
 	cfg ExportConfig,
 	broadcaster statusBroadcaster,
 	db db.DB,
-	playlistService playlist.Service,
 	store entity.EntityStoreServer,
-	dashboardsnapshots dashboardsnapshots.Service,
 ) (Job, error) {
 	job := &entityStoreJob{
 		logger:      log.New("export_to_object_store_job"),
@@ -56,10 +49,8 @@ func startEntityStoreJob(ctx context.Context,
 			Count:   make(map[string]int, 10),
 			Index:   0,
 		},
-		sess:               db.GetSqlxSession(),
-		playlistService:    playlistService,
-		store:              store,
-		dashboardsnapshots: dashboardsnapshots,
+		sess:  db.GetSqlxSession(),
+		store: store,
 	}
 
 	broadcaster(job.status)
@@ -149,113 +140,6 @@ func (e *entityStoreJob) start(ctx context.Context) {
 		e.status.Count[what] += 1
 		e.status.Last = fmt.Sprintf("ITEM: %s", dash.UID)
 		e.broadcaster(e.status)
-	}
-
-	// Playlists
-	what = models.StandardKindPlaylist
-	e.status.Count[what] = 0
-	rowUser.OrgID = 1
-	rowUser.UserID = 1
-	res, err := e.playlistService.Search(ctx, &playlist.GetPlaylistsQuery{
-		OrgId: rowUser.OrgID, // TODO... all or orgs
-		Limit: 5000,
-	})
-	if err != nil {
-		e.status.Status = "error: " + err.Error()
-		return
-	}
-	for _, item := range res {
-		playlist, err := e.playlistService.Get(ctx, &playlist.GetPlaylistByUidQuery{
-			UID:   item.UID,
-			OrgId: rowUser.OrgID,
-		})
-		if err != nil {
-			e.status.Status = "error: " + err.Error()
-			return
-		}
-
-		_, err = e.store.Write(ctx, &entity.WriteEntityRequest{
-			GRN: &entity.GRN{
-				UID:  playlist.Uid,
-				Kind: models.StandardKindPlaylist,
-			},
-			Body:    prettyJSON(playlist),
-			Comment: "export from playlists",
-		})
-		if err != nil {
-			e.status.Status = "error: " + err.Error()
-			return
-		}
-		e.status.Changed = time.Now().UnixMilli()
-		e.status.Index++
-		e.status.Count[what] += 1
-		e.status.Last = fmt.Sprintf("ITEM: %s", playlist.Uid)
-		e.broadcaster(e.status)
-	}
-
-	// TODO.. query lookup
-	orgIDs := []int64{1}
-	what = "snapshot"
-	for _, orgId := range orgIDs {
-		rowUser.OrgID = orgId
-		rowUser.UserID = 1
-		cmd := &dashboardsnapshots.GetDashboardSnapshotsQuery{
-			OrgId:        orgId,
-			Limit:        500000,
-			SignedInUser: rowUser,
-		}
-
-		err := e.dashboardsnapshots.SearchDashboardSnapshots(ctx, cmd)
-		if err != nil {
-			e.status.Status = "error: " + err.Error()
-			return
-		}
-
-		for _, dto := range cmd.Result {
-			m := snapshot.Model{
-				Name:        dto.Name,
-				ExternalURL: dto.ExternalUrl,
-				Expires:     dto.Expires.UnixMilli(),
-			}
-			rowUser.OrgID = dto.OrgId
-			rowUser.UserID = dto.UserId
-
-			snapcmd := &dashboardsnapshots.GetDashboardSnapshotQuery{
-				Key: dto.Key,
-			}
-			err = e.dashboardsnapshots.GetDashboardSnapshot(ctx, snapcmd)
-			if err == nil {
-				res := snapcmd.Result
-				m.DeleteKey = res.DeleteKey
-				m.ExternalURL = res.ExternalUrl
-
-				snap := res.Dashboard
-				m.DashboardUID = snap.Get("uid").MustString("")
-				snap.Del("uid")
-				snap.Del("id")
-
-				b, _ := snap.MarshalJSON()
-				m.Snapshot = b
-			}
-
-			_, err = e.store.Write(ctx, &entity.WriteEntityRequest{
-				GRN: &entity.GRN{
-					UID:  dto.Key,
-					Kind: models.StandardKindSnapshot,
-				},
-				Body:    prettyJSON(m),
-				Comment: "export from snapshtts",
-			})
-			if err != nil {
-				e.status.Status = "error: " + err.Error()
-				return
-			}
-			e.status.Changed = time.Now().UnixMilli()
-			e.status.Index++
-			e.status.Count[what] += 1
-			e.status.Last = fmt.Sprintf("ITEM: %s", dto.Name)
-			e.broadcaster(e.status)
-		}
 	}
 }
 

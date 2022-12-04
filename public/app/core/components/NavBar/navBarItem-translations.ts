@@ -33,10 +33,6 @@ export function getNavTitle(navId: string | undefined) {
       return config.featureToggles.topnav
         ? t('nav.dashboards.title', 'Dashboards')
         : t('nav.manage-dashboards.title', 'Browse');
-    case 'dashboards/playlists':
-      return t('nav.playlists.title', 'Playlists');
-    case 'dashboards/snapshots':
-      return t('nav.snapshots.title', 'Snapshots');
     case 'dashboards/library-panels':
       return t('nav.library-panels.title', 'Library panels');
     case 'dashboards/new':
@@ -146,13 +142,6 @@ export function getNavSubTitle(navId: string | undefined) {
       return config.featureToggles.topnav
         ? t('nav.dashboards.subtitle', 'Create and manage dashboards to visualize your data')
         : undefined;
-    case 'dashboards/playlists':
-      return t('nav.playlists.subtitle', 'Groups of dashboards that are displayed in a sequence');
-    case 'dashboards/snapshots':
-      return t(
-        'nav.snapshots.subtitle',
-        'Interactive, publically available, point-in-time representations of dashboards'
-      );
     case 'dashboards/library-panels':
       return t('nav.library-panels.subtitle', 'Reusable panels that can be added to multiple dashboards');
     case 'alerting':

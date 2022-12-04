@@ -14,7 +14,6 @@ import {
 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { PanelModel } from 'app/features/dashboard/state';
-import { GrafanaQueryType } from 'app/plugins/datasource/grafana/types';
 
 import { Randomize, randomizeData } from './randomizer';
 
@@ -105,17 +104,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
   dashboard.panels[0] = {
     ...saveModel,
     ...dashboard.panels[0],
-    targets: [
-      {
-        refId: 'A',
-        datasource: {
-          type: 'grafana',
-          uid: 'grafana',
-        },
-        queryType: GrafanaQueryType.Snapshot,
-        snapshot: frames,
-      },
-    ],
   };
 
   if (saveModel.transformations?.length) {

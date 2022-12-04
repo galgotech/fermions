@@ -1,4 +1,3 @@
-import pluralize from 'pluralize';
 import React, { PureComponent } from 'react';
 
 import {
@@ -10,7 +9,7 @@ import {
   DataFrame,
 } from '@grafana/data';
 import { config, getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
-import { InlineField, Select, Alert, Input, InlineFieldRow, InlineLabel } from '@grafana/ui';
+import { InlineField, Select, Alert, Input, InlineFieldRow } from '@grafana/ui';
 import { hasAlphaPanels } from 'app/core/config';
 import { SearchQuery } from 'app/features/search/service';
 
@@ -345,18 +344,6 @@ export class QueryEditor extends PureComponent<Props, State> {
     );
   }
 
-  renderSnapshotQuery() {
-    const { query } = this.props;
-
-    return (
-      <InlineFieldRow>
-        <InlineField label="Snapshot" grow={true} labelWidth={labelWidth}>
-          <InlineLabel>{pluralize('frame', query.snapshot?.length ?? 0, true)}</InlineLabel>
-        </InlineField>
-      </InlineFieldRow>
-    );
-  }
-
   onSearchChange = (search: SearchQuery) => {
     const { query, onChange, onRunQuery } = this.props;
 
@@ -374,18 +361,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     };
 
     const { queryType } = query;
-
-    // Only show "snapshot" when it already exists
-    let queryTypes = this.queryTypes;
-    if (queryType === GrafanaQueryType.Snapshot) {
-      queryTypes = [
-        ...this.queryTypes,
-        {
-          label: 'Snapshot',
-          value: queryType,
-        },
-      ];
-    }
+    const queryTypes = this.queryTypes;
 
     return (
       <>
@@ -406,7 +382,6 @@ export class QueryEditor extends PureComponent<Props, State> {
         </InlineFieldRow>
         {queryType === GrafanaQueryType.LiveMeasurements && this.renderMeasurementsQuery()}
         {queryType === GrafanaQueryType.List && this.renderListPublicFiles()}
-        {queryType === GrafanaQueryType.Snapshot && this.renderSnapshotQuery()}
         {queryType === GrafanaQueryType.Search && (
           <SearchEditor value={query.search ?? {}} onChange={this.onSearchChange} />
         )}

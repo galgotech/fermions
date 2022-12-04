@@ -310,11 +310,6 @@
       "title": "Usuarios"
     }
   },
-  "navigation": {
-    "kiosk": {
-      "tv-alert": "Pulse ESC para salir del modo de quiosco"
-    }
-  },
   "news": {
     "title": "Últimas entradas del blog"
   },

@@ -30,7 +30,6 @@ export interface DashboardMeta {
   showSettings?: boolean;
   expires?: string;
   isFolder?: boolean;
-  isSnapshot?: boolean;
   folderTitle?: string;
   folderUrl?: string;
   created?: string;
@@ -88,11 +87,6 @@ export enum DashboardInitPhase {
 export interface DashboardInitError {
   message: string;
   error: any;
-}
-
-export enum KioskMode {
-  TV = 'tv',
-  Full = 'full',
 }
 
 export type GetMutableDashboardModelFn = () => DashboardModel | null;

@@ -16,8 +16,6 @@ const stats: ServerStat = {
   datasources: 54,
   editors: 2,
   orgs: 1,
-  playlists: 1,
-  snapshots: 1,
   stars: 3,
   tags: 42,
   users: 5,
@@ -39,8 +37,6 @@ describe('ServerStats', () => {
     expect(await screen.findByRole('heading', { name: /instance statistics/i })).toBeInTheDocument();
     expect(screen.getByText('Dashboards (starred)')).toBeInTheDocument();
     expect(screen.getByText('Tags')).toBeInTheDocument();
-    expect(screen.getByText('Playlists')).toBeInTheDocument();
-    expect(screen.getByText('Snapshots')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Manage dashboards' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Manage data sources' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Alerts' })).toBeInTheDocument();

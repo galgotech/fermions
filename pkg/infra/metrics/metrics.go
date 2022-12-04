@@ -58,15 +58,6 @@ var (
 	// MApiOrgCreate is a metric api org created counter
 	MApiOrgCreate prometheus.Counter
 
-	// MApiDashboardSnapshotCreate is a metric dashboard snapshots created
-	MApiDashboardSnapshotCreate prometheus.Counter
-
-	// MApiDashboardSnapshotExternal is a metric external dashboard snapshots created
-	MApiDashboardSnapshotExternal prometheus.Counter
-
-	// MApiDashboardSnapshotGet is a metric loaded dashboards
-	MApiDashboardSnapshotGet prometheus.Counter
-
 	// MApiDashboardInsert is a metric dashboards inserted
 	MApiDashboardInsert prometheus.Counter
 
@@ -147,9 +138,6 @@ var (
 
 	// MStatTotalOrgs is a metric total amount of orgs
 	MStatTotalOrgs prometheus.Gauge
-
-	// MStatTotalPlaylists is a metric total amount of playlists
-	MStatTotalPlaylists prometheus.Gauge
 
 	// StatsTotalViewers is a metric total amount of viewers
 	StatsTotalViewers prometheus.Gauge
@@ -296,24 +284,6 @@ func init() {
 		Namespace: ExporterName,
 	})
 
-	MApiDashboardSnapshotCreate = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "api_dashboard_snapshot_create_total",
-		Help:      "dashboard snapshots created",
-		Namespace: ExporterName,
-	})
-
-	MApiDashboardSnapshotExternal = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "api_dashboard_snapshot_external_total",
-		Help:      "external dashboard snapshots created",
-		Namespace: ExporterName,
-	})
-
-	MApiDashboardSnapshotGet = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "api_dashboard_snapshot_get_total",
-		Help:      "loaded dashboards",
-		Namespace: ExporterName,
-	})
-
 	MApiDashboardInsert = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
 		Name:      "api_models_dashboard_insert_total",
 		Help:      "dashboards inserted ",
@@ -453,12 +423,6 @@ func init() {
 	MStatTotalOrgs = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name:      "stat_total_orgs",
 		Help:      "total amount of orgs",
-		Namespace: ExporterName,
-	})
-
-	MStatTotalPlaylists = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "stat_total_playlists",
-		Help:      "total amount of playlists",
 		Namespace: ExporterName,
 	})
 
@@ -639,9 +603,6 @@ func initMetricVars() {
 		MApiLoginOAuth,
 		MApiLoginSAML,
 		MApiOrgCreate,
-		MApiDashboardSnapshotCreate,
-		MApiDashboardSnapshotExternal,
-		MApiDashboardSnapshotGet,
 		MApiDashboardInsert,
 		MAlertingResultState,
 		MAlertingNotificationSent,
@@ -662,7 +623,6 @@ func initMetricVars() {
 		MStatTotalUsers,
 		MStatActiveUsers,
 		MStatTotalOrgs,
-		MStatTotalPlaylists,
 		StatsTotalViewers,
 		StatsTotalEditors,
 		StatsTotalAdmins,

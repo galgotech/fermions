@@ -1,4 +1,3 @@
-import { isArray } from 'lodash';
 import { Unsubscribable } from 'rxjs';
 
 import {
@@ -10,7 +9,6 @@ import {
   PanelData,
   PanelEvents,
   TimeRange,
-  toDataFrameDTO,
   toLegacyResponseData,
 } from '@grafana/data';
 import { PanelCtrl } from 'app/angular/panel/panel_ctrl';
@@ -70,28 +68,6 @@ class MetricsPanelCtrl extends PanelCtrl {
     // ignore fetching data if another panel is in fullscreen
     if (this.otherPanelInFullscreenMode()) {
       return;
-    }
-
-    // if we have snapshot data use that
-    if (this.panel.snapshotData) {
-      this.updateTimeRange();
-      let data = this.panel.snapshotData;
-      // backward compatibility
-      if (!isArray(data)) {
-        data = data.data;
-      }
-
-      this.panelData = {
-        state: LoadingState.Done,
-        series: data,
-        timeRange: this.range,
-      };
-
-      // Defer panel rendering till the next digest cycle.
-      // For some reason snapshot panels don't init at this time, so this helps to avoid rendering issues.
-      return this.$timeout(() => {
-        this.events.emit(PanelEvents.dataSnapshotLoad, data);
-      });
     }
 
     // clear loading/error state
@@ -210,10 +186,6 @@ class MetricsPanelCtrl extends PanelCtrl {
   handleDataFrames(data: DataFrame[]) {
     this.loading = false;
 
-    if (this.dashboard && this.dashboard.snapshot) {
-      this.panel.snapshotData = data.map((frame) => toDataFrameDTO(frame));
-    }
-
     try {
       this.events.emit(PanelEvents.dataFramesReceived, data);
     } catch (err) {
@@ -223,10 +195,6 @@ class MetricsPanelCtrl extends PanelCtrl {
 
   handleQueryResult(result: DataQueryResponse) {
     this.loading = false;
-
-    if (this.dashboard.snapshot) {
-      this.panel.snapshotData = result.data;
-    }
 
     if (!result || !result.data) {
       console.log('Data source query result invalid, missing data field:', result);

@@ -1,11 +1,11 @@
 declare global {
   interface Window {
     __monacoKustoResolvePromise: (value: unknown) => void;
-    __grafana_public_path__: string;
+    __fermions_public_path__: string;
   }
 }
 
-const monacoPath = (window.__grafana_public_path__ ?? 'public/') + 'lib/monaco/min/vs';
+const monacoPath = (window.__fermions_public_path__ ?? 'public/') + 'lib/monaco/min/vs';
 
 const scripts = [
   [`${monacoPath}/language/kusto/bridge.min.js`],

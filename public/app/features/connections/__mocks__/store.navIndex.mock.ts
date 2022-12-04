@@ -35,20 +35,6 @@ export const navIndex: NavIndex = {
     sortWeight: -1700,
     children: [
       {
-        id: 'dashboards/playlists',
-        text: 'Playlists',
-        subTitle: 'Groups of dashboards that are displayed in a sequence',
-        icon: 'presentation-play',
-        url: '/playlists',
-      },
-      {
-        id: 'dashboards/snapshots',
-        text: 'Snapshots',
-        subTitle: 'Interactive, publically available, point-in-time representations of dashboards',
-        icon: 'camera',
-        url: '/dashboard/snapshots',
-      },
-      {
         id: 'dashboards/library-panels',
         text: 'Library panels',
         subTitle: 'Reusable panels that can be added to multiple dashboards',
@@ -64,20 +50,6 @@ export const navIndex: NavIndex = {
       url: '/',
       sortWeight: -2000,
     },
-  },
-  'dashboards/playlists': {
-    id: 'dashboards/playlists',
-    text: 'Playlists',
-    subTitle: 'Groups of dashboards that are displayed in a sequence',
-    icon: 'presentation-play',
-    url: '/playlists',
-  },
-  'dashboards/snapshots': {
-    id: 'dashboards/snapshots',
-    text: 'Snapshots',
-    subTitle: 'Interactive, publically available, point-in-time representations of dashboards',
-    icon: 'camera',
-    url: '/dashboard/snapshots',
   },
   'dashboards/library-panels': {
     id: 'dashboards/library-panels',

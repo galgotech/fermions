@@ -4,7 +4,7 @@ import { ResourceDimensionMode } from './types';
 describe('getResourceDimension', () => {
   const publicPath = '/public/';
   beforeAll(() => {
-    window.__grafana_public_path__ = publicPath;
+    window.__fermions_public_path__ = publicPath;
   });
 
   it('fixed mode', () => {

@@ -73,7 +73,6 @@ export class TablePanelCtrl extends MetricsPanelCtrl {
     this.panelHasLinks = Boolean(this.panel.styles.find((style: any) => style.link));
 
     this.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this));
-    this.events.on(PanelEvents.dataSnapshotLoad, this.onDataReceived.bind(this));
     this.events.on(PanelEvents.editModeInitialized, this.onInitEditMode.bind(this));
   }
 

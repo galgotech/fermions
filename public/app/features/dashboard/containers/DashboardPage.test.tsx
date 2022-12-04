@@ -294,36 +294,8 @@ describe('DashboardPage', () => {
     });
   });
 
-  dashboardPageScenario('No kiosk mode tv', (ctx) => {
-    ctx.setup(() => {
-      ctx.mount({ dashboard: getTestDashboard() });
-      ctx.rerender({ dashboard: ctx.dashboard });
-    });
-
-    it('should render dashboard page toolbar and submenu', () => {
-      expect(screen.queryAllByTestId(selectors.pages.Dashboard.DashNav.navV2)).toHaveLength(1);
-      expect(screen.queryAllByLabelText(selectors.pages.Dashboard.SubMenu.submenu)).toHaveLength(1);
-    });
-  });
-
-  dashboardPageScenario('When in full kiosk mode', (ctx) => {
-    ctx.setup(() => {
-      ctx.mount({
-        queryParams: { kiosk: true },
-        dashboard: getTestDashboard(),
-      });
-      ctx.rerender({ dashboard: ctx.dashboard });
-    });
-
-    it('should not render page toolbar and submenu', () => {
-      expect(screen.queryAllByTestId(selectors.pages.Dashboard.DashNav.navV2)).toHaveLength(0);
-      expect(screen.queryAllByLabelText(selectors.pages.Dashboard.SubMenu.submenu)).toHaveLength(0);
-    });
-  });
-
   dashboardPageScenario('When dashboard is public', (ctx) => {
     ctx.setup(() => {
-      locationService.partial({ kiosk: false });
       ctx.mount({
         queryParams: {},
         dashboard: getTestDashboard(),

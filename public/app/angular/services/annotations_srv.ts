@@ -1,5 +1,3 @@
-import { cloneDeep } from 'lodash';
-
 import { AnnotationEvent, deprecationWarning } from '@grafana/data';
 import { deleteAnnotation, saveAnnotation, updateAnnotation } from 'app/features/annotations/api';
 import { AnnotationQueryOptions } from 'app/features/annotations/types';
@@ -68,13 +66,6 @@ export class AnnotationsSrv {
    */
   translateQueryResult(annotation: any, results: any) {
     deprecationWarning('annotations_srv.ts', 'translateQueryResult', 'DashboardQueryRunner/utils/translateQueryResult');
-    // if annotation has snapshotData
-    // make clone and remove it
-    if (annotation.snapshotData) {
-      annotation = cloneDeep(annotation);
-      delete annotation.snapshotData;
-    }
-
     for (const item of results) {
       item.source = annotation;
       item.color = annotation.iconColor;

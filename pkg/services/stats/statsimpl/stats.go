@@ -63,7 +63,6 @@ func (ss *sqlStatsService) GetSystemStats(ctx context.Context, query *models.Get
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("org") + `) AS orgs,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("data_source") + `) AS datasources,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("star") + `) AS stars,`)
-		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("playlist") + `) AS playlists,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("alert") + `) AS alerts,`)
 
 		now := time.Now()
@@ -104,7 +103,6 @@ func (ss *sqlStatsService) GetSystemStats(ctx context.Context, query *models.Get
 		sb.Write(viewersPermissionsCounterSQL(ss.db, "folders_viewers_can_admin", true, models.PERMISSION_ADMIN))
 
 		sb.Write(`(SELECT COUNT(id) FROM ` + dialect.Quote("dashboard_provisioning") + `) AS provisioned_dashboards,`)
-		sb.Write(`(SELECT COUNT(id) FROM ` + dialect.Quote("dashboard_snapshot") + `) AS snapshots,`)
 		sb.Write(`(SELECT COUNT(id) FROM ` + dialect.Quote("dashboard_version") + `) AS dashboard_versions,`)
 		sb.Write(`(SELECT COUNT(id) FROM ` + dialect.Quote("annotation") + `) AS annotations,`)
 		sb.Write(`(SELECT COUNT(id) FROM ` + dialect.Quote("team") + `) AS teams,`)
@@ -183,10 +181,6 @@ func (ss *sqlStatsService) GetAdminStats(ctx context.Context, query *models.GetA
 			FROM ` + dialect.Quote("dashboard") + `WHERE is_folder=` + dialect.BooleanStr(false) + `
 		) AS dashboards,
 		(
-			SELECT COUNT(*)
-			FROM ` + dialect.Quote("dashboard_snapshot") + `
-		) AS snapshots,
-		(
 			SELECT COUNT( DISTINCT ( ` + dialect.Quote("term") + ` ))
 			FROM ` + dialect.Quote("dashboard_tag") + `
 		) AS tags,
@@ -194,10 +188,6 @@ func (ss *sqlStatsService) GetAdminStats(ctx context.Context, query *models.GetA
 			SELECT COUNT(*)
 			FROM ` + dialect.Quote("data_source") + `
 		) AS datasources,
-		(
-			SELECT COUNT(*)
-			FROM ` + dialect.Quote("playlist") + `
-		) AS playlists,
 		(
 			SELECT COUNT(*)
 			FROM ` + dialect.Quote("star") + `

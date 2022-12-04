@@ -37,8 +37,8 @@ describe('toUrlParams', () => {
 
 describe('parseKeyValue', () => {
   it('should parse url search params to object', () => {
-    const obj = urlUtil.parseKeyValue('param=value&param2=value2&kiosk');
-    expect(obj).toEqual({ param: 'value', param2: 'value2', kiosk: true });
+    const obj = urlUtil.parseKeyValue('param=value&param2=value2');
+    expect(obj).toEqual({ param: 'value', param2: 'value2' });
   });
 
   it('should parse same url key multiple times to array', () => {

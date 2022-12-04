@@ -310,11 +310,6 @@
       "title": "用户"
     }
   },
-  "navigation": {
-    "kiosk": {
-      "tv-alert": "按 ESC 退出 kiosk 模式"
-    }
-  },
   "news": {
     "title": "最新博客"
   },

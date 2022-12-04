@@ -49,7 +49,7 @@ class SubMenuUnConnected extends PureComponent<Props> {
       return null;
     }
 
-    const readOnlyVariables = dashboard.meta.isSnapshot ?? false;
+    const readOnlyVariables = false;
 
     return (
       <div className="submenu-controls">

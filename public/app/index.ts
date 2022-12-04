@@ -7,7 +7,7 @@ if (window.public_cdn_path) {
 }
 
 // This is a path to the public folder without '/build'
-window.__grafana_public_path__ =
+window.__fermions_public_path__ =
   __webpack_public_path__.substring(0, __webpack_public_path__.lastIndexOf('build/')) || __webpack_public_path__;
 
 if (window.nonce) {
@@ -15,7 +15,7 @@ if (window.nonce) {
 }
 
 // This is an indication to the window.onLoad failure check that the app bundle has loaded.
-window.__grafana_app_bundle_loaded = true;
+window.__fermions_app_bundle_loaded = true;
 
 import app from './app';
 app.init();

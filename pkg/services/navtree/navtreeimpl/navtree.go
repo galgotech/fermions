@@ -366,19 +366,7 @@ func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm b
 		})
 	}
 
-	dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
-		Text: "Playlists", SubTitle: "Groups of dashboards that are displayed in a sequence", Id: "dashboards/playlists", Url: s.cfg.AppSubURL + "/playlists", Icon: "presentation-play",
-	})
-
 	if c.IsSignedIn {
-		dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
-			Text:     "Snapshots",
-			SubTitle: "Interactive, publically available, point-in-time representations of dashboards",
-			Id:       "dashboards/snapshots",
-			Url:      s.cfg.AppSubURL + "/dashboard/snapshots",
-			Icon:     "camera",
-		})
-
 		dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
 			Text:     "Library panels",
 			SubTitle: "Reusable panels that can be added to multiple dashboards",

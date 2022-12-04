@@ -2,11 +2,10 @@ import React, { FC, ReactNode, useContext, useEffect } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { locationUtil, textUtil } from '@grafana/data';
+import { locationUtil } from '@grafana/data';
 import { selectors as e2eSelectors } from '@grafana/e2e-selectors/src';
 import { locationService } from '@grafana/runtime';
 import {
-  ButtonGroup,
   ModalsController,
   ToolbarButton,
   PageToolbar,
@@ -18,15 +17,12 @@ import {
 import { AppChromeUpdate } from 'app/core/components/AppChrome/AppChromeUpdate';
 import { NavToolbarSeparator } from 'app/core/components/AppChrome/NavToolbarSeparator';
 import config from 'app/core/config';
-import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useBusEvent } from 'app/core/hooks/useBusEvent';
-import { t, Trans } from 'app/core/internationalization';
+import { t } from 'app/core/internationalization';
 import { DashboardCommentsModal } from 'app/features/dashboard/components/DashboardComments/DashboardCommentsModal';
 import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardDrawer';
 import { ShareModal } from 'app/features/dashboard/components/ShareModal';
-import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
-import { KioskMode } from 'app/types';
 import { DashboardMetaChangedEvent } from 'app/types/events';
 
 import { setStarred } from '../../../../core/reducers/navBarTree';
@@ -48,7 +44,6 @@ const selectors = e2eSelectors.pages.Dashboard.DashNav;
 export interface OwnProps {
   dashboard: DashboardModel;
   isFullscreen: boolean;
-  kioskMode?: KioskMode | null;
   hideTimePicker: boolean;
   folderTitle?: string;
   title: string;
@@ -77,7 +72,6 @@ type Props = OwnProps & ConnectedProps<typeof connector>;
 
 export const DashNav = React.memo<Props>((props) => {
   const forceUpdate = useForceUpdate();
-  const { chrome } = useGrafana();
   const { showModal, hideModal } = useContext(ModalsContext);
 
   // We don't really care about the event payload here only that it triggeres a re-render of this component
@@ -98,25 +92,8 @@ export const DashNav = React.memo<Props>((props) => {
     locationService.partial({ viewPanel: null });
   };
 
-  const onToggleTVMode = () => {
-    chrome.onToggleKioskMode();
-  };
-
   const onOpenSettings = () => {
     locationService.partial({ editview: 'settings' });
-  };
-
-  const onPlaylistPrev = () => {
-    playlistSrv.prev();
-  };
-
-  const onPlaylistNext = () => {
-    playlistSrv.next();
-  };
-
-  const onPlaylistStop = () => {
-    playlistSrv.stop();
-    forceUpdate();
   };
 
   const addCustomContent = (actions: DashNavButtonModel[], buttons: ReactNode[]) => {
@@ -125,10 +102,6 @@ export const DashNav = React.memo<Props>((props) => {
       const element = <Component {...props} key={`button-custom-${index}`} />;
       typeof action.index === 'number' ? buttons.splice(action.index, 0, element) : buttons.push(element);
     });
-  };
-
-  const isPlaylistRunning = () => {
-    return playlistSrv.isPlaying;
   };
 
   // Open/Close
@@ -151,13 +124,9 @@ export const DashNav = React.memo<Props>((props) => {
   }, [showModal, hideModal, props.dashboard, props.shareModalActiveTab]);
 
   const renderLeftActions = () => {
-    const { dashboard, kioskMode } = props;
+    const { dashboard } = props;
     const { canStar, canShare, isStarred } = dashboard.meta;
     const buttons: ReactNode[] = [];
-
-    if (kioskMode || isPlaylistRunning()) {
-      return [];
-    }
 
     if (canStar) {
       let desc = isStarred
@@ -225,28 +194,6 @@ export const DashNav = React.memo<Props>((props) => {
     return buttons;
   };
 
-  const renderPlaylistControls = () => {
-    return (
-      <ButtonGroup key="playlist-buttons">
-        <ToolbarButton
-          tooltip={t('dashboard.toolbar.playlist-previous', 'Go to previous dashboard')}
-          icon="backward"
-          onClick={onPlaylistPrev}
-          narrow
-        />
-        <ToolbarButton onClick={onPlaylistStop}>
-          <Trans i18nKey="dashboard.toolbar.playlist-stop">Stop playlist</Trans>
-        </ToolbarButton>
-        <ToolbarButton
-          tooltip={t('dashboard.toolbar.playlist-next', 'Go to next dashboard')}
-          icon="forward"
-          onClick={onPlaylistNext}
-          narrow
-        />
-      </ButtonGroup>
-    );
-  };
-
   const renderTimeControls = () => {
     const { dashboard, updateTimeZoneForSession, hideTimePicker } = props;
 
@@ -260,27 +207,9 @@ export const DashNav = React.memo<Props>((props) => {
   };
 
   const renderRightActions = () => {
-    const { dashboard, onAddPanel, isFullscreen, kioskMode } = props;
+    const { dashboard, onAddPanel, isFullscreen } = props;
     const { canSave, canEdit, showSettings } = dashboard.meta;
-    const { snapshot } = dashboard;
-    const snapshotUrl = snapshot && snapshot.originalUrl;
     const buttons: ReactNode[] = [];
-    const tvButton = config.featureToggles.topnav ? null : (
-      <ToolbarButton
-        tooltip={t('dashboard.toolbar.tv-button', 'Cycle view mode')}
-        icon="monitor"
-        onClick={onToggleTVMode}
-        key="tv-button"
-      />
-    );
-
-    if (isPlaylistRunning()) {
-      return [renderPlaylistControls(), renderTimeControls()];
-    }
-
-    if (kioskMode === KioskMode.TV) {
-      return [renderTimeControls(), tvButton];
-    }
 
     if (canEdit && !isFullscreen) {
       buttons.push(
@@ -312,17 +241,6 @@ export const DashNav = React.memo<Props>((props) => {
       );
     }
 
-    if (snapshotUrl) {
-      buttons.push(
-        <ToolbarButton
-          tooltip={t('dashboard.toolbar.open-original', 'Open original dashboard')}
-          onClick={() => gotoSnapshotOrigin(snapshotUrl)}
-          icon="link"
-          key="button-snapshot"
-        />
-      );
-    }
-
     if (showSettings) {
       buttons.push(
         <ToolbarButton
@@ -337,7 +255,6 @@ export const DashNav = React.memo<Props>((props) => {
     addCustomContent(customRightActions, buttons);
 
     buttons.push(renderTimeControls());
-    buttons.push(tvButton);
 
     if (config.featureToggles.scenes) {
       buttons.push(
@@ -350,10 +267,6 @@ export const DashNav = React.memo<Props>((props) => {
       );
     }
     return buttons;
-  };
-
-  const gotoSnapshotOrigin = (snapshotUrl: string) => {
-    window.location.href = textUtil.sanitizeUrl(snapshotUrl);
   };
 
   const { isFullscreen, title, folderTitle } = props;

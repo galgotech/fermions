@@ -19,7 +19,6 @@ const shortcuts = {
     { keys: ['d', 'r'], description: 'Refresh all panels' },
     { keys: ['d', 's'], description: 'Dashboard settings' },
     { keys: ['d', 'v'], description: 'Toggle in-active / view mode' },
-    { keys: ['d', 'k'], description: 'Toggle kiosk mode (hides top nav)' },
     { keys: ['d', 'E'], description: 'Expand all rows' },
     { keys: ['d', 'C'], description: 'Collapse all rows' },
     { keys: ['d', 'a'], description: 'Toggle auto fit panels (experimental feature)' },

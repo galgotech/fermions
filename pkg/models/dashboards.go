@@ -168,7 +168,7 @@ func GetDashboardUrl(uid string, slug string) string {
 
 // GetKioskModeDashboardUrl returns the HTML url for a dashboard in kiosk mode.
 func GetKioskModeDashboardUrl(uid string, slug string, theme Theme) string {
-	return fmt.Sprintf("%s?kiosk&theme=%s", GetDashboardUrl(uid, slug), string(theme))
+	return fmt.Sprintf("%s?theme=%s", GetDashboardUrl(uid, slug), string(theme))
 }
 
 // GetFullDashboardUrl returns the full URL for a dashboard.

@@ -10,7 +10,7 @@ export function getPublicOrAbsoluteUrl(v: string): string {
   if (!v) {
     return '';
   }
-  return v.indexOf(':/') > 0 ? v : window.__grafana_public_path__ + v;
+  return v.indexOf(':/') > 0 ? v : window.__fermions_public_path__ + v;
 }
 
 export function getResourceDimension(

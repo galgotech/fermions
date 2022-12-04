@@ -58,10 +58,6 @@ export interface DataSourceResponse<T> {
 
 type DataSourceResponsePayload = DataSourceResponse<any>;
 
-export interface ToggleKioskModePayload {
-  exit?: boolean;
-}
-
 export interface GraphClickedPayload {
   pos: any;
   panel: any;

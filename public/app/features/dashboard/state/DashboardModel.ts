@@ -14,7 +14,6 @@ import {
   PanelModel as IPanelModel,
   TimeRange,
   TimeZone,
-  UrlQueryValue,
 } from '@grafana/data';
 import { RefreshEvent, TimeRangeUpdatedEvent } from '@grafana/runtime';
 import { DEFAULT_ANNOTATION_COLOR } from '@grafana/ui';
@@ -24,7 +23,7 @@ import { sortedDeepCloneWithoutNulls } from 'app/core/utils/object';
 import { variableAdapters } from 'app/features/variables/adapters';
 import { onTimeRangeUpdated } from 'app/features/variables/state/actions';
 import { GetVariables, getVariablesByKey } from 'app/features/variables/state/selectors';
-import { CoreEvents, DashboardMeta, KioskMode } from 'app/types';
+import { CoreEvents, DashboardMeta } from 'app/types';
 import { DashboardMetaChangedEvent, DashboardPanelsChangedEvent, RenderEvent } from 'app/types/events';
 
 import { appEvents } from '../../../core/core';
@@ -1034,7 +1033,7 @@ export class DashboardModel implements TimeModel {
     return this.hasVariablesChanged(this.originalTemplating, this.getVariablesFromState(this.uid));
   }
 
-  autoFitPanels(viewHeight: number, kioskMode?: UrlQueryValue) {
+  autoFitPanels(viewHeight: number) {
     const currentGridHeight = Math.max(...this.panels.map((panel) => panel.gridPos.h + panel.gridPos.y));
 
     const navbarHeight = 55;
@@ -1044,14 +1043,11 @@ export class DashboardModel implements TimeModel {
     let visibleHeight = viewHeight - navbarHeight - margin;
 
     // Remove submenu height if visible
-    if (this.meta.submenuEnabled && !kioskMode) {
+    if (this.meta.submenuEnabled) {
       visibleHeight -= submenuHeight;
     }
 
     // add back navbar height
-    if (kioskMode && kioskMode !== KioskMode.TV) {
-      visibleHeight += navbarHeight;
-    }
 
     const visibleGridHeight = Math.floor(visibleHeight / (GRID_CELL_HEIGHT + GRID_CELL_VMARGIN));
     const scaleFactor = currentGridHeight / visibleGridHeight;

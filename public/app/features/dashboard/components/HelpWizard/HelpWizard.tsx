@@ -203,7 +203,7 @@ export function HelpWizard({ panel, plugin, onClose }: Props) {
               <>
                 <iframe
                   title="Support snapshot preview"
-                  src={`${config.appUrl}dashboard/new?orgId=${contextSrv.user.orgId}&kiosk&${snapshotUpdate}`}
+                  src={`${config.appUrl}dashboard/new?orgId=${contextSrv.user.orgId}&${snapshotUpdate}`}
                   width="100%"
                   height={height - 100}
                   frameBorder="0"

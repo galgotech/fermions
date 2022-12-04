@@ -46,7 +46,6 @@ func (m *SecretsMigrator) ReEncryptSecrets(ctx context.Context) (bool, error) {
 	toReencrypt := []interface {
 		reencrypt(context.Context, *manager.SecretsService, db.DB) bool
 	}{
-		simpleSecret{tableName: "dashboard_snapshot", columnName: "dashboard_encrypted"},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_access_token"}, encoding: base64.StdEncoding},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_refresh_token"}, encoding: base64.StdEncoding},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_token_type"}, encoding: base64.StdEncoding},
@@ -76,7 +75,6 @@ func (m *SecretsMigrator) RollBackSecrets(ctx context.Context) (bool, error) {
 	toRollback := []interface {
 		rollback(context.Context, *manager.SecretsService, encryption.Internal, db.DB, string) bool
 	}{
-		simpleSecret{tableName: "dashboard_snapshot", columnName: "dashboard_encrypted"},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_access_token"}, encoding: base64.StdEncoding},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_refresh_token"}, encoding: base64.StdEncoding},
 		b64Secret{simpleSecret: simpleSecret{tableName: "user_auth", columnName: "o_auth_token_type"}, encoding: base64.StdEncoding},

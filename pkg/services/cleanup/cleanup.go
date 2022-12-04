@@ -18,7 +18,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/tracing"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/annotations"
-	"github.com/grafana/grafana/pkg/services/dashboardsnapshots"
 	dashver "github.com/grafana/grafana/pkg/services/dashboardversion"
 	"github.com/grafana/grafana/pkg/services/ngalert/image"
 	"github.com/grafana/grafana/pkg/services/queryhistory"
@@ -29,7 +28,7 @@ import (
 
 func ProvideService(cfg *setting.Cfg, serverLockService *serverlock.ServerLockService,
 	shortURLService shorturls.Service, sqlstore db.DB, queryHistoryService queryhistory.Service,
-	dashboardVersionService dashver.Service, dashSnapSvc dashboardsnapshots.Service, deleteExpiredImageService *image.DeleteExpiredService,
+	dashboardVersionService dashver.Service, deleteExpiredImageService *image.DeleteExpiredService,
 	tempUserService tempuser.Service, tracer tracing.Tracer, annotationCleaner annotations.Cleaner) *CleanUpService {
 	s := &CleanUpService{
 		Cfg:                       cfg,
@@ -39,7 +38,6 @@ func ProvideService(cfg *setting.Cfg, serverLockService *serverlock.ServerLockSe
 		store:                     sqlstore,
 		log:                       log.New("cleanup"),
 		dashboardVersionService:   dashboardVersionService,
-		dashboardSnapshotService:  dashSnapSvc,
 		deleteExpiredImageService: deleteExpiredImageService,
 		tempUserService:           tempUserService,
 		tracer:                    tracer,
@@ -57,7 +55,6 @@ type CleanUpService struct {
 	ShortURLService           shorturls.Service
 	QueryHistoryService       queryhistory.Service
 	dashboardVersionService   dashver.Service
-	dashboardSnapshotService  dashboardsnapshots.Service
 	deleteExpiredImageService *image.DeleteExpiredService
 	tempUserService           tempuser.Service
 	annotationCleaner         annotations.Cleaner
@@ -96,7 +93,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 
 	cleanupJobs := []cleanUpJob{
 		{"clean up temporary files", srv.cleanUpTmpFiles},
-		{"delete expired snapshots", srv.deleteExpiredSnapshots},
 		{"delete expired dashboard versions", srv.deleteExpiredDashboardVersions},
 		{"delete expired images", srv.deleteExpiredImages},
 		{"cleanup old annotations", srv.cleanUpOldAnnotations},
@@ -189,16 +185,6 @@ func (srv *CleanUpService) shouldCleanupTempFile(filemtime time.Time, now time.T
 	}
 
 	return filemtime.Add(srv.Cfg.TempDataLifetime).Before(now)
-}
-
-func (srv *CleanUpService) deleteExpiredSnapshots(ctx context.Context) {
-	logger := srv.log.FromContext(ctx)
-	cmd := dashboardsnapshots.DeleteExpiredSnapshotsCommand{}
-	if err := srv.dashboardSnapshotService.DeleteExpiredSnapshots(ctx, &cmd); err != nil {
-		logger.Error("Failed to delete expired snapshots", "error", err.Error())
-	} else {
-		logger.Debug("Deleted expired snapshots", "rows affected", cmd.DeletedRows)
-	}
 }
 
 func (srv *CleanUpService) deleteExpiredDashboardVersions(ctx context.Context) {

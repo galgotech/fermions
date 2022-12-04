@@ -8,7 +8,6 @@ import { useLocation } from 'react-router-dom';
 import { GrafanaTheme2, NavModelItem, NavSection } from '@grafana/data';
 import { config, locationSearchToObject, locationService, reportInteraction } from '@grafana/runtime';
 import { Icon, useTheme2, CustomScrollbar } from '@grafana/ui';
-import { getKioskMode } from 'app/core/navigation/kiosk';
 import { useSelector } from 'app/types';
 
 import NavBarItem from './NavBarItem';
@@ -167,10 +166,6 @@ export const NavBar = React.memo(() => {
 
 function shouldHideNavBar(location: HistoryLocation) {
   const queryParams = locationSearchToObject(location.search);
-
-  if (getKioskMode(queryParams)) {
-    return true;
-  }
 
   // Temporary, can be removed after topnav is made permanent
   if ((location.pathname.indexOf('/d/') === 0 && queryParams.editview) || queryParams.editPanel) {

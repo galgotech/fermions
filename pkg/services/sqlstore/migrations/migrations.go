@@ -31,11 +31,9 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addDashboardMigration(mg) // Do NOT add more migrations to this function.
 	addDataSourceMigration(mg)
 	addApiKeyMigrations(mg)
-	addDashboardSnapshotMigrations(mg)
 	addQuotaMigration(mg)
 	addAppSettingsMigration(mg)
 	addSessionMigration(mg)
-	addPlaylistMigrations(mg)
 	addPreferencesMigrations(mg)
 	addAlertMigrations(mg)
 	addAnnotationMig(mg)
@@ -97,7 +95,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	accesscontrol.AddManagedPermissionsMigration(mg, accesscontrol.ManagedPermissionsMigrationID)
 	accesscontrol.AddManagedFolderAlertActionsMigration(mg)
 	accesscontrol.AddActionNameMigrator(mg)
-	addPlaylistUIDMigration(mg)
 
 	ualert.UpdateRuleGroupIndexMigration(mg)
 	accesscontrol.AddManagedFolderAlertActionsRepeatMigration(mg)

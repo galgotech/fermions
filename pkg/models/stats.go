@@ -8,10 +8,8 @@ type SystemStats struct {
 	DailyActiveUsers          int64
 	MonthlyActiveUsers        int64
 	Orgs                      int64
-	Playlists                 int64
 	Alerts                    int64
 	Stars                     int64
-	Snapshots                 int64
 	Teams                     int64
 	DashboardPermissions      int64
 	FolderPermissions         int64
@@ -79,10 +77,8 @@ type GetAlertNotifierUsageStatsQuery struct {
 type AdminStats struct {
 	Orgs                int64 `json:"orgs"`
 	Dashboards          int64 `json:"dashboards"`
-	Snapshots           int64 `json:"snapshots"`
 	Tags                int64 `json:"tags"`
 	Datasources         int64 `json:"datasources"`
-	Playlists           int64 `json:"playlists"`
 	Stars               int64 `json:"stars"`
 	Alerts              int64 `json:"alerts"`
 	Users               int64 `json:"users"`

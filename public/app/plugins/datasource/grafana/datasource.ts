@@ -14,8 +14,6 @@ import {
   MutableDataFrame,
   parseLiveChannelAddress,
   toDataFrame,
-  dataFrameFromJSON,
-  LoadingState,
 } from '@grafana/data';
 import {
   DataSourceWithBackend,
@@ -82,15 +80,6 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
         );
       }
       if (target.hide) {
-        continue;
-      }
-      if (target.queryType === GrafanaQueryType.Snapshot) {
-        results.push(
-          of({
-            data: (target.snapshot ?? []).map((v) => dataFrameFromJSON(v)),
-            state: LoadingState.Done,
-          })
-        );
         continue;
       }
       if (target.queryType === GrafanaQueryType.LiveMeasurements) {
