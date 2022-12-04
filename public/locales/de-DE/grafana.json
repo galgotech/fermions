@@ -284,10 +284,6 @@
     "sign-out": {
       "title": "Abmelden"
     },
-    "snapshots": {
-      "subtitle": "Interaktive, öffentlich verfügbare Point-in-Time-Darstellungen von Dashboards",
-      "title": "Schnappschüsse"
-    },
     "starred": {
       "title": "Hervorgehoben"
     },
@@ -385,31 +381,11 @@
     "panel": {
       "title": "Panel teilen"
     },
-    "snapshot": {
-      "cancel-button": "Abbrechen",
-      "copy-link-button": "Kopieren",
-      "delete-button": "Schnappschuss löschen.",
-      "deleted-message": "Der Schnappschuss wurde gelöscht. Wenn du bereits einmal darauf zugegriffen hast, kann es bis zu eine Stunde dauern, bevor es aus den Browser-Caches oder den CDN-Caches gelöscht wird.",
-      "expire": "Läuft ab nach",
-      "expire-day": "1 Tag",
-      "expire-hour": "1 Stunde",
-      "expire-never": "Nie",
-      "expire-week": "7 Tage",
-      "info-text-1": "Ein Schnappschuss ist eine Möglichkeit, ein interaktives Dashboard sofort öffentlich zu teilen. Beim Erstellen entfernen wir sensible Daten wie Abfragen (Metriken, Vorlagen und Anmerkungen) und Panel-Links, sodass nur die sichtbaren Metrikdaten und die in dein Dashboard eingebetteten Seriennamen angezeigt werden.",
-      "info-text-2": "Beachte, dass dein Schnappschuss <1>für jeden sichtbar ist</1>, der den Link hat und auf die URL zugreifen kann. Teile Schnappschüsse daher mit Bedacht.",
-      "local-button": "Lokaler Schnappschuss",
-      "mistake-message": "Hast du einen Fehler gemacht? ",
-      "name": "Name des Schnappschusses",
-      "timeout": "Timeout (Sekunden)",
-      "timeout-description": "Wenn die Erfassung deiner Dashboard-Metriken lange dauert, musst du ggf. den Timeout-Wert anpassen.",
-      "url-label": ""
-    },
     "tab-title": {
       "embed": "Einbetten",
       "export": "Exportieren",
       "library-panel": "Bibliotheks-Panel",
-      "link": "Link",
-      "snapshot": "Schnappschuss"
+      "link": "Link"
     },
     "theme-picker": {
       "current": "Aktuell",

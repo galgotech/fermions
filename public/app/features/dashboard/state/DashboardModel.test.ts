@@ -677,7 +677,6 @@ describe('DashboardModel', () => {
       expect(model.panels.find((x) => x.type !== 'row')?.scopedVars?.dc.value).toBe('dc1');
       expect(model.panels.find((x) => x.type !== 'row')?.scopedVars?.app.value).toBe('se1');
 
-      model.snapshot = { timestamp: new Date() };
       const saveModel = model.getSaveModelClone();
       expect(saveModel.panels.filter((x) => x.type === 'row')).toHaveLength(2);
       expect(saveModel.panels.filter((x) => x.type !== 'row')).toHaveLength(4);

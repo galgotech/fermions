@@ -284,10 +284,6 @@
     "sign-out": {
       "title": "退出登录"
     },
-    "snapshots": {
-      "subtitle": "交互式、可公开获取的仪表板时间点表示",
-      "title": "快照"
-    },
     "starred": {
       "title": "已加星标"
     },
@@ -385,31 +381,11 @@
     "panel": {
       "title": "分享面板"
     },
-    "snapshot": {
-      "cancel-button": "取消",
-      "copy-link-button": "复制",
-      "delete-button": "删除快照。",
-      "deleted-message": "快照已删除。如果您已经访问过它，则可能需要等待一小时，才能将其从浏览器缓存或 CDN 缓存中删除。",
-      "expire": "失效期限",
-      "expire-day": "1 天",
-      "expire-hour": "1 小时",
-      "expire-never": "从不",
-      "expire-week": "7 天",
-      "info-text-1": "可通过快照即时、公开地分享交互式仪表板。创建后，我们会剥离敏感数据，如查询（指标、模板和注释）和面板链接，仅将可见指标数据和系列名称嵌入到仪表板中。",
-      "info-text-2": "请注意，知晓该链接并能够访问该网址的<1>任何人都可以</1>查看您的快照。分享需谨慎。",
-      "local-button": "本地快照",
-      "mistake-message": "是不是弄错了什么？",
-      "name": "快照名称",
-      "timeout": "超时（秒）",
-      "timeout-description": "如果需要很长时间才能收集仪表板指标，则可能需要配置超时值。",
-      "url-label": ""
-    },
     "tab-title": {
       "embed": "嵌入",
       "export": "导出",
       "library-panel": "库面板",
-      "link": "链接",
-      "snapshot": "快照"
+      "link": "链接"
     },
     "theme-picker": {
       "current": "当前",

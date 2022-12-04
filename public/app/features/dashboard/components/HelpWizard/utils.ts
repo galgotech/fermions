@@ -37,7 +37,7 @@ export function getPanelDataFrames(data?: PanelData): DataFrameJSON[] {
   return frames;
 }
 
-export function getGithubMarkdown(panel: PanelModel, snapshot: string): string {
+export function getGithubMarkdown(panel: PanelModel): string {
   const saveModel = panel.getSaveModel();
   const info = {
     panelType: saveModel.type,
@@ -51,9 +51,6 @@ export function getGithubMarkdown(panel: PanelModel, snapshot: string): string {
 | Grafana | ${grafanaVersion} // ${config.buildInfo.edition} |
 `;
 
-  if (snapshot) {
-    md += '<details><summary>Panel debug snapshot dashboard</summary>\n\n```json\n' + snapshot + '\n```\n</details>';
-  }
   return md;
 }
 

@@ -85,7 +85,6 @@ export class DashboardModel implements TimeModel {
   private originalTemplating: any;
   annotations: { list: AnnotationQuery[] };
   refresh: any;
-  snapshot: any;
   schemaVersion: number;
   version: number;
   revision: number;
@@ -148,7 +147,6 @@ export class DashboardModel implements TimeModel {
     this.templating = this.ensureListExist(data.templating);
     this.annotations = this.ensureListExist(data.annotations);
     this.refresh = data.refresh;
-    this.snapshot = data.snapshot;
     this.schemaVersion = data.schemaVersion ?? 0;
     this.fiscalYearStartMonth = data.fiscalYearStartMonth ?? 0;
     this.version = data.version ?? 0;
@@ -274,7 +272,7 @@ export class DashboardModel implements TimeModel {
     return this.panels
       .filter(
         (panel) =>
-          this.isSnapshotTruthy() || !(panel.type === 'add-panel' || panel.repeatPanelId || panel.repeatedByRow)
+          !(panel.type === 'add-panel' || panel.repeatPanelId || panel.repeatedByRow)
       )
       .map((panel) => {
         // Clean libarary panels on save
@@ -300,9 +298,6 @@ export class DashboardModel implements TimeModel {
         return panel.getSaveModel();
       })
       .map((model: any) => {
-        if (this.isSnapshotTruthy()) {
-          return model;
-        }
         // Clear any scopedVars from persisted mode. This cannot be part of getSaveModel as we need to be able to copy
         // panel models with preserved scopedVars, for example when going into edit mode.
         delete model.scopedVars;
@@ -526,7 +521,7 @@ export class DashboardModel implements TimeModel {
   }
 
   cleanUpRepeats() {
-    if (this.isSnapshotTruthy() || !this.hasVariables()) {
+    if (!this.hasVariables()) {
       return;
     }
 
@@ -542,7 +537,7 @@ export class DashboardModel implements TimeModel {
   }
 
   processRepeats() {
-    if (this.isSnapshotTruthy() || !this.hasVariables()) {
+    if (!this.hasVariables()) {
       return;
     }
 
@@ -569,7 +564,7 @@ export class DashboardModel implements TimeModel {
   }
 
   processRowRepeats(row: PanelModel) {
-    if (this.isSnapshotTruthy() || !this.hasVariables()) {
+    if (!this.hasVariables()) {
       return;
     }
 
@@ -992,10 +987,6 @@ export class DashboardModel implements TimeModel {
     });
   }
 
-  isSnapshot() {
-    return this.snapshot !== undefined;
-  }
-
   getTimezone(): TimeZone {
     return (this.timezone ? this.timezone : contextSrv?.user?.timezone) as TimeZone;
   }
@@ -1151,10 +1142,6 @@ export class DashboardModel implements TimeModel {
 
   private getPanelRepeatVariable(panel: PanelModel) {
     return this.getVariablesFromState(this.uid).find((variable) => variable.name === panel.repeat);
-  }
-
-  private isSnapshotTruthy() {
-    return this.snapshot;
   }
 
   private hasVariables() {

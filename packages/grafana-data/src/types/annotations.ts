@@ -17,7 +17,6 @@ export interface AnnotationQuery<TQuery extends DataQuery = DataQuery> {
   hide?: boolean;
   builtIn?: number;
   type?: string;
-  snapshotData?: any;
 
   // Standard datasource query
   target?: TQuery;

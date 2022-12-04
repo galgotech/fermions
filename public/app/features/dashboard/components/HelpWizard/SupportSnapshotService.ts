@@ -73,7 +73,7 @@ export class SupportSnapshotService extends StateManagerBase<SupportSnapshotStat
     const { panel, randomize, snapshotUpdate, iframeLoading, currentTab } = this.state;
     const snapshot = await getDebugDashboard(panel, randomize, getTimeSrv().timeRange());
     const snapshotText = JSON.stringify(snapshot, null, 2);
-    const markdownText = getGithubMarkdown(panel, snapshotText);
+    const markdownText = getGithubMarkdown(panel);
     const snapshotSize = formattedValueToString(getValueFormat('bytes')(snapshotText?.length ?? 0));
 
     if (iframeLoading && currentTab === SnapshotTab.Support) {

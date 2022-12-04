@@ -17,12 +17,10 @@ import { getDashboardSrv } from './DashboardSrv';
 
 export class DashboardLoaderSrv {
   constructor() {}
-  _dashboardLoadFailed(title: string, snapshot?: boolean) {
-    snapshot = snapshot || false;
+  _dashboardLoadFailed(title: string) {
     return {
       meta: {
         canStar: false,
-        isSnapshot: snapshot,
         canDelete: false,
         canSave: false,
         canEdit: false,
@@ -37,10 +35,6 @@ export class DashboardLoaderSrv {
 
     if (type === 'script') {
       promise = this._loadScriptedDashboard(slug);
-    } else if (type === 'snapshot') {
-      promise = backendSrv.get('/api/snapshots/' + slug).catch(() => {
-        return this._dashboardLoadFailed('Snapshot not found', true);
-      });
     } else if (type === DashboardRoutes.Path) {
       promise = getGrafanaStorage().getDashboard(slug!);
     } else if (type === 'ds') {
@@ -52,7 +46,7 @@ export class DashboardLoaderSrv {
           return result;
         })
         .catch(() => {
-          return this._dashboardLoadFailed('Public Dashboard Not found', true);
+          return this._dashboardLoadFailed('Public Dashboard Not found');
         });
     } else {
       promise = backendSrv
@@ -65,7 +59,7 @@ export class DashboardLoaderSrv {
           return result;
         })
         .catch(() => {
-          return this._dashboardLoadFailed('Not found', true);
+          return this._dashboardLoadFailed('Not found');
         });
     }
 

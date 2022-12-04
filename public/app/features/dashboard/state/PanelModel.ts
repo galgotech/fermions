@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import {
   DataConfigSource,
-  DataFrameDTO,
   DataLink,
   DataLinkBuiltInVars,
   DataQuery,
@@ -159,7 +158,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   pluginVersion?: string;
   savedQueryLink: SavedQueryLink | null = null; // Used by the experimental feature queryLibrary
 
-  snapshotData?: DataFrameDTO[];
   timeFrom?: any;
   timeShift?: any;
   hideTimeOverride?: any;

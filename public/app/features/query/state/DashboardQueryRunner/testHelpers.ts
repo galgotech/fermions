@@ -1,6 +1,6 @@
 import { asyncScheduler, Observable, of, scheduled } from 'rxjs';
 
-import { AnnotationEvent, getDefaultTimeRange } from '@grafana/data';
+import { getDefaultTimeRange } from '@grafana/data';
 
 import { DashboardQueryRunnerOptions } from './types';
 
@@ -12,17 +12,12 @@ export function toAsyncOfResult(result: any): Observable<any> {
 export const LEGACY_DS_NAME = 'Legacy';
 export const NEXT_GEN_DS_NAME = 'NextGen';
 
-function getSnapshotData(annotation: any): AnnotationEvent[] {
-  return [{ annotation, source: {}, timeEnd: 2, time: 1 }];
-}
-
 function getAnnotation({
   enable = true,
-  useSnapshotData = false,
   datasource = LEGACY_DS_NAME,
-}: { enable?: boolean; useSnapshotData?: boolean; datasource?: string } = {}) {
+}: { enable?: boolean; datasource?: string } = {}) {
   const annotation = {
-    id: useSnapshotData ? 'Snapshotted' : undefined,
+    id: undefined,
     enable,
     hide: false,
     name: 'Test',
@@ -32,7 +27,6 @@ function getAnnotation({
 
   return {
     ...annotation,
-    snapshotData: useSnapshotData ? getSnapshotData(annotation) : undefined,
   };
 }
 
@@ -46,8 +40,8 @@ export function getDefaultOptions(): DashboardQueryRunnerOptions {
         legacy,
         nextGen,
         getAnnotation({ enable: false }),
-        getAnnotation({ useSnapshotData: true }),
-        getAnnotation({ enable: false, useSnapshotData: true }),
+        getAnnotation({ }),
+        getAnnotation({ enable: false }),
       ],
     },
     events: {

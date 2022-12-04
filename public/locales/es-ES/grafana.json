@@ -284,10 +284,6 @@
     "sign-out": {
       "title": "Cerrar sesión"
     },
-    "snapshots": {
-      "subtitle": "Representaciones interactivas, públicamente disponibles y puntuales de los paneles de control",
-      "title": "Instantáneas"
-    },
     "starred": {
       "title": "Destacado"
     },
@@ -385,31 +381,11 @@
     "panel": {
       "title": "Compartir panel"
     },
-    "snapshot": {
-      "cancel-button": "Cancelar",
-      "copy-link-button": "Copiar",
-      "delete-button": "Elimine la instantánea.",
-      "deleted-message": "La instantánea se ha eliminado. Si ya ha accedido una vez a ella, la eliminación de la caché del navegador o de la caché de la CDN puede tardar hasta una hora.",
-      "expire": "Expira",
-      "expire-day": "1 día",
-      "expire-hour": "1 hora",
-      "expire-never": "Nunca",
-      "expire-week": "7 días",
-      "info-text-1": "Una instantánea es una forma inmediata de compartir un panel interactivo públicamente. Cuando se crean, eliminamos datos confidenciales como consultas (métricas, plantilla y anotación) y enlaces de panel, dejando solo los datos de métricas visibles y los nombres de serie incrustados en el panel.",
-      "info-text-2": "Tenga en cuenta que su instantánea <1>puede ser vista por cualquiera</1> que tenga el enlace y pueda acceder a la URL. Comparta sus instantáneas con cautela.",
-      "local-button": "Instantánea local",
-      "mistake-message": "¿Ha cometido un error? ",
-      "name": "Nombre de la instantánea",
-      "timeout": "Tiempo de espera (segundos)",
-      "timeout-description": "Es posible que deba configurar el valor del tiempo de espera si se tarda mucho tiempo en recopilar las métricas del panel.",
-      "url-label": ""
-    },
     "tab-title": {
       "embed": "Incrustar",
       "export": "Exportar",
       "library-panel": "Panel de librería",
-      "link": "Enlace",
-      "snapshot": "Vista rápida"
+      "link": "Enlace"
     },
     "theme-picker": {
       "current": "Actual",

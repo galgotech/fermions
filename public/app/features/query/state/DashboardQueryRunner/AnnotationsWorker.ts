@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash';
 import { from, merge, Observable, of } from 'rxjs';
 import { catchError, filter, finalize, map, mergeAll, mergeMap, reduce, takeUntil } from 'rxjs/operators';
 
@@ -73,10 +72,6 @@ export class AnnotationsWorker implements DashboardQueryRunnerWorker {
                 .pipe(filter((a) => a === annotation))
             ),
             map((results) => {
-              // store response in annotation object if this is a snapshot call
-              if (dashboard.snapshot) {
-                annotation.snapshotData = cloneDeep(results);
-              }
               // translate result
               if (dashboard.meta.publicDashboardAccessToken) {
                 return results;
@@ -108,6 +103,6 @@ export class AnnotationsWorker implements DashboardQueryRunnerWorker {
   }
 
   private static getAnnotationsToProcessFilter(annotation: AnnotationQuery): boolean {
-    return annotation.enable && !Boolean(annotation.snapshotData);
+    return annotation.enable;
   }
 }
