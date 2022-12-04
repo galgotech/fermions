@@ -4,10 +4,10 @@ import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux';
 import { EventBusSrv } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { AngularComponent, config, getAngularLoader, getDataSourceSrv } from '@grafana/runtime';
-import { Alert, Button, ConfirmModal, Container, CustomScrollbar, HorizontalGroup, Modal } from '@grafana/ui';
+import { Button, ConfirmModal, Container, CustomScrollbar, HorizontalGroup, Modal } from '@grafana/ui';
 import EmptyListCTA from 'app/core/components/EmptyListCTA/EmptyListCTA';
 import { getPanelStateForModel } from 'app/features/panel/state/selectors';
-import { AppNotificationSeverity, StoreState } from 'app/types';
+import { StoreState } from 'app/types';
 
 import { AlertState } from '../../plugins/datasource/alertmanager/types';
 import { PanelNotSupported } from '../dashboard/components/PanelEditor/PanelNotSupported';
@@ -111,7 +111,6 @@ class UnConnectedAlertTab extends PureComponent<Props, State> {
     this.component = loader.load(this.element, scopeProps, template);
 
     const validationMessage = await getAlertingValidationMessage(
-      panel.transformations,
       panel.targets,
       getDataSourceSrv(),
       panel.datasource
@@ -210,9 +209,8 @@ class UnConnectedAlertTab extends PureComponent<Props, State> {
   };
 
   render() {
-    const { alert, transformations } = this.props.panel;
+    const { alert } = this.props.panel;
     const { validationMessage } = this.state;
-    const hasTransformations = transformations && transformations.length > 0;
 
     if (!alert && validationMessage) {
       return <PanelNotSupported message={validationMessage} />;
@@ -230,13 +228,6 @@ class UnConnectedAlertTab extends PureComponent<Props, State> {
         <CustomScrollbar autoHeightMin="100%">
           <Container padding="md">
             <div aria-label={selectors.components.AlertTab.content}>
-              {alert && hasTransformations && (
-                <Alert
-                  severity={AppNotificationSeverity.Error}
-                  title="Transformations are not supported in alert queries"
-                />
-              )}
-
               <div ref={(element) => (this.element = element)} />
               {alert && (
                 <HorizontalGroup>

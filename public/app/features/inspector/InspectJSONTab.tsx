@@ -105,7 +105,6 @@ export class InspectJSONTab extends PureComponent<Props, State> {
         d = await firstValueFrom(
           panel.getQueryRunner().getData({
             withFieldConfig: false,
-            withTransforms: false,
           })
         );
       }

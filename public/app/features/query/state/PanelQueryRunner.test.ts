@@ -61,7 +61,6 @@ interface ScenarioContext {
 type ScenarioFn = (ctx: ScenarioContext) => void;
 const defaultPanelConfig: grafanaData.DataConfigSource = {
   getFieldOverrideOptions: () => undefined,
-  getTransformations: () => undefined,
   getDataSupport: () => ({ annotations: false, alertStates: false }),
 };
 
@@ -136,7 +135,7 @@ function describeQueryRunnerScenario(
       };
 
       ctx.runner = new PanelQueryRunner(panelConfig || defaultPanelConfig);
-      ctx.runner.getData({ withTransforms: true, withFieldConfig: true }).subscribe({
+      ctx.runner.getData({ withFieldConfig: true }).subscribe({
         next: (data: grafanaData.PanelData) => {
           ctx.res = data;
           ctx.events?.push(data);
@@ -236,7 +235,7 @@ describe('PanelQueryRunner', () => {
     'field overrides',
     (ctx) => {
       it('should apply when field override options are set', async () => {
-        ctx.runner.getData({ withTransforms: true, withFieldConfig: true }).subscribe({
+        ctx.runner.getData({ withFieldConfig: true }).subscribe({
           next: (data: grafanaData.PanelData) => {
             return data;
           },
@@ -256,31 +255,6 @@ describe('PanelQueryRunner', () => {
         replaceVariables: (v) => v,
         theme: grafanaData.createTheme(),
       }),
-      getTransformations: () => undefined,
-      getDataSupport: () => ({ annotations: false, alertStates: false }),
-    }
-  );
-
-  describeQueryRunnerScenario(
-    'transformations',
-    (ctx) => {
-      it('should apply when transformations are set', async () => {
-        const spy = jest.spyOn(grafanaData, 'transformDataFrame');
-        spy.mockClear();
-
-        ctx.runner.getData({ withTransforms: true, withFieldConfig: true }).subscribe({
-          next: (data: grafanaData.PanelData) => {
-            return data;
-          },
-        });
-
-        expect(spy).toBeCalled();
-      });
-    },
-    {
-      getFieldOverrideOptions: () => undefined,
-      // @ts-ignore
-      getTransformations: () => [{} as unknown as grafanaData.DataTransformerConfig],
       getDataSupport: () => ({ annotations: false, alertStates: false }),
     }
   );
@@ -288,20 +262,8 @@ describe('PanelQueryRunner', () => {
   describeQueryRunnerScenario(
     'getData',
     (ctx) => {
-      it('should not apply transformations when transform option is false', async () => {
-        const spy = jest.spyOn(grafanaData, 'transformDataFrame');
-        spy.mockClear();
-        ctx.runner.getData({ withTransforms: false, withFieldConfig: true }).subscribe({
-          next: (data: grafanaData.PanelData) => {
-            return data;
-          },
-        });
-
-        expect(spy).not.toBeCalled();
-      });
-
       it('should not apply field config when applyFieldConfig option is false', async () => {
-        ctx.runner.getData({ withFieldConfig: false, withTransforms: true }).subscribe({
+        ctx.runner.getData({ withFieldConfig: false }).subscribe({
           next: (data: grafanaData.PanelData) => {
             return data;
           },
@@ -322,8 +284,6 @@ describe('PanelQueryRunner', () => {
         replaceVariables: (v) => v,
         theme: grafanaData.createTheme(),
       }),
-      // @ts-ignore
-      getTransformations: () => [{} as unknown as grafanaData.DataTransformerConfig],
       getDataSupport: () => ({ annotations: false, alertStates: false }),
     }
   );
@@ -331,20 +291,8 @@ describe('PanelQueryRunner', () => {
   describeQueryRunnerScenario(
     'getData',
     (ctx) => {
-      it('should not apply transformations when transform option is false', async () => {
-        const spy = jest.spyOn(grafanaData, 'transformDataFrame');
-        spy.mockClear();
-        ctx.runner.getData({ withTransforms: false, withFieldConfig: true }).subscribe({
-          next: (data: grafanaData.PanelData) => {
-            return data;
-          },
-        });
-
-        expect(spy).not.toBeCalled();
-      });
-
       it('should not apply field config when applyFieldConfig option is false', async () => {
-        ctx.runner.getData({ withFieldConfig: false, withTransforms: true }).subscribe({
+        ctx.runner.getData({ withFieldConfig: false }).subscribe({
           next: (data: grafanaData.PanelData) => {
             return data;
           },
@@ -365,8 +313,6 @@ describe('PanelQueryRunner', () => {
         replaceVariables: (v) => v,
         theme: grafanaData.createTheme(),
       }),
-      // @ts-ignore
-      getTransformations: () => [{}],
       getDataSupport: () => ({ annotations: false, alertStates: false }),
     }
   );

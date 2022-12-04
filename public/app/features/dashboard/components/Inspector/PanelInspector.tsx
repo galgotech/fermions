@@ -29,7 +29,6 @@ export type Props = OwnProps & ConnectedProps;
 
 const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
   const [dataOptions, setDataOptions] = useState<GetDataOptions>({
-    withTransforms: false,
     withFieldConfig: true,
   });
 

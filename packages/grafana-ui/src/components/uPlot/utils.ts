@@ -1,6 +1,6 @@
 import uPlot, { AlignedData, Options, PaddingSide } from 'uplot';
 
-import { DataFrame, ensureTimeField, FieldType } from '@grafana/data';
+import { DataFrame } from '@grafana/data';
 import { BarAlignment, GraphDrawStyle, GraphTransform, LineInterpolation, StackingMode } from '@grafana/schema';
 
 import { attachDebugger } from '../../utils';
@@ -188,11 +188,7 @@ export function preparePlotData2(
     let vals = field.values.toArray();
 
     if (i === 0) {
-      if (field.type === FieldType.time) {
-        data[i] = ensureTimeField(field).values.toArray();
-      } else {
-        data[i] = vals;
-      }
+      data[i] = vals;
       return;
     }
 

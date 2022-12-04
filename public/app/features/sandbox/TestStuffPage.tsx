@@ -4,7 +4,6 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
   ApplyFieldOverrideOptions,
-  DataTransformerConfig,
   dateMath,
   FieldColorModeId,
   NavModelItem,
@@ -50,7 +49,7 @@ export const TestStuffPage = () => {
   /**
    * Subscribe to data
    */
-  const observable = useMemo(() => queryRunner.getData({ withFieldConfig: true, withTransforms: true }), [queryRunner]);
+  const observable = useMemo(() => queryRunner.getData({ withFieldConfig: true }), [queryRunner]);
   const data = useObservable(observable);
 
   const node: NavModelItem = {
@@ -132,7 +131,6 @@ export function getDefaultState(): State {
   };
 
   const dataConfig = {
-    getTransformations: () => [] as DataTransformerConfig[],
     getFieldOverrideOptions: () => options,
     getDataSupport: () => ({ annotations: false, alertStates: false }),
   };

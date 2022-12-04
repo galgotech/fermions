@@ -30,13 +30,6 @@ export const getPanelEditorTabs = memoizeOne((tab?: string, plugin?: PanelPlugin
       icon: 'database',
       active: false,
     });
-
-    tabs.push({
-      id: PanelEditorTabId.Transform,
-      text: 'Transform',
-      icon: 'process',
-      active: false,
-    });
   }
 
   const { alertingEnabled, unifiedAlertingEnabled } = getConfig();

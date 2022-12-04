@@ -101,14 +101,6 @@ export class PanelQueriesChangedEvent extends BusEventBase {
 }
 
 /**
- * Used for syncing transformations badge count in panel edit transform tab
- * Think we can get rid of this soon
- */
-export class PanelTransformationsChangedEvent extends BusEventBase {
-  static type = 'panel-transformations-changed';
-}
-
-/**
  * Used by panel editor to know when panel plugin itself trigger option updates
  */
 export class PanelOptionsChangedEvent extends BusEventBase {

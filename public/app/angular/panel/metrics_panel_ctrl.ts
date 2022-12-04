@@ -53,7 +53,7 @@ class MetricsPanelCtrl extends PanelCtrl {
   private onMetricsPanelMounted() {
     const queryRunner = this.panel.getQueryRunner() as PanelQueryRunner;
     this.querySubscription = queryRunner
-      .getData({ withTransforms: true, withFieldConfig: true })
+      .getData({ withFieldConfig: true })
       .subscribe(this.panelDataObserver);
   }
 
@@ -179,7 +179,6 @@ class MetricsPanelCtrl extends PanelCtrl {
       publicDashboardAccessToken: this.dashboard.meta.publicDashboardAccessToken,
       scopedVars: panel.scopedVars,
       cacheTimeout: panel.cacheTimeout,
-      transformations: panel.transformations,
     });
   }
 

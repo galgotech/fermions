@@ -1,7 +1,6 @@
 import {
   DataSourceApi,
   PluginMeta,
-  DataTransformerConfig,
   DataSourceInstanceSettings,
   DataSourceRef,
 } from '@grafana/data';
@@ -42,9 +41,8 @@ describe('getAlertingValidationMessage', () => {
         { refId: 'A', query: '@hostname:$hostname' },
         { refId: 'B', query: '@instance:instance' },
       ];
-      const transformations: DataTransformerConfig[] = [];
 
-      const result = await getAlertingValidationMessage(transformations, targets, datasourceSrv, {
+      const result = await getAlertingValidationMessage(targets, datasourceSrv, {
         uid: datasource.uid,
       });
 
@@ -85,9 +83,8 @@ describe('getAlertingValidationMessage', () => {
         { refId: 'A', query: 'some query', datasource: 'alertingDatasource' },
         { refId: 'B', query: 'some query', datasource: 'datasource' },
       ];
-      const transformations: DataTransformerConfig[] = [];
 
-      const result = await getAlertingValidationMessage(transformations, targets, datasourceSrv, {
+      const result = await getAlertingValidationMessage(targets, datasourceSrv, {
         uid: datasource.name,
       });
 
@@ -117,9 +114,8 @@ describe('getAlertingValidationMessage', () => {
         { refId: 'A', query: '@hostname:$hostname' },
         { refId: 'B', query: '@instance:$instance' },
       ];
-      const transformations: DataTransformerConfig[] = [];
 
-      const result = await getAlertingValidationMessage(transformations, targets, datasourceSrv, {
+      const result = await getAlertingValidationMessage(targets, datasourceSrv, {
         uid: datasource.name,
       });
 
@@ -152,9 +148,8 @@ describe('getAlertingValidationMessage', () => {
         { refId: 'A', query: '@hostname:hostname' },
         { refId: 'B', query: '@instance:instance' },
       ];
-      const transformations: DataTransformerConfig[] = [];
 
-      const result = await getAlertingValidationMessage(transformations, targets, datasourceSrv, {
+      const result = await getAlertingValidationMessage(targets, datasourceSrv, {
         uid: datasource.uid,
       });
 
@@ -186,9 +181,8 @@ describe('getAlertingValidationMessage', () => {
         { refId: 'A', query: '@hostname:hostname' },
         { refId: 'B', query: '@instance:instance' },
       ];
-      const transformations: DataTransformerConfig[] = [{ id: 'A', options: null }];
 
-      const result = await getAlertingValidationMessage(transformations, targets, datasourceSrv, {
+      const result = await getAlertingValidationMessage(targets, datasourceSrv, {
         uid: datasource.uid,
       });
 

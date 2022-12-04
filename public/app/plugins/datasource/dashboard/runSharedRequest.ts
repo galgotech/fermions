@@ -52,7 +52,6 @@ export function runSharedRequest(options: QueryRunnerOptions, query: DashboardQu
     const listenToRunner = listenToPanel.getQueryRunner();
     const subscription = listenToRunner
       .getData({
-        withTransforms: Boolean(query?.withTransforms),
         withFieldConfig: false,
       })
       .subscribe({

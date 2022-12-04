@@ -11,9 +11,7 @@ import {
   TimeZone,
   EventBus,
 } from '@grafana/data';
-import { Alert, Button, Collapse, InlineField, TooltipDisplayMode, useStyles2, useTheme2 } from '@grafana/ui';
-
-import { ExploreGraph } from './Graph/ExploreGraph';
+import { Alert, Button, Collapse, InlineField, useStyles2 } from '@grafana/ui';
 
 type Props = {
   logsVolumeData: DataQueryResponse | undefined;
@@ -90,10 +88,8 @@ function createVisualisationData(
 }
 
 export function LogsVolumePanel(props: Props) {
-  const { width, timeZone, splitOpen, onUpdateTimeRange, onLoadLogsVolume, onHiddenSeriesChanged } = props;
-  const theme = useTheme2();
+  const { onLoadLogsVolume } = props;
   const styles = useStyles2(getStyles);
-  const spacing = parseInt(theme.spacing(2).slice(0, -2), 10);
   const height = 150;
 
   const data = createVisualisationData(
@@ -119,23 +115,7 @@ export function LogsVolumePanel(props: Props) {
     LogsVolumePanelContent = <span>Log volume is loading...</span>;
   } else if (logsVolumeData?.data) {
     if (logsVolumeData.data.length > 0) {
-      LogsVolumePanelContent = (
-        <ExploreGraph
-          graphStyle="lines"
-          loadingState={LoadingState.Done}
-          data={logsVolumeData.data}
-          height={height}
-          width={width - spacing * 2}
-          absoluteRange={range}
-          onChangeTime={onUpdateTimeRange}
-          timeZone={timeZone}
-          splitOpenFn={splitOpen}
-          tooltipDisplayMode={TooltipDisplayMode.Multi}
-          onHiddenSeriesChanged={onHiddenSeriesChanged}
-          anchorToZero
-          eventBus={props.eventBus}
-        />
-      );
+      LogsVolumePanelContent = <span>Component ./Graph/ExploreGraph</span>;
     } else {
       LogsVolumePanelContent = <span>No volume data.</span>;
     }

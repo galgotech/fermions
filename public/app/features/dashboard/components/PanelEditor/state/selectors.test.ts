@@ -65,8 +65,7 @@ describe('getPanelEditorTabs selector', () => {
             id: 'table',
           },
         } as PanelPlugin);
-        expect(tabs.length).toEqual(2);
-        expect(tabs[1].id).toEqual(PanelEditorTabId.Transform);
+        expect(tabs.length).toEqual(1);
       });
     });
 
@@ -84,8 +83,7 @@ describe('getPanelEditorTabs selector', () => {
           },
         } as PanelPlugin);
 
-        expect(tabs.length).toEqual(2);
-        expect(tabs[1].id).toEqual(PanelEditorTabId.Transform);
+        expect(tabs.length).toEqual(1);
       });
     });
 
@@ -116,8 +114,7 @@ describe('getPanelEditorTabs selector', () => {
           },
         } as PanelPlugin);
 
-        expect(tabs.length).toEqual(2);
-        expect(tabs[1].id).toEqual(PanelEditorTabId.Transform);
+        expect(tabs.length).toEqual(1);
       });
     });
   });

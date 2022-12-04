@@ -3,12 +3,12 @@ import React, { Component } from 'react';
 
 import {
   DataFrame,
-  FieldMatcherID,
   getDataSourceRef,
   getFrameDisplayName,
   PanelProps,
   SelectableValue,
 } from '@grafana/data';
+import { FieldMatcherID } from '@grafana/data/src/transformations/matchers/ids'
 import { PanelDataErrorView } from '@grafana/runtime';
 import { Select, Table } from '@grafana/ui';
 import { FilterItem, TableSortByFieldState } from '@grafana/ui/src/components/Table/types';

@@ -8,17 +8,15 @@ import {
   CoreApp,
   CSVConfig,
   DataFrame,
-  DataTransformerID,
   MutableDataFrame,
   SelectableValue,
   TimeZone,
-  transformDataFrame,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { reportInteraction } from '@grafana/runtime';
 import { Button, Spinner, Table } from '@grafana/ui';
 import { config } from 'app/core/config';
-import { t, Trans } from 'app/core/internationalization';
+import { Trans } from 'app/core/internationalization';
 import { dataFrameToLogsModel } from 'app/core/logsModel';
 import { PanelModel } from 'app/features/dashboard/state';
 import { GetDataOptions } from 'app/features/query/state/PanelQueryRunner';
@@ -42,10 +40,8 @@ interface Props {
 
 interface State {
   /** The string is joinByField transformation. Otherwise it is a dataframe index */
-  selectedDataFrame: number | DataTransformerID;
-  transformId: DataTransformerID;
+  selectedDataFrame: number;
   dataFrameIndex: number;
-  transformationOptions: Array<SelectableValue<DataTransformerID>>;
   transformedData: DataFrame[];
   downloadForExcel: boolean;
 }
@@ -57,8 +53,6 @@ export class InspectDataTab extends PureComponent<Props, State> {
     this.state = {
       selectedDataFrame: 0,
       dataFrameIndex: 0,
-      transformId: DataTransformerID.noop,
-      transformationOptions: buildTransformationOptions(),
       transformedData: props.data ?? [],
       downloadForExcel: false,
     };
@@ -70,23 +64,7 @@ export class InspectDataTab extends PureComponent<Props, State> {
       return;
     }
 
-    if (this.props.options.withTransforms) {
-      this.setState({ transformedData: this.props.data });
-      return;
-    }
-
-    if (prevProps.data !== this.props.data || prevState.transformId !== this.state.transformId) {
-      const currentTransform = this.state.transformationOptions.find((item) => item.value === this.state.transformId);
-
-      if (currentTransform && currentTransform.transformer.id !== DataTransformerID.noop) {
-        const selectedDataFrame = this.state.selectedDataFrame;
-        const dataFrameIndex = this.state.dataFrameIndex;
-        const subscription = transformDataFrame([currentTransform.transformer], this.props.data).subscribe((data) => {
-          this.setState({ transformedData: data, selectedDataFrame, dataFrameIndex }, () => subscription.unsubscribe());
-        });
-        return;
-      }
-
+    if (prevProps.data !== this.props.data) {
       this.setState({ transformedData: this.props.data });
       return;
     }
@@ -94,9 +72,8 @@ export class InspectDataTab extends PureComponent<Props, State> {
 
   exportCsv = (dataFrame: DataFrame, csvConfig: CSVConfig = {}) => {
     const { panel } = this.props;
-    const { transformId } = this.state;
 
-    downloadDataFrameAsCsv(dataFrame, panel ? panel.getDisplayTitle() : 'Explore', csvConfig, transformId);
+    downloadDataFrameAsCsv(dataFrame, panel ? panel.getDisplayTitle() : 'Explore', csvConfig);
   };
 
   exportLogsAsTxt = () => {
@@ -153,10 +130,8 @@ export class InspectDataTab extends PureComponent<Props, State> {
     downloadAsJson(data, panel ? panel.getDisplayTitle() : 'Explore');
   };
 
-  onDataFrameChange = (item: SelectableValue<DataTransformerID | number>) => {
+  onDataFrameChange = (item: SelectableValue<number>) => {
     this.setState({
-      transformId:
-        item.value === DataTransformerID.joinByField ? DataTransformerID.joinByField : DataTransformerID.noop,
       dataFrameIndex: typeof item.value === 'number' ? item.value : 0,
       selectedDataFrame: item.value!,
     });
@@ -191,7 +166,7 @@ export class InspectDataTab extends PureComponent<Props, State> {
 
   render() {
     const { isLoading, options, data, panel, onOptionsChange, app } = this.props;
-    const { dataFrameIndex, transformId, transformationOptions, selectedDataFrame, downloadForExcel } = this.state;
+    const { dataFrameIndex, selectedDataFrame, downloadForExcel } = this.state;
     const styles = getPanelInspectorStyles();
 
     if (isLoading) {
@@ -223,8 +198,6 @@ export class InspectDataTab extends PureComponent<Props, State> {
             panel={panel}
             options={options}
             dataFrames={dataFrames}
-            transformId={transformId}
-            transformationOptions={transformationOptions}
             selectedDataFrame={selectedDataFrame}
             downloadForExcel={downloadForExcel}
             onOptionsChange={onOptionsChange}
@@ -303,19 +276,4 @@ export class InspectDataTab extends PureComponent<Props, State> {
       </div>
     );
   }
-}
-
-function buildTransformationOptions() {
-  const transformations: Array<SelectableValue<DataTransformerID>> = [
-    {
-      value: DataTransformerID.joinByField,
-      label: t('dashboard.inspect-data.transformation', 'Series joined by time'),
-      transformer: {
-        id: DataTransformerID.joinByField,
-        options: { byField: undefined }, // defaults to time field
-      },
-    },
-  ];
-
-  return transformations;
 }

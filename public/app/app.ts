@@ -21,7 +21,6 @@ import {
   setWeekStart,
   standardEditorsRegistry,
   standardFieldConfigEditorRegistry,
-  standardTransformersRegistry,
 } from '@grafana/data';
 import {
   locationService,
@@ -38,7 +37,6 @@ import { setPluginPage } from '@grafana/runtime/src/components/PluginPage';
 import { getScrollbarWidth } from '@grafana/ui';
 import config from 'app/core/config';
 import { arrayMove } from 'app/core/utils/arrayMove';
-import { getStandardTransformers } from 'app/features/transformers/standardTransformers';
 
 import getDefaultMonacoLanguages from '../lib/monaco-languages';
 
@@ -124,7 +122,6 @@ export class GrafanaApp {
 
       standardEditorsRegistry.setInit(getAllOptionEditors);
       standardFieldConfigEditorRegistry.setInit(getAllStandardFieldConfigs);
-      standardTransformersRegistry.setInit(getStandardTransformers);
       variableAdapters.setInit(() => [
         createQueryVariableAdapter(),
         createCustomVariableAdapter(),

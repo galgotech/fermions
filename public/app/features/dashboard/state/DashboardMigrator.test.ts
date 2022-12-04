@@ -1452,38 +1452,6 @@ describe('DashboardModel', () => {
     });
   });
 
-  describe('labelsToFields should be split into two transformers', () => {
-    let model: DashboardModel;
-
-    beforeEach(() => {
-      model = new DashboardModel({
-        schemaVersion: 29,
-        panels: [
-          {
-            id: 1,
-            type: 'timeseries',
-            transformations: [{ id: 'labelsToFields' }],
-          },
-        ],
-      });
-    });
-
-    it('should create two transormatoins', () => {
-      const xforms = model.panels[0].transformations;
-      expect(xforms).toMatchInlineSnapshot(`
-        [
-          {
-            "id": "labelsToFields",
-          },
-          {
-            "id": "merge",
-            "options": {},
-          },
-        ]
-      `);
-    });
-  });
-
   describe('migrating legacy CloudWatch queries', () => {
     let model: any;
     let panelTargets: any;

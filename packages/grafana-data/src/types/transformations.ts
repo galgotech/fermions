@@ -31,28 +31,6 @@ export interface SynchronousDataTransformerInfo<TOptions = any> extends DataTran
   transformer: (options: TOptions) => (frames: DataFrame[]) => DataFrame[];
 }
 
-/**
- * @public
- */
-export interface DataTransformerConfig<TOptions = any> {
-  /**
-   * Unique identifier of transformer
-   */
-  id: string;
-  /**
-   * Disabled transformations are skipped
-   */
-  disabled?: boolean;
-  /**
-   * Options to be passed to the transformer
-   */
-  options: TOptions;
-  /**
-   * Function to apply template variable substitution to the DataTransformerConfig
-   */
-  replace?: (target?: string, scopedVars?: ScopedVars, format?: string | Function) => string;
-}
-
 export type FrameMatcher = (frame: DataFrame) => boolean;
 export type FieldMatcher = (field: Field, frame: DataFrame, allFrames: DataFrame[]) => boolean;
 

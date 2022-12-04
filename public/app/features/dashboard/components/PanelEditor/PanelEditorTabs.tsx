@@ -7,10 +7,9 @@ import { config } from '@grafana/runtime';
 import { Tab, TabContent, TabsBar, toIconName, useForceUpdate, useStyles2 } from '@grafana/ui';
 import AlertTabIndex from 'app/features/alerting/AlertTabIndex';
 import { PanelAlertTab } from 'app/features/alerting/unified/PanelAlertTab';
-import { PanelQueriesChangedEvent, PanelTransformationsChangedEvent } from 'app/types/events';
+import { PanelQueriesChangedEvent } from 'app/types/events';
 
 import { DashboardModel, PanelModel } from '../../state';
-import { TransformationsEditor } from '../TransformationsEditor/TransformationsEditor';
 
 import { PanelEditorQueries } from './PanelEditorQueries';
 import { PanelEditorTab, PanelEditorTabId } from './types';
@@ -29,7 +28,6 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
   useEffect(() => {
     const eventSubs = new Subscription();
     eventSubs.add(panel.events.subscribe(PanelQueriesChangedEvent, forceUpdate));
-    eventSubs.add(panel.events.subscribe(PanelTransformationsChangedEvent, forceUpdate));
     return () => eventSubs.unsubscribe();
   }, [panel, dashboard, forceUpdate]);
 
@@ -61,7 +59,6 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
       <TabContent className={styles.tabContent}>
         {activeTab.id === PanelEditorTabId.Query && <PanelEditorQueries panel={panel} queries={panel.targets} />}
         {activeTab.id === PanelEditorTabId.Alert && <AlertTabIndex panel={panel} dashboard={dashboard} />}
-        {activeTab.id === PanelEditorTabId.Transform && <TransformationsEditor panel={panel} />}
       </TabContent>
     </div>
   );
@@ -75,9 +72,6 @@ function getCounter(panel: PanelModel, tab: PanelEditorTab) {
       return panel.targets.length;
     case PanelEditorTabId.Alert:
       return panel.alert ? 1 : 0;
-    case PanelEditorTabId.Transform:
-      const transformations = panel.getTransformations() ?? [];
-      return transformations.length;
   }
 
   return null;

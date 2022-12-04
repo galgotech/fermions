@@ -6,7 +6,6 @@ import {
   DataLink,
   DataLinkBuiltInVars,
   DataQuery,
-  DataTransformerConfig,
   EventBusSrv,
   FieldConfigSource,
   PanelPlugin,
@@ -25,7 +24,6 @@ import { QueryGroupOptions } from 'app/types';
 import {
   PanelOptionsChangedEvent,
   PanelQueriesChangedEvent,
-  PanelTransformationsChangedEvent,
   RenderEvent,
 } from 'app/types/events';
 
@@ -152,7 +150,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
   panels?: PanelModel[];
   declare targets: DataQuery[];
-  transformations?: DataTransformerConfig[];
   datasource: DataSourceRef | null = null;
   thresholds?: any;
   pluginVersion?: string;
@@ -363,7 +360,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       minInterval: this.interval,
       scopedVars: this.scopedVars,
       cacheTimeout: this.cacheTimeout,
-      transformations: this.transformations,
     });
   }
 
@@ -575,10 +571,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     return clone;
   }
 
-  getTransformations() {
-    return this.transformations;
-  }
-
   getFieldOverrideOptions() {
     if (!this.plugin) {
       return undefined;
@@ -617,13 +609,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     if (this.queryRunner) {
       this.queryRunner.destroy();
     }
-  }
-
-  setTransformations(transformations: DataTransformerConfig[]) {
-    this.transformations = transformations;
-    this.resendLastResult();
-    this.configRev++;
-    this.events.publish(new PanelTransformationsChangedEvent());
   }
 
   setProperty(key: keyof this, value: any) {

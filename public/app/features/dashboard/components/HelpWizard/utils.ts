@@ -6,7 +6,6 @@ import {
   TimeRange,
   DataQuery,
   PanelData,
-  DataTransformerConfig,
   DataFrameJSON,
   LoadingState,
   dataFrameToJSON,
@@ -66,7 +65,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
   const data = await firstValueFrom(
     panel.getQueryRunner().getData({
       withFieldConfig: false,
-      withTransforms: false,
     })
   );
 
@@ -88,7 +86,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
         })
         .join(', ')}</td>
     </tr>
-    ${getTransformsRow(saveModel)}
     ${getDataRow(data, frames)}
     ${getAnnotationsRow(data)}
     <tr>
@@ -102,18 +99,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
     ...saveModel,
     ...dashboard.panels[0],
   };
-
-  if (saveModel.transformations?.length) {
-    const last = dashboard.panels[dashboard.panels.length - 1];
-    last.title = last.title + ' (after transformations)';
-
-    const before = cloneDeep(last);
-    before.id = 100;
-    before.title = 'Data (before transformations)';
-    before.gridPos.w = 24; // full width
-    before.targets[0].withTransforms = false;
-    dashboard.panels.push(before);
-  }
 
   if (data.annotations?.length) {
     dashboard.panels.push({
@@ -140,7 +125,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
             uid: '-- Dashboard --',
           },
           panelId: 2,
-          withTransforms: true,
           topic: DataTopic.Annotations,
           refId: 'A',
         },
@@ -159,17 +143,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
   };
 
   return dashboard;
-}
-
-// eslint-disable-next-line
-function getTransformsRow(saveModel: any): string {
-  if (!saveModel.transformations) {
-    return '';
-  }
-  return `<tr>
-      <th>Transforms (${saveModel.transformations.length})</th>
-      <td>${saveModel.transformations.map((t: DataTransformerConfig) => t.id).join(', ')}</td>
-  </tr>`;
 }
 
 function getDataRow(data: PanelData, frames: DataFrameJSON[]): string {
@@ -281,7 +254,6 @@ const embeddedDataTemplate: any = {
             uid: '-- Dashboard --',
           },
           panelId: 2,
-          withTransforms: true,
           refId: 'A',
         },
       ],

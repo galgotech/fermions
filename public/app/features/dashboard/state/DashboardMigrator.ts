@@ -6,7 +6,6 @@ import {
   DataLinkBuiltInVars,
   DataQuery,
   DataSourceRef,
-  DataTransformerConfig,
   FieldConfigSource,
   FieldMatcherID,
   FieldType,
@@ -23,8 +22,6 @@ import {
   ValueMap,
   ValueMapping,
 } from '@grafana/data';
-import { labelsToFieldsTransformer } from '@grafana/data/src/transformations/transformers/labelsToFields';
-import { mergeTransformer } from '@grafana/data/src/transformations/transformers/merge';
 import { getDataSourceSrv, setDataSourceSrv } from '@grafana/runtime';
 import { AxisPlacement, GraphFieldConfig } from '@grafana/ui';
 import { getAllOptionEditors, getAllStandardFieldConfigs } from 'app/core/components/OptionsUI/registry';
@@ -696,16 +693,6 @@ export class DashboardMigrator {
 
     if (oldVersion < 31) {
       panelUpgrades.push((panel: PanelModel) => {
-        if (panel.transformations) {
-          for (const t of panel.transformations) {
-            if (t.id === labelsToFieldsTransformer.id) {
-              return appendTransformerAfter(panel, labelsToFieldsTransformer.id, {
-                id: mergeTransformer.id,
-                options: {},
-              });
-            }
-          }
-        }
         return panel;
       });
     }
@@ -1148,21 +1135,6 @@ export function migrateDatasourceNameToRef(
   }
 
   return getDataSourceRef(ds);
-}
-
-// mutates transformations appending a new transformer after the existing one
-function appendTransformerAfter(panel: PanelModel, id: string, cfg: DataTransformerConfig) {
-  if (panel.transformations) {
-    const transformations: DataTransformerConfig[] = [];
-    for (const t of panel.transformations) {
-      transformations.push(t);
-      if (t.id === id) {
-        transformations.push({ ...cfg });
-      }
-    }
-    panel.transformations = transformations;
-  }
-  return panel;
 }
 
 function upgradeValueMappingsForPanel(panel: PanelModel) {

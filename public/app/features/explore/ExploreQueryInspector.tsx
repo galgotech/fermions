@@ -54,7 +54,7 @@ export function ExploreQueryInspector(props: Props) {
       <InspectDataTab
         data={dataFrames}
         isLoading={loading}
-        options={{ withTransforms: false, withFieldConfig: false }}
+        options={{ withFieldConfig: false }}
         timeZone={timeZone}
         app={CoreApp.Explore}
       />

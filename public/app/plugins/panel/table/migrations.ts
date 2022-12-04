@@ -2,13 +2,12 @@ import { omitBy, isNil, isNumber, defaultTo } from 'lodash';
 
 import {
   PanelModel,
-  FieldMatcherID,
   ConfigOverrideRule,
   ThresholdsMode,
   ThresholdsConfig,
   FieldConfig,
 } from '@grafana/data';
-import { ReduceTransformerOptions } from '@grafana/data/src/transformations/transformers/reduce';
+import { FieldMatcherID } from '@grafana/data/src/transformations/matchers/ids'
 
 import { PanelOptions } from './models.gen';
 
@@ -27,40 +26,10 @@ export const tableMigrationHandler = (panel: PanelModel<PanelOptions>): Partial<
   return panel.options;
 };
 
-const transformsMap = {
-  timeseries_to_rows: 'seriesToRows',
-  timeseries_to_columns: 'seriesToColumns',
-  timeseries_aggregations: 'reduce',
-  table: 'merge',
-};
-
-const columnsMap = {
-  avg: 'mean',
-  min: 'min',
-  max: 'max',
-  total: 'sum',
-  current: 'lastNotNull',
-  count: 'count',
-};
-
 const colorModeMap = {
   cell: 'color-background',
   row: 'color-background',
   value: 'color-text',
-};
-
-type Transformations = keyof typeof transformsMap;
-
-type Transformation = {
-  id: string;
-  options: ReduceTransformerOptions;
-};
-
-type Columns = keyof typeof columnsMap;
-
-type Column = {
-  value: Columns;
-  text: string;
 };
 
 type ColorModes = keyof typeof colorModeMap;
@@ -70,27 +39,6 @@ const generateThresholds = (thresholds: string[], colors: string[]) => {
     color: colors[idx],
     value: isNumber(threshold) ? threshold : parseInt(threshold, 10),
   }));
-};
-
-const migrateTransformations = (
-  panel: PanelModel<Partial<PanelOptions>> | any,
-  oldOpts: { columns: any; transform: Transformations }
-) => {
-  const transformations: Transformation[] = panel.transformations ?? [];
-  if (Object.keys(transformsMap).includes(oldOpts.transform)) {
-    const opts: ReduceTransformerOptions = {
-      reducers: [],
-    };
-    if (oldOpts.transform === 'timeseries_aggregations') {
-      opts.includeTimeField = false;
-      opts.reducers = oldOpts.columns.map((column: Column) => columnsMap[column.value]);
-    }
-    transformations.push({
-      id: transformsMap[oldOpts.transform],
-      options: opts,
-    });
-  }
-  return transformations;
 };
 
 type Style = {
@@ -227,12 +175,10 @@ export const tablePanelChangedHandler = (
   // Changing from angular table panel
   if (prevPluginId === 'table-old' && prevOptions.angular) {
     const oldOpts = prevOptions.angular;
-    const transformations = migrateTransformations(panel, oldOpts);
     const prevDefaults = oldOpts.styles.find((style: any) => style.pattern === '/.*/');
     const defaults = migrateDefaults(prevDefaults);
     const overrides = oldOpts.styles.filter((style: any) => style.pattern !== '/.*/').map(migrateTableStyleToOverride);
 
-    panel.transformations = transformations;
     panel.fieldConfig = {
       defaults,
       overrides,

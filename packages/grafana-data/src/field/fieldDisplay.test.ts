@@ -2,7 +2,6 @@ import { merge } from 'lodash';
 
 import { toDataFrame } from '../dataframe/processDataFrame';
 import { createTheme } from '../themes';
-import { ReducerID } from '../transformations/fieldReducer';
 import { MappingType, SpecialValueMatch, ValueMapping } from '../types';
 
 import { getDisplayProcessor } from './displayProcessor';

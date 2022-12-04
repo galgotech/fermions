@@ -15,7 +15,6 @@ import { FieldConfigSource } from './fieldOverrides';
 import { OptionEditorConfig } from './options';
 import { PluginMeta } from './plugin';
 import { AbsoluteTimeRange, TimeRange, TimeZone } from './time';
-import { DataTransformerConfig } from './transformations';
 
 export type InterpolateFunction = (value: string, scopedVars?: ScopedVars, format?: string | Function) => string;
 
@@ -201,8 +200,6 @@ export interface VisualizationSuggestion<TOptions = any, TFieldConfig = any> {
   options?: Partial<TOptions>;
   /** Panel plugin field options */
   fieldConfig?: FieldConfigSource<Partial<TFieldConfig>>;
-  /** Data transformations */
-  transformations?: DataTransformerConfig[];
   /** Options for how to render suggestion card */
   cardOptions?: {
     /** Tweak for small preview */

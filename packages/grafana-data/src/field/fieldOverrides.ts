@@ -3,7 +3,8 @@ import { isNumber, set, unset, get, cloneDeep } from 'lodash';
 import { guessFieldTypeForField } from '../dataframe';
 import { getTimeField } from '../dataframe/processDataFrame';
 import { asHexString } from '../themes/colorManipulator';
-import { fieldMatchers, reduceField, ReducerID } from '../transformations';
+import { fieldMatchers } from '../transformations/matchers';
+import { reduceField, ReducerID } from '../transformations/fieldReducer';
 import {
   ApplyFieldOverrideOptions,
   DataFrame,

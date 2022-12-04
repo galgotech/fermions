@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash';
-import { MonoTypeOperatorFunction, Observable, of, ReplaySubject, Unsubscribable } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { Observable, ReplaySubject, Unsubscribable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import {
   applyFieldOverrides,
@@ -14,14 +14,12 @@ import {
   DataSourceApi,
   DataSourceJsonData,
   DataSourceRef,
-  DataTransformerConfig,
   LoadingState,
   PanelData,
   rangeUtil,
   ScopedVars,
   TimeRange,
   TimeZone,
-  transformDataFrame,
 } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
@@ -55,7 +53,6 @@ export interface QueryRunnerOptions<
   minInterval: string | undefined | null;
   scopedVars?: ScopedVars;
   cacheTimeout?: string | null;
-  transformations?: DataTransformerConfig[];
 }
 
 let counter = 100;
@@ -65,7 +62,6 @@ export function getNextRequestId() {
 }
 
 export interface GetDataOptions {
-  withTransforms: boolean;
   withFieldConfig: boolean;
 }
 
@@ -85,14 +81,13 @@ export class PanelQueryRunner {
    * Returns an observable that subscribes to the shared multi-cast subject (that reply last result).
    */
   getData(options: GetDataOptions): Observable<PanelData> {
-    const { withFieldConfig, withTransforms } = options;
+    const { withFieldConfig } = options;
     let structureRev = 1;
     let lastData: DataFrame[] = [];
     let isFirstPacket = true;
     let lastConfigRev = -1;
 
     return this.subject.pipe(
-      this.getTransformationsStream(withTransforms),
       map((data: PanelData) => {
         let processedData = data;
         let streamingPacketWithSameSchema = false;
@@ -160,32 +155,6 @@ export class PanelQueryRunner {
       })
     );
   }
-
-  private getTransformationsStream = (withTransforms: boolean): MonoTypeOperatorFunction<PanelData> => {
-    return (inputStream) =>
-      inputStream.pipe(
-        mergeMap((data) => {
-          if (!withTransforms) {
-            return of(data);
-          }
-
-          const transformations = this.dataConfigSource.getTransformations();
-
-          if (!transformations || transformations.length === 0) {
-            return of(data);
-          }
-
-          const replace = (option: string): string => {
-            return getTemplateSrv().replace(option, data?.request?.scopedVars);
-          };
-          transformations.forEach((transform: any) => {
-            transform.replace = replace;
-          });
-
-          return transformDataFrame(transformations, data.series).pipe(map((series) => ({ ...data, series })));
-        })
-      );
-  };
 
   async run(options: QueryRunnerOptions) {
     const {

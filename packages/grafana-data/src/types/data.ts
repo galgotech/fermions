@@ -2,7 +2,6 @@ import { FieldConfig } from './dataFrame';
 import { DataFrameType } from './dataFrameTypes';
 import { ApplyFieldOverrideOptions } from './fieldOverrides';
 import { DataTopic } from './query';
-import { DataTransformerConfig } from './transformations';
 
 import { PanelPluginDataSupport } from '.';
 
@@ -173,7 +172,6 @@ export enum NullValueMode {
 export interface DataConfigSource {
   configRev?: number;
   getDataSupport: () => PanelPluginDataSupport;
-  getTransformations: () => DataTransformerConfig[] | undefined;
   getFieldOverrideOptions: () => ApplyFieldOverrideOptions | undefined;
 }
 

@@ -28,12 +28,10 @@ import {
   PanelContext,
   PanelContextProvider,
   PanelPadding,
-  SeriesVisibilityChangeMode,
 } from '@grafana/ui';
 import { PANEL_BORDER } from 'app/core/constants';
 import { profiler } from 'app/core/profiler';
 import { applyPanelTimeOverrides } from 'app/features/dashboard/utils/panel';
-import { changeSeriesColorConfigFactory } from 'app/plugins/panel/timeseries/overrides/colorSeriesConfigFactory';
 import { RenderEvent } from 'app/types/events';
 
 import { isSoloRoute } from '../../../routes/utils';
@@ -44,7 +42,6 @@ import { DashboardModel, PanelModel } from '../state';
 
 import { PanelHeader } from './PanelHeader/PanelHeader';
 import { PanelHeaderLoadingIndicator } from './PanelHeader/PanelHeaderLoadingIndicator';
-import { seriesVisibilityConfigFactory } from './SeriesVisibilityConfigFactory';
 import { liveTimer } from './liveTimer';
 
 const DEFAULT_PLUGIN_ERROR = 'Error in plugin';
@@ -91,8 +88,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         eventBus,
         app: this.getPanelContextApp(),
         sync: this.getSync,
-        onSeriesColorChange: this.onSeriesColorChange,
-        onToggleSeriesVisibility: this.onSeriesVisibilityChange,
         onAnnotationCreate: this.onAnnotationCreate,
         onAnnotationUpdate: this.onAnnotationUpdate,
         onAnnotationDelete: this.onAnnotationDelete,
@@ -130,16 +125,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
 
     return CoreApp.Dashboard;
   }
-
-  onSeriesColorChange = (label: string, color: string) => {
-    this.onFieldConfigChange(changeSeriesColorConfigFactory(label, color, this.props.panel.fieldConfig));
-  };
-
-  onSeriesVisibilityChange = (label: string, mode: SeriesVisibilityChangeMode) => {
-    this.onFieldConfigChange(
-      seriesVisibilityConfigFactory(label, mode, this.props.panel.fieldConfig, this.state.data.series)
-    );
-  };
 
   onToggleLegendSort = (sortKey: string) => {
     const legendOptions: VizLegendOptions = this.props.panel.options.legend;
@@ -194,7 +179,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     this.subs.add(
       panel
         .getQueryRunner()
-        .getData({ withTransforms: true, withFieldConfig: true })
+        .getData({ withFieldConfig: true })
         .subscribe({
           next: (data) => this.onDataUpdate(data),
         })

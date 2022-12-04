@@ -1,4 +1,4 @@
-import { DataTransformerConfig, FieldConfigSource } from '@grafana/data';
+import { FieldConfigSource } from '@grafana/data';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
 import { getPanelOptionsWithDefaults } from 'app/features/dashboard/state/getPanelOptionsWithDefaults';
 import { getLibraryPanel } from 'app/features/library-panels/state/api';
@@ -49,7 +49,6 @@ export interface ChangePanelPluginAndOptionsArgs {
   pluginId: string;
   options?: any;
   fieldConfig?: FieldConfigSource;
-  transformations?: DataTransformerConfig[];
 }
 
 export function changePanelPlugin({

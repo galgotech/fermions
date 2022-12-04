@@ -14,7 +14,6 @@ const createProps = (propsOverride?: Partial<ComponentProps<typeof InspectDataTa
   const defaultProps = {
     isLoading: false,
     options: {
-      withTransforms: false,
       withFieldConfig: false,
     },
     data: [

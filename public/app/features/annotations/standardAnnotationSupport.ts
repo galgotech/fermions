@@ -14,7 +14,6 @@ import {
   FieldType,
   getFieldDisplayName,
   KeyValue,
-  standardTransformers,
 } from '@grafana/data';
 import { config } from 'app/core/config';
 
@@ -67,7 +66,6 @@ export function singleFrameFromPanelData(): OperatorFunction<DataFrame[], DataFr
         }
 
         return of(data).pipe(
-          standardTransformers.mergeTransformer.operator({}),
           map((d) => d[0])
         );
       })

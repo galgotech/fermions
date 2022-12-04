@@ -4,7 +4,6 @@ export const SHARED_DASHBOARD_QUERY = '-- Dashboard --';
 
 export interface DashboardQuery extends DataQuery {
   panelId?: number;
-  withTransforms?: boolean;
   topic?: DataTopic;
 }
 

@@ -58,7 +58,7 @@ export const usePanelLatestData = (
      * Otherwise, passing different references to the same object might cause troubles.
      */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panel, options.withFieldConfig, options.withTransforms]);
+  }, [panel, options.withFieldConfig]);
 
   return {
     data: latestData,

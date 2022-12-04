@@ -5,7 +5,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useAsync } from 'react-use';
 
 import { DataQuery, GrafanaTheme2, PanelData, SelectableValue, DataTopic } from '@grafana/data';
-import { Field, Select, useStyles2, VerticalGroup, Spinner, Switch, RadioButtonGroup, Icon } from '@grafana/ui';
+import { Field, Select, useStyles2, VerticalGroup, Spinner, RadioButtonGroup, Icon } from '@grafana/ui';
 import config from 'app/core/config';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { PanelModel } from 'app/features/dashboard/state';
@@ -78,13 +78,6 @@ export function DashboardQueryEditor({ panelData, queries, onChange, onRunQuerie
     [query, onUpdateQuery]
   );
 
-  const onTransformToggle = useCallback(() => {
-    onUpdateQuery({
-      ...query,
-      withTransforms: !query.withTransforms,
-    });
-  }, [query, onUpdateQuery]);
-
   const onTopicChanged = useCallback(
     (t: boolean) => {
       onUpdateQuery({
@@ -143,7 +136,6 @@ export function DashboardQueryEditor({ panelData, queries, onChange, onRunQuerie
   const selected = panels.find((panel) => panel.value === query.panelId);
   // Same as current URL, but different panelId
   const editURL = `d/${dashboard.uid}/${dashboard.title}?&editPanel=${query.panelId}`;
-  const showTransforms = Boolean(query.withTransforms || panel?.transformations?.length);
 
   return (
     <>
@@ -184,12 +176,6 @@ export function DashboardQueryEditor({ panelData, queries, onChange, onRunQuerie
             </Field>
           )}
         </>
-      )}
-
-      {showTransforms && (
-        <Field label="Transform" description="Apply panel transformations from the source panel">
-          <Switch value={Boolean(query.withTransforms)} onChange={onTransformToggle} />
-        </Field>
       )}
 
       <Field label="Data">

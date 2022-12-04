@@ -3,7 +3,6 @@ import saveAs from 'file-saver';
 import {
   CSVConfig,
   DataFrame,
-  DataTransformerID,
   dateTimeFormat,
   dateTimeFormatISO,
   LogsModel,
@@ -44,13 +43,11 @@ export function downloadLogsModelAsTxt(logsModel: Pick<LogsModel, 'meta' | 'rows
  * @param {DataFrame} dataFrame
  * @param {string} title
  * @param {CSVConfig} [csvConfig]
- * @param {DataTransformerID} [transformId=DataTransformerID.noop]
  */
 export function downloadDataFrameAsCsv(
   dataFrame: DataFrame,
   title: string,
   csvConfig?: CSVConfig,
-  transformId: DataTransformerID = DataTransformerID.noop
 ) {
   const dataFrameCsv = toCSV([dataFrame], csvConfig);
 
@@ -58,8 +55,7 @@ export function downloadDataFrameAsCsv(
     type: 'text/csv;charset=utf-8',
   });
 
-  const transformation = transformId !== DataTransformerID.noop ? '-as-' + transformId.toLocaleLowerCase() : '';
-  const fileName = `${title}-data${transformation}-${dateTimeFormat(new Date())}.csv`;
+  const fileName = `${title}-data-${dateTimeFormat(new Date())}.csv`;
   saveAs(blob, fileName);
 }
 

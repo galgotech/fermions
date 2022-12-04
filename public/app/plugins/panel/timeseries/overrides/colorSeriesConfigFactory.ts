@@ -3,8 +3,8 @@ import {
   DynamicConfigValue,
   FieldColorModeId,
   FieldConfigSource,
-  FieldMatcherID,
 } from '@grafana/data';
+import { FieldMatcherID } from '@grafana/data/src/transformations/matchers/ids'
 
 export const changeSeriesColorConfigFactory = (
   label: string,

@@ -3,9 +3,9 @@ import {
   FieldType,
   getFieldDisplayName,
   PanelPlugin,
-  ReducerID,
   standardEditorsRegistry,
 } from '@grafana/data';
+import { ReducerID } from '@grafana/data/src/transformations/fieldReducer'
 import { TableFieldOptions } from '@grafana/schema';
 import { TableCellDisplayMode } from '@grafana/ui';
 
