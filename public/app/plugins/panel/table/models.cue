@@ -32,6 +32,9 @@ Panel: thema.#Lineage & {
 						sortBy?: [...ui.TableSortByFieldState]
 					} @cuetsy(kind="interface")
 					PanelFieldConfig: ui.TableFieldOptions & {} @cuetsy(kind="interface")
+					Data: {
+						teste: string | *"teste"
+					} @cuetsy(kind="interface")
 				},
 			]
 		},

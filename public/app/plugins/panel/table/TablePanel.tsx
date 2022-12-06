@@ -19,9 +19,9 @@ import { getDashboardSrv } from '../../../features/dashboard/services/DashboardS
 import { applyFilterFromTable } from '../../../features/variables/adhoc/actions';
 import { dispatch } from '../../../store/store';
 
-import { PanelOptions } from './models.gen';
+import { PanelOptions, Data } from './models.gen';
 
-interface Props extends PanelProps<PanelOptions> {}
+interface Props extends PanelProps<PanelOptions, Data> {}
 
 export class TablePanel extends Component<Props> {
   constructor(props: Props) {

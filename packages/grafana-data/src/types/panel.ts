@@ -26,12 +26,14 @@ export interface PanelPluginMeta extends PluginMeta {
   sort: number;
 }
 
-export interface PanelData {
+export interface PanelData<T = any> {
   /** State of the data (loading, done, error, streaming) */
   state: LoadingState;
 
   /** Contains data frames with field overrides applied */
   series: DataFrame[];
+
+  data?: T;
 
   /**
    * This is a key that will change when the DataFrame[] structure changes.
@@ -52,12 +54,12 @@ export interface PanelData {
   timeRange: TimeRange;
 }
 
-export interface PanelProps<T = any> {
+export interface PanelProps<T = any, TPanelData extends object = any> {
   /** ID of the panel within the current dashboard */
   id: number;
 
   /** Result set of panel queries */
-  data: PanelData;
+  data: PanelData<TPanelData>;
 
   /** Time range of the current dashboard */
   timeRange: TimeRange;

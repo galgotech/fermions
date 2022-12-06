@@ -14,7 +14,6 @@ import {
   PanelPluginDataSupport,
   VisualizationSuggestionsSupplier,
 } from '../types';
-import { deprecationWarning } from '../utils';
 import { FieldConfigEditorBuilder, PanelOptionsEditorBuilder } from '../utils/OptionsUIBuilders';
 
 import { createFieldConfigRegistry } from './registryFactories';
@@ -93,6 +92,7 @@ export type PanelOptionsSupplier<TOptions> = (
 
 export class PanelPlugin<
   TOptions = any,
+  TPanelData extends object = any,
   TFieldConfigOptions extends object = any
 > extends GrafanaPlugin<PanelPluginMeta> {
   private _defaults?: TOptions;
@@ -100,6 +100,7 @@ export class PanelPlugin<
     defaults: {},
     overrides: [],
   };
+  private _defaultData?: Partial<TPanelData>;
 
   private _fieldConfigRegistry?: FieldConfigOptionsRegistry;
   private _initConfigRegistry = () => {
@@ -115,11 +116,6 @@ export class PanelPlugin<
   onPanelTypeChanged?: PanelTypeChangedHandler<TOptions>;
   noPadding?: boolean;
   dataSupport: PanelPluginDataSupport = {};
-
-  /**
-   * Legacy angular ctrl.  If this exists it will be used instead of the panel
-   */
-  angularPanelCtrl?: any;
 
   constructor(panel: ComponentType<PanelProps<TOptions>> | null) {
     super();
@@ -162,15 +158,6 @@ export class PanelPlugin<
     };
   }
 
-  /**
-   * @deprecated setDefaults is deprecated in favor of setPanelOptions
-   */
-  setDefaults(defaults: TOptions) {
-    deprecationWarning('PanelPlugin', 'setDefaults', 'setPanelOptions');
-    this._defaults = defaults;
-    return this;
-  }
-
   get fieldConfigRegistry() {
     if (!this._fieldConfigRegistry) {
       this._fieldConfigRegistry = this._initConfigRegistry();
@@ -179,12 +166,12 @@ export class PanelPlugin<
     return this._fieldConfigRegistry;
   }
 
-  /**
-   * @deprecated setEditor is deprecated in favor of setPanelOptions
-   */
-  setEditor(editor: ComponentClass<PanelEditorProps<TOptions>>) {
-    deprecationWarning('PanelPlugin', 'setEditor', 'setPanelOptions');
-    this.editor = editor;
+  get getDefaultData (): Partial<TPanelData> | undefined {
+    return this._defaultData;
+  }
+
+  setDefaultData(defaultData: Partial<TPanelData>) {
+    this._defaultData = defaultData;
     return this;
   }
 

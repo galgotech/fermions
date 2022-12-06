@@ -36,3 +36,11 @@ export const defaultPanelFieldConfig: TableFieldOptions = {
   align: 'auto',
   inspect: false,
 };
+
+export interface Data {
+  teste: string;
+}
+
+export const defaultData: Partial<Data> = {
+  teste: 'teste',
+};

@@ -12,15 +12,16 @@ import { TableCellDisplayMode } from '@grafana/ui';
 import { PaginationEditor } from './PaginationEditor';
 import { TablePanel } from './TablePanel';
 import { tableMigrationHandler, tablePanelChangedHandler } from './migrations';
-import { PanelOptions, defaultPanelOptions, defaultPanelFieldConfig } from './models.gen';
+import { PanelOptions, defaultPanelOptions, defaultPanelFieldConfig, Data, defaultData } from './models.gen';
 import { TableSuggestionsSupplier } from './suggestions';
 
 const footerCategory = 'Table footer';
 
-export const plugin = new PanelPlugin<PanelOptions, TableFieldOptions>(TablePanel)
+export const plugin = new PanelPlugin<PanelOptions, Data, TableFieldOptions>(TablePanel)
   .setPanelChangeHandler(tablePanelChangedHandler)
   .setMigrationHandler(tableMigrationHandler)
   .setNoPadding()
+  .setDefaultData(defaultData)
   .useFieldConfig({
     useCustomConfig: (builder) => {
       builder
