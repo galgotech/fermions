@@ -10,7 +10,6 @@ import { AngularLoader } from 'app/angular/services/AngularLoader';
 import appEvents from 'app/core/app_events';
 import config from 'app/core/config';
 import { ContextSrv } from 'app/core/services/context_srv';
-import { initGrafanaLive } from 'app/features/live';
 import { CoreEvents, AppEventEmitter, AppEventConsumer } from 'app/types';
 
 import { UtilSrv } from './services/UtilSrv';
@@ -31,8 +30,6 @@ export class GrafanaCtrl {
     setAngularLoader(angularLoader);
     setLegacyAngularInjector($injector);
     setAppEvents(appEvents);
-
-    initGrafanaLive();
 
     $scope.init = () => {
       $scope.contextSrv = contextSrv;

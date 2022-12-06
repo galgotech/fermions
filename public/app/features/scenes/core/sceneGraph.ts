@@ -1,4 +1,4 @@
-import { getDefaultTimeRange, LoadingState, ScopedVars } from '@grafana/data';
+import { LoadingState, ScopedVars } from '@grafana/data';
 
 import { CustomFormatterFn, sceneInterpolator } from '../variables/interpolation/sceneInterpolator';
 import { SceneVariableSet } from '../variables/sets/SceneVariableSet';
@@ -109,7 +109,6 @@ export const EmptyDataNode = new SceneDataNode({
   data: {
     state: LoadingState.Done,
     series: [],
-    timeRange: getDefaultTimeRange(),
   },
 });
 

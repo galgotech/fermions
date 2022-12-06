@@ -373,14 +373,13 @@ export class QueryEditorRow<TQuery extends DataQuery> extends PureComponent<Prop
   };
 
   renderExtraActions = () => {
-    const { query, queries, data, onAddQuery, dataSource } = this.props;
+    const { query, queries, onAddQuery, dataSource } = this.props;
 
     const extraActions = RowActionComponents.getAllExtraRenderAction()
       .map((action, index) =>
         action({
           query,
           queries,
-          timeRange: data.timeRange,
           onAddQuery: onAddQuery as (query: DataQuery) => void,
           dataSource,
           key: index,
@@ -554,13 +553,10 @@ export function filterPanelDataToQuery(data: PanelData, refId: string): PanelDat
     state = LoadingState.Done;
   }
 
-  const timeRange = data.timeRange;
-
   return {
     ...data,
     state,
     series,
     error,
-    timeRange,
   };
 }

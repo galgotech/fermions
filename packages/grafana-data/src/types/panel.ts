@@ -13,7 +13,6 @@ import { DataQueryError, DataQueryRequest, DataQueryTimings } from './datasource
 import { FieldConfigSource } from './fieldOverrides';
 import { OptionEditorConfig } from './options';
 import { PluginMeta } from './plugin';
-import { AbsoluteTimeRange, TimeRange, TimeZone } from './time';
 
 export type InterpolateFunction = (value: string, scopedVars?: ScopedVars, format?: string | Function) => string;
 
@@ -49,9 +48,6 @@ export interface PanelData<T = any> {
 
   /** Any query errors */
   error?: DataQueryError;
-
-  /** Contains the range from the request or a shifted time range if a request uses relative time */
-  timeRange: TimeRange;
 }
 
 export interface PanelProps<T = any, TPanelData extends object = any> {
@@ -60,12 +56,6 @@ export interface PanelProps<T = any, TPanelData extends object = any> {
 
   /** Result set of panel queries */
   data: PanelData<TPanelData>;
-
-  /** Time range of the current dashboard */
-  timeRange: TimeRange;
-
-  /** Time zone of the current dashboard */
-  timeZone: TimeZone;
 
   /** Panel options */
   options: T;
@@ -99,9 +89,6 @@ export interface PanelProps<T = any, TPanelData extends object = any> {
 
   /** Template variables interpolation function */
   replaceVariables: InterpolateFunction;
-
-  /** Time range change handler */
-  onChangeTimeRange: (timeRange: AbsoluteTimeRange) => void;
 }
 
 export interface PanelEditorProps<T = any> {

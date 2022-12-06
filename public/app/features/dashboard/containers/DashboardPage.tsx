@@ -2,7 +2,7 @@ import { cx } from '@emotion/css';
 import React, { PureComponent } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
-import { NavModel, NavModelItem, TimeRange, PageLayoutType, locationUtil } from '@grafana/data';
+import { NavModel, NavModelItem, PageLayoutType, locationUtil } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { config, locationService } from '@grafana/runtime';
 import { Themeable2, withTheme2 } from '@grafana/ui';
@@ -30,7 +30,6 @@ import { PanelEditor } from '../components/PanelEditor/PanelEditor';
 import { PublicDashboardFooter } from '../components/PublicDashboardFooter/PublicDashboardsFooter';
 import { SubMenu } from '../components/SubMenu/SubMenu';
 import { DashboardGrid } from '../dashgrid/DashboardGrid';
-import { liveTimer } from '../dashgrid/liveTimer';
 import { getTimeSrv } from '../services/TimeSrv';
 import { cleanUpDashboardAndVariables } from '../state/actions';
 import { initDashboard } from '../state/initDashboard';
@@ -144,9 +143,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
       accessToken: match.params.accessToken,
       keybindingSrv: this.context.keybindings,
     });
-
-    // small delay to start live updates
-    setTimeout(this.updateLiveTimer, 250);
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -169,11 +165,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
     if (prevProps.location.search !== this.props.location.search) {
       const prevUrlParams = prevProps.queryParams;
       const urlParams = this.props.queryParams;
-
-      if (urlParams?.from !== prevUrlParams?.from || urlParams?.to !== prevUrlParams?.to) {
-        getTimeSrv().updateTimeRangeFromUrl();
-        this.updateLiveTimer();
-      }
 
       if (!prevUrlParams?.refresh && urlParams?.refresh) {
         getTimeSrv().setAutoRefresh(urlParams.refresh);
@@ -212,14 +203,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
       locationService.partial({ editPanel: null, viewPanel: null });
     }
   }
-
-  updateLiveTimer = () => {
-    let tr: TimeRange | undefined = undefined;
-    if (this.props.dashboard?.liveNow) {
-      tr = getTimeSrv().timeRange();
-    }
-    liveTimer.setLiveTimeRange(tr);
-  };
 
   static getDerivedStateFromProps(props: Props, state: State) {
     const { dashboard, queryParams } = props;

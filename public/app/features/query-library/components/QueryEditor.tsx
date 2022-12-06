@@ -6,7 +6,6 @@ import {
   DataQuery,
   DataSourceApi,
   DataSourceInstanceSettings,
-  getDefaultTimeRange,
   GrafanaTheme2,
   LoadingState,
 } from '@grafana/data';
@@ -39,7 +38,6 @@ export const QueryEditor = ({ savedQuery, onSavedQueryChange }: Props) => {
   const data = {
     state: LoadingState.NotStarted,
     series: [],
-    timeRange: getDefaultTimeRange(),
   };
 
   const onQueriesChange = (newQueries: DataQuery[]) => {

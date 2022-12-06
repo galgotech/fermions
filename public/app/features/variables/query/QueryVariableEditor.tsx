@@ -161,7 +161,7 @@ export class QueryVariableEditorUnConnected extends PureComponent<Props, State> 
             query={query}
             onChange={this.onQueryChange}
             onRunQuery={() => {}}
-            data={{ series: [], state: LoadingState.Done, timeRange: range }}
+            data={{ series: [], state: LoadingState.Done }}
             range={range}
             onBlur={() => {}}
             history={[]}

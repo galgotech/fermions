@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AbsoluteTimeRange, FieldConfigSource, PanelData } from '@grafana/data';
+import { FieldConfigSource, PanelData } from '@grafana/data';
 
 /**
  * Describes the properties that can be passed to the PanelRenderer.
@@ -17,7 +17,6 @@ export interface PanelRendererProps<P extends object = any, F extends object = a
   options?: Partial<P>;
   onOptionsChange?: (options: P) => void;
   onFieldConfigChange?: (config: FieldConfigSource<F>) => void;
-  onChangeTimeRange?: (timeRange: AbsoluteTimeRange) => void;
   fieldConfig?: FieldConfigSource<Partial<F>>;
   timeZone?: string;
   width: number;

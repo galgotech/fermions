@@ -5,7 +5,6 @@ import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceRef,
-  getDefaultTimeRange,
   LoadingState,
   PanelData,
 } from '@grafana/data';
@@ -91,6 +90,5 @@ function getQueryError(msg: string): PanelData {
     series: [],
     request: {} as DataQueryRequest,
     error: { message: msg },
-    timeRange: getDefaultTimeRange(),
   };
 }

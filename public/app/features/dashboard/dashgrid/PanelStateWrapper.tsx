@@ -3,19 +3,16 @@ import React, { PureComponent } from 'react';
 import { Subscription } from 'rxjs';
 
 import {
-  AbsoluteTimeRange,
   CoreApp,
   DashboardCursorSync,
   EventFilterOptions,
   FieldConfigSource,
-  getDefaultTimeRange,
   LoadingState,
   PanelData,
   PanelPlugin,
   PanelPluginMeta,
   PluginContextProvider,
   TimeRange,
-  toUtc,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { config, locationService, RefreshEvent } from '@grafana/runtime';
@@ -38,7 +35,6 @@ import { DashboardModel, PanelModel } from '../state';
 
 import { PanelHeader } from './PanelHeader/PanelHeader';
 import { PanelHeaderLoadingIndicator } from './PanelHeader/PanelHeaderLoadingIndicator';
-import { liveTimer } from './liveTimer';
 
 const DEFAULT_PLUGIN_ERROR = 'Error in plugin';
 
@@ -149,7 +145,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     return {
       state: LoadingState.NotStarted,
       series: [],
-      timeRange: getDefaultTimeRange(),
     };
   }
 
@@ -174,31 +169,14 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
           next: (data) => this.onDataUpdate(data),
         })
     );
-
-    // Listen for live timer events
-    liveTimer.listen(this);
   }
 
   componentWillUnmount() {
     this.subs.unsubscribe();
-    liveTimer.remove(this);
-  }
-
-  liveTimeChanged(liveTime: TimeRange) {
-    const { data } = this.state;
-    if (data.timeRange) {
-      const delta = liveTime.to.valueOf() - data.timeRange.to.valueOf();
-      if (delta < 100) {
-        // 10hz
-        console.log('Skip tick render', this.props.panel.title, delta);
-        return;
-      }
-    }
-    this.setState({ liveTime });
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { isInView, width } = this.props;
+    const { isInView } = this.props;
     const { context } = this.state;
 
     const app = this.getPanelContextApp();
@@ -220,11 +198,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
           this.onRefresh();
         }
       }
-    }
-
-    // The timer depends on panel width
-    if (width !== prevProps.width) {
-      liveTimer.updateInterval(this);
     }
   }
 
@@ -299,7 +272,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     } else {
       // The panel should render on refresh as well if it doesn't have a query, like clock panel
       this.setState({
-        data: { ...this.state.data, timeRange: this.timeSrv.timeRange() },
+        data: { ...this.state.data },
         renderCounter: this.state.renderCounter + 1,
         liveTime: undefined,
       });
@@ -334,13 +307,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     return !this.props.plugin.meta.skipDataQuery;
   }
 
-  onChangeTimeRange = (timeRange: AbsoluteTimeRange) => {
-    this.timeSrv.setTime({
-      from: toUtc(timeRange.from),
-      to: toUtc(timeRange.to),
-    });
-  };
-
   shouldSignalRenderingCompleted(loadingState: LoadingState, pluginMeta: PanelPluginMeta) {
     return loadingState === LoadingState.Done || pluginMeta.skipDataQuery;
   }
@@ -371,7 +337,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     }
 
     const PanelComponent = plugin.panel!;
-    const timeRange = this.state.liveTime ?? data.timeRange ?? this.timeSrv.timeRange();
     const panelOptions = panel.getOptions();
 
     // Update the event filter (dashboard settings may have changed)
@@ -385,8 +350,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             id={panel.id}
             data={data}
             title={panel.title}
-            timeRange={timeRange}
-            timeZone={this.props.dashboard.getTimezone()}
             options={panelOptions}
             fieldConfig={panel.fieldConfig}
             transparent={panel.transparent}
@@ -396,7 +359,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             replaceVariables={panel.replaceVariables}
             onOptionsChange={this.onOptionsChange}
             onFieldConfigChange={this.onFieldConfigChange}
-            onChangeTimeRange={this.onChangeTimeRange}
             eventBus={dashboard.events}
           />
         </PanelContextProvider>
@@ -422,7 +384,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     }
 
     const PanelComponent = plugin.panel!;
-    const timeRange = this.state.liveTime ?? data.timeRange ?? this.timeSrv.timeRange();
     const headerHeight = this.hasOverlayHeader() ? 0 : theme.panelHeaderHeight;
     const chromePadding = plugin.noPadding ? 0 : theme.panelPadding;
     const panelWidth = width - chromePadding * 2 - PANEL_BORDER;
@@ -437,8 +398,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     // Yes this is called ever render for a function that is triggered on every mouse move
     this.eventFilter.onlyLocal = dashboard.graphTooltip === 0;
 
-    const timeZone = this.props.timezone || this.props.dashboard.getTimezone();
-
     return (
       <>
         <div className={panelContentClassNames}>
@@ -448,8 +407,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
                 id={panel.id}
                 data={data}
                 title={panel.title}
-                timeRange={timeRange}
-                timeZone={timeZone}
                 options={panelOptions}
                 fieldConfig={panel.fieldConfig}
                 transparent={panel.transparent}
@@ -459,7 +416,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
                 replaceVariables={panel.replaceVariables}
                 onOptionsChange={this.onOptionsChange}
                 onFieldConfigChange={this.onFieldConfigChange}
-                onChangeTimeRange={this.onChangeTimeRange}
                 eventBus={dashboard.events}
               />
             </PanelContextProvider>

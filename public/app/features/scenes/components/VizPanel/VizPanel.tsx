@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { AbsoluteTimeRange, FieldConfigSource, PanelModel, PanelPlugin, toUtc } from '@grafana/data';
+import { FieldConfigSource, PanelModel, PanelPlugin } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Field, Input } from '@grafana/ui';
 import { importPanelPlugin, syncGetPanelPlugin } from 'app/features/plugins/importPanelPlugin';
 
 import { getPanelOptionsWithDefaults } from '../../../dashboard/state/getPanelOptionsWithDefaults';
 import { SceneObjectBase } from '../../core/SceneObjectBase';
-import { sceneGraph } from '../../core/sceneGraph';
 import { SceneComponentProps, SceneLayoutChildState } from '../../core/types';
 
 import { VizPanelRenderer } from './VizPanelRenderer';
@@ -92,18 +91,6 @@ export class VizPanel<TOptions = {}, TFieldConfig = {}> extends SceneObjectBase<
   public getPlugin(): PanelPlugin | undefined {
     return this._plugin;
   }
-
-  public onChangeTimeRange = (timeRange: AbsoluteTimeRange) => {
-    const sceneTimeRange = sceneGraph.getTimeRange(this);
-    sceneTimeRange.onTimeRangeChange({
-      raw: {
-        from: toUtc(timeRange.from),
-        to: toUtc(timeRange.to),
-      },
-      from: toUtc(timeRange.from),
-      to: toUtc(timeRange.to),
-    });
-  };
 
   public onOptionsChange = (options: TOptions) => {
     this.setState({ options });

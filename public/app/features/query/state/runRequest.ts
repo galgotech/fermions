@@ -112,7 +112,6 @@ export function runRequest(
       state: LoadingState.Loading,
       series: [],
       request: request,
-      timeRange: request.range,
     },
     packets: {},
   };

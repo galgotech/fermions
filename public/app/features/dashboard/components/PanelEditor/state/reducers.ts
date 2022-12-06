@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { getDefaultTimeRange, LoadingState, PanelData } from '@grafana/data';
+import { LoadingState, PanelData } from '@grafana/data';
 
 import store from '../../../../../core/store';
 import { PanelModel } from '../../../state/PanelModel';
@@ -55,7 +55,6 @@ export const initialState = (): PanelEditorState => {
     getData: () => ({
       state: LoadingState.NotStarted,
       series: [],
-      timeRange: getDefaultTimeRange(),
     }),
     initDone: false,
     shouldDiscardChanges: false,

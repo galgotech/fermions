@@ -67,8 +67,6 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
                     id={1}
                     data={dataWithOverrides}
                     title={title}
-                    timeRange={dataWithOverrides.timeRange}
-                    timeZone={timeZone}
                     options={options}
                     fieldConfig={fieldConfig}
                     transparent={false}
@@ -78,7 +76,6 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
                     replaceVariables={(str: string) => str}
                     onOptionsChange={model.onOptionsChange}
                     onFieldConfigChange={model.onFieldConfigChange}
-                    onChangeTimeRange={model.onChangeTimeRange}
                     eventBus={appEvents}
                   />
                 </PluginContextProvider>

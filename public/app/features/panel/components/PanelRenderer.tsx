@@ -30,7 +30,6 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
     height,
     title,
     onOptionsChange = () => {},
-    onChangeTimeRange = () => {},
     onFieldConfigChange = () => {},
     fieldConfig = defaultFieldConfig,
   } = props;
@@ -79,8 +78,6 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
           id={1}
           data={dataWithOverrides}
           title={title}
-          timeRange={dataWithOverrides.timeRange}
-          timeZone={timeZone}
           options={optionsWithDefaults!.options}
           fieldConfig={fieldConfig}
           transparent={false}
@@ -90,7 +87,6 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
           replaceVariables={(str: string) => str}
           onOptionsChange={onOptionsChange}
           onFieldConfigChange={onFieldConfigChange}
-          onChangeTimeRange={onChangeTimeRange}
           eventBus={appEvents}
         />
       </PluginContextProvider>

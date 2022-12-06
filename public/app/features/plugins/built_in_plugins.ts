@@ -3,13 +3,10 @@ const dashboardDSPlugin = async () =>
 const grafanaPlugin = async () =>
   await import(/* webpackChunkName: "grafanaPlugin" */ 'app/plugins/datasource/grafana/module');
 
-import * as barGaugePanel from 'app/plugins/panel/bargauge/module';
 import * as dashListPanel from 'app/plugins/panel/dashlist/module';
-import * as gaugePanel from 'app/plugins/panel/gauge/module';
 import * as gettingStartedPanel from 'app/plugins/panel/gettingstarted/module';
 import * as livePanel from 'app/plugins/panel/live/module';
 import * as newsPanel from 'app/plugins/panel/news/module';
-import * as statPanel from 'app/plugins/panel/stat/module';
 import * as tablePanel from 'app/plugins/panel/table/module';
 import * as textPanel from 'app/plugins/panel/text/module';
 import * as welcomeBanner from 'app/plugins/panel/welcome/module';
@@ -29,10 +26,7 @@ const builtInPlugins: any = {
   'app/plugins/panel/table/module': tablePanel,
   'app/plugins/panel/news/module': newsPanel,
   'app/plugins/panel/live/module': livePanel,
-  'app/plugins/panel/stat/module': statPanel,
   'app/plugins/panel/gettingstarted/module': gettingStartedPanel,
-  'app/plugins/panel/gauge/module': gaugePanel,
-  'app/plugins/panel/bargauge/module': barGaugePanel,
   'app/plugins/panel/welcome/module': welcomeBanner,
 };
 

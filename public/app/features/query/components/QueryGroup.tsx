@@ -7,7 +7,6 @@ import {
   DataQuery,
   DataSourceApi,
   DataSourceInstanceSettings,
-  getDefaultTimeRange,
   LoadingState,
   PanelData,
 } from '@grafana/data';
@@ -80,7 +79,6 @@ export class QueryGroup extends PureComponent<Props, State> {
     data: {
       state: LoadingState.NotStarted,
       series: [],
-      timeRange: getDefaultTimeRange(),
     },
   };
 

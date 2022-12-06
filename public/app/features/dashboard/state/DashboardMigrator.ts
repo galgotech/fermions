@@ -22,7 +22,6 @@ import {
 import { getDataSourceSrv, setDataSourceSrv } from '@grafana/runtime';
 import { AxisPlacement, GraphFieldConfig } from '@grafana/ui';
 import { getAllOptionEditors, getAllStandardFieldConfigs } from 'app/core/components/OptionsUI/registry';
-import { config } from 'app/core/config';
 import {
   DEFAULT_PANEL_SPAN,
   DEFAULT_ROW_HEIGHT,
@@ -36,8 +35,6 @@ import kbn from 'app/core/utils/kbn';
 import { DatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { isConstant, isMulti } from 'app/features/variables/guard';
 import { alignCurrentWithMulti } from 'app/features/variables/shared/multiOptions';
-import { plugin as gaugePanelPlugin } from 'app/plugins/panel/gauge/module';
-import { plugin as statPanelPlugin } from 'app/plugins/panel/stat/module';
 
 import { ConstantVariableModel, TextBoxVariableModel, VariableHide } from '../../variables/types';
 
@@ -607,14 +604,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 28) {
-      panelUpgrades.push((panel: PanelModel) => {
-        if (panel.type === 'singlestat') {
-          return migrateSinglestat(panel);
-        }
-
-        return panel;
-      });
-
       for (const variable of this.dashboard.templating.list) {
         if (variable.tags) {
           delete variable.tags;
@@ -1002,35 +991,7 @@ function updateVariablesSyntax(text: string) {
   });
 }
 
-function migrateSinglestat(panel: PanelModel) {
-  // If   'grafana-singlestat-panel' exists, move to that
-  if (config.panels['grafana-singlestat-panel']) {
-    panel.type = 'grafana-singlestat-panel';
-    return panel;
-  }
 
-  let returnSaveModel = false;
-
-  if (!panel.changePlugin) {
-    returnSaveModel = true;
-    panel = new PanelModel(panel);
-  }
-
-  // Otheriwse use gauge or stat panel
-  if ((panel as any).gauge?.show) {
-    gaugePanelPlugin.meta = config.panels['gauge'];
-    panel.changePlugin(gaugePanelPlugin);
-  } else {
-    statPanelPlugin.meta = config.panels['stat'];
-    panel.changePlugin(statPanelPlugin);
-  }
-
-  if (returnSaveModel) {
-    return panel.getSaveModel();
-  }
-
-  return panel;
-}
 
 interface MigrateDatasourceNameOptions {
   returnDefaultAsNull: boolean;

@@ -133,10 +133,6 @@ class MetricsPanelCtrl extends PanelCtrl {
         }
       }
 
-      if (data.timeRange) {
-        this.range = data.timeRange;
-      }
-
       if (this.useDataFrames) {
         this.handleDataFrames(data.series);
       } else {
