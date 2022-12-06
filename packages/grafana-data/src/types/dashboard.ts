@@ -37,7 +37,4 @@ export interface PanelModel<TOptions = any, TCustomFieldConfig = any> {
 
   /** The queries in a panel */
   targets?: DataQuery[];
-
-  /** alerting v1 object */
-  alert?: any;
 }

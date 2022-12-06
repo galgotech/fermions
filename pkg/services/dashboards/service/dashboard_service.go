@@ -12,7 +12,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/guardian"
@@ -36,7 +35,6 @@ type DashboardServiceImpl struct {
 	cfg                  *setting.Cfg
 	log                  log.Logger
 	dashboardStore       dashboards.Store
-	dashAlertExtractor   alerting.DashAlertExtractor
 	features             featuremgmt.FeatureToggles
 	folderPermissions    accesscontrol.FolderPermissionsService
 	dashboardPermissions accesscontrol.DashboardPermissionsService
@@ -44,7 +42,7 @@ type DashboardServiceImpl struct {
 }
 
 func ProvideDashboardService(
-	cfg *setting.Cfg, store dashboards.Store, dashAlertExtractor alerting.DashAlertExtractor,
+	cfg *setting.Cfg, store dashboards.Store,
 	features featuremgmt.FeatureToggles, folderPermissionsService accesscontrol.FolderPermissionsService,
 	dashboardPermissionsService accesscontrol.DashboardPermissionsService, ac accesscontrol.AccessControl,
 ) *DashboardServiceImpl {
@@ -55,7 +53,6 @@ func ProvideDashboardService(
 		cfg:                  cfg,
 		log:                  log.New("dashboard-service"),
 		dashboardStore:       store,
-		dashAlertExtractor:   dashAlertExtractor,
 		features:             features,
 		folderPermissions:    folderPermissionsService,
 		dashboardPermissions: dashboardPermissionsService,
@@ -75,7 +72,7 @@ func (dr *DashboardServiceImpl) GetProvisionedDashboardDataByDashboardUID(ctx co
 	return dr.dashboardStore.GetProvisionedDataByDashboardUID(ctx, orgID, dashboardUID)
 }
 
-func (dr *DashboardServiceImpl) BuildSaveDashboardCommand(ctx context.Context, dto *dashboards.SaveDashboardDTO, shouldValidateAlerts bool,
+func (dr *DashboardServiceImpl) BuildSaveDashboardCommand(ctx context.Context, dto *dashboards.SaveDashboardDTO,
 	validateProvisionedDashboard bool) (*models.SaveDashboardCommand, error) {
 	dash := dto.Dashboard
 
@@ -104,13 +101,6 @@ func (dr *DashboardServiceImpl) BuildSaveDashboardCommand(ctx context.Context, d
 
 	if err := validateDashboardRefreshInterval(dash); err != nil {
 		return nil, err
-	}
-
-	if shouldValidateAlerts {
-		dashAlertInfo := alerting.DashAlertInfo{Dash: dash, User: dto.User, OrgID: dash.OrgId}
-		if err := dr.dashAlertExtractor.ValidateAlerts(ctx, dashAlertInfo); err != nil {
-			return nil, err
-		}
 	}
 
 	isParentFolderChanged, err := dr.dashboardStore.ValidateDashboardBeforeSave(ctx, dash, dto.Overwrite)
@@ -220,7 +210,7 @@ func (dr *DashboardServiceImpl) SaveProvisionedDashboard(ctx context.Context, dt
 
 	dto.User = accesscontrol.BackgroundUser("dashboard_provisioning", dto.OrgId, org.RoleAdmin, provisionerPermissions)
 
-	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, setting.IsLegacyAlertingEnabled(), false)
+	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, false)
 	if err != nil {
 		return nil, err
 	}
@@ -229,26 +219,6 @@ func (dr *DashboardServiceImpl) SaveProvisionedDashboard(ctx context.Context, dt
 	dash, err := dr.dashboardStore.SaveProvisionedDashboard(ctx, *cmd, provisioning)
 	if err != nil {
 		return nil, err
-	}
-
-	// alerts
-	dashAlertInfo := alerting.DashAlertInfo{
-		User:  dto.User,
-		Dash:  dash,
-		OrgID: dto.OrgId,
-	}
-
-	// extract/save legacy alerts only if legacy alerting is enabled
-	if setting.IsLegacyAlertingEnabled() {
-		alerts, err := dr.dashAlertExtractor.GetAlerts(ctx, dashAlertInfo)
-		if err != nil {
-			return nil, err
-		}
-
-		err = dr.dashboardStore.SaveAlerts(ctx, dash.Id, alerts)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if dto.Dashboard.Id == 0 {
@@ -262,7 +232,7 @@ func (dr *DashboardServiceImpl) SaveProvisionedDashboard(ctx context.Context, dt
 
 func (dr *DashboardServiceImpl) SaveFolderForProvisionedDashboards(ctx context.Context, dto *dashboards.SaveDashboardDTO) (*models.Dashboard, error) {
 	dto.User = accesscontrol.BackgroundUser("dashboard_provisioning", dto.OrgId, org.RoleAdmin, provisionerPermissions)
-	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, false, false)
+	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, false)
 	if err != nil {
 		return nil, err
 	}
@@ -270,25 +240,6 @@ func (dr *DashboardServiceImpl) SaveFolderForProvisionedDashboards(ctx context.C
 	dash, err := dr.dashboardStore.SaveDashboard(ctx, *cmd)
 	if err != nil {
 		return nil, err
-	}
-
-	dashAlertInfo := alerting.DashAlertInfo{
-		User:  dto.User,
-		Dash:  dash,
-		OrgID: dto.OrgId,
-	}
-
-	// extract/save legacy alerts only if legacy alerting is enabled
-	if setting.IsLegacyAlertingEnabled() {
-		alerts, err := dr.dashAlertExtractor.GetAlerts(ctx, dashAlertInfo)
-		if err != nil {
-			return nil, err
-		}
-
-		err = dr.dashboardStore.SaveAlerts(ctx, dash.Id, alerts)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if dto.Dashboard.Id == 0 {
@@ -309,7 +260,7 @@ func (dr *DashboardServiceImpl) SaveDashboard(ctx context.Context, dto *dashboar
 		dto.Dashboard.Data.Set("refresh", setting.MinRefreshInterval)
 	}
 
-	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, setting.IsLegacyAlertingEnabled(), !allowUiUpdate)
+	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, !allowUiUpdate)
 	if err != nil {
 		return nil, err
 	}
@@ -317,25 +268,6 @@ func (dr *DashboardServiceImpl) SaveDashboard(ctx context.Context, dto *dashboar
 	dash, err := dr.dashboardStore.SaveDashboard(ctx, *cmd)
 	if err != nil {
 		return nil, fmt.Errorf("saving dashboard failed: %w", err)
-	}
-
-	dashAlertInfo := alerting.DashAlertInfo{
-		User:  dto.User,
-		Dash:  dash,
-		OrgID: dto.OrgId,
-	}
-
-	// extract/save legacy alerts only if legacy alerting is enabled
-	if setting.IsLegacyAlertingEnabled() {
-		alerts, err := dr.dashAlertExtractor.GetAlerts(ctx, dashAlertInfo)
-		if err != nil {
-			return nil, err
-		}
-
-		err = dr.dashboardStore.SaveAlerts(ctx, dash.Id, alerts)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// new dashboard created
@@ -430,7 +362,7 @@ func (dr *DashboardServiceImpl) ImportDashboard(ctx context.Context, dto *dashbo
 		dto.Dashboard.Data.Set("refresh", setting.MinRefreshInterval)
 	}
 
-	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, false, true)
+	cmd, err := dr.BuildSaveDashboardCommand(ctx, dto, true)
 	if err != nil {
 		return nil, err
 	}

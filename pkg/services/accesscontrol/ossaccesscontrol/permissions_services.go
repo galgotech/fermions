@@ -179,14 +179,11 @@ type FolderPermissionsService struct {
 	*resourcepermissions.Service
 }
 
-var FolderViewActions = []string{dashboards.ActionFoldersRead, accesscontrol.ActionAlertingRuleRead}
+var FolderViewActions = []string{dashboards.ActionFoldersRead}
 var FolderEditActions = append(FolderViewActions, []string{
 	dashboards.ActionFoldersWrite,
 	dashboards.ActionFoldersDelete,
 	dashboards.ActionDashboardsCreate,
-	accesscontrol.ActionAlertingRuleCreate,
-	accesscontrol.ActionAlertingRuleUpdate,
-	accesscontrol.ActionAlertingRuleDelete,
 }...)
 var FolderAdminActions = append(FolderEditActions, []string{dashboards.ActionFoldersPermissionsRead, dashboards.ActionFoldersPermissionsWrite}...)
 

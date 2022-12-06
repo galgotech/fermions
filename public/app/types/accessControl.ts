@@ -85,33 +85,6 @@ export enum AccessControlAction {
   FoldersPermissionsRead = 'folders.permissions:read',
   FoldersPermissionsWrite = 'folders.permissions:write',
 
-  // Alerting rules
-  AlertingRuleCreate = 'alert.rules:create',
-  AlertingRuleRead = 'alert.rules:read',
-  AlertingRuleUpdate = 'alert.rules:write',
-  AlertingRuleDelete = 'alert.rules:delete',
-
-  // Alerting instances (+silences)
-  AlertingInstanceCreate = 'alert.instances:create',
-  AlertingInstanceUpdate = 'alert.instances:write',
-  AlertingInstanceRead = 'alert.instances:read',
-
-  // Alerting Notification policies
-  AlertingNotificationsRead = 'alert.notifications:read',
-  AlertingNotificationsWrite = 'alert.notifications:write',
-
-  // External alerting rule actions.
-  AlertingRuleExternalWrite = 'alert.rules.external:write',
-  AlertingRuleExternalRead = 'alert.rules.external:read',
-
-  // External alerting instances actions.
-  AlertingInstancesExternalWrite = 'alert.instances.external:write',
-  AlertingInstancesExternalRead = 'alert.instances.external:read',
-
-  // External alerting notifications actions.
-  AlertingNotificationsExternalWrite = 'alert.notifications.external:write',
-  AlertingNotificationsExternalRead = 'alert.notifications.external:read',
-
   ActionAPIKeysRead = 'apikeys:read',
   ActionAPIKeysCreate = 'apikeys:create',
   ActionAPIKeysDelete = 'apikeys:delete',

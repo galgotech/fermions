@@ -114,10 +114,7 @@ export class PanelPlugin<
   onPanelMigration?: PanelMigrationHandler<TOptions>;
   onPanelTypeChanged?: PanelTypeChangedHandler<TOptions>;
   noPadding?: boolean;
-  dataSupport: PanelPluginDataSupport = {
-    annotations: false,
-    alertStates: false,
-  };
+  dataSupport: PanelPluginDataSupport = {};
 
   /**
    * Legacy angular ctrl.  If this exists it will be used instead of the panel

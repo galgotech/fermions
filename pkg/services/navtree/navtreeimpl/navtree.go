@@ -14,7 +14,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/navtree"
-	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	pref "github.com/grafana/grafana/pkg/services/preference"
 	"github.com/grafana/grafana/pkg/services/querylibrary"
@@ -109,22 +108,6 @@ func (s *ServiceImpl) GetNavTree(c *models.ReqContext, hasEditPerm bool, prefs *
 		treeRoot.AddSection(dashboardLink)
 	}
 
-	canExplore := func(context *models.ReqContext) bool {
-		return c.OrgRole == org.RoleAdmin || c.OrgRole == org.RoleEditor || setting.ViewersCanEdit
-	}
-
-	if setting.ExploreEnabled && hasAccess(canExplore, ac.EvalPermission(ac.ActionDatasourcesExplore)) {
-		treeRoot.AddSection(&navtree.NavLink{
-			Text:       "Explore",
-			Id:         "explore",
-			SubTitle:   "Explore your data",
-			Icon:       "compass",
-			SortWeight: navtree.WeightExplore,
-			Section:    navtree.NavSectionCore,
-			Url:        s.cfg.AppSubURL + "/explore",
-		})
-	}
-
 	if !s.queryLibraryService.IsDisabled() {
 		treeRoot.AddSection(&navtree.NavLink{
 			Text:       "Query Library",
@@ -139,19 +122,6 @@ func (s *ServiceImpl) GetNavTree(c *models.ReqContext, hasEditPerm bool, prefs *
 
 	if setting.ProfileEnabled && c.IsSignedIn {
 		treeRoot.AddSection(s.getProfileNode(c))
-	}
-
-	_, uaIsDisabledForOrg := s.cfg.UnifiedAlerting.DisabledOrgs[c.OrgID]
-	uaVisibleForOrg := s.cfg.UnifiedAlerting.IsEnabled() && !uaIsDisabledForOrg
-
-	if setting.AlertingEnabled != nil && *setting.AlertingEnabled {
-		if legacyAlertSection := s.buildLegacyAlertNavLinks(c); legacyAlertSection != nil {
-			treeRoot.AddSection(legacyAlertSection)
-		}
-	} else if uaVisibleForOrg {
-		if alertingSection := s.buildAlertNavLinks(c, hasEditPerm); alertingSection != nil {
-			treeRoot.AddSection(alertingSection)
-		}
 	}
 
 	if s.features.IsEnabled(featuremgmt.FlagDataConnectionsConsole) {
@@ -425,106 +395,6 @@ func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm b
 	}
 
 	return dashboardChildNavs
-}
-
-func (s *ServiceImpl) buildLegacyAlertNavLinks(c *models.ReqContext) *navtree.NavLink {
-	var alertChildNavs []*navtree.NavLink
-	alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-		Text: "Alert rules", Id: "alert-list", Url: s.cfg.AppSubURL + "/alerting/list", Icon: "list-ul",
-	})
-
-	if c.HasRole(org.RoleEditor) {
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-			Text: "Notification channels", Id: "channels", Url: s.cfg.AppSubURL + "/alerting/notifications",
-			Icon: "comment-alt-share",
-		})
-	}
-
-	var alertNav = navtree.NavLink{
-		Text:       "Alerting",
-		SubTitle:   "Learn about problems in your systems moments after they occur",
-		Id:         "alerting-legacy",
-		Icon:       "bell",
-		Children:   alertChildNavs,
-		Section:    navtree.NavSectionCore,
-		SortWeight: navtree.WeightAlerting,
-	}
-
-	if s.features.IsEnabled(featuremgmt.FlagTopnav) {
-		alertNav.Url = s.cfg.AppSubURL + "/alerting"
-	} else {
-		alertNav.Url = s.cfg.AppSubURL + "/alerting/list"
-	}
-
-	return &alertNav
-}
-
-func (s *ServiceImpl) buildAlertNavLinks(c *models.ReqContext, hasEditPerm bool) *navtree.NavLink {
-	hasAccess := ac.HasAccess(s.accessControl, c)
-	var alertChildNavs []*navtree.NavLink
-
-	if hasAccess(ac.ReqViewer, ac.EvalAny(ac.EvalPermission(ac.ActionAlertingRuleRead), ac.EvalPermission(ac.ActionAlertingRuleExternalRead))) {
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-			Text: "Alert rules", SubTitle: "Rules that determine whether an alert will fire", Id: "alert-list", Url: s.cfg.AppSubURL + "/alerting/list", Icon: "list-ul",
-		})
-	}
-
-	if hasAccess(ac.ReqOrgAdminOrEditor, ac.EvalAny(ac.EvalPermission(ac.ActionAlertingNotificationsRead), ac.EvalPermission(ac.ActionAlertingNotificationsExternalRead))) {
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-			Text: "Contact points", SubTitle: "Decide how your contacts are notified when an alert fires", Id: "receivers", Url: s.cfg.AppSubURL + "/alerting/notifications",
-			Icon: "comment-alt-share",
-		})
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{Text: "Notification policies", SubTitle: "Determine how alerts are routed to contact points", Id: "am-routes", Url: s.cfg.AppSubURL + "/alerting/routes", Icon: "sitemap"})
-	}
-
-	if hasAccess(ac.ReqViewer, ac.EvalAny(ac.EvalPermission(ac.ActionAlertingInstanceRead), ac.EvalPermission(ac.ActionAlertingInstancesExternalRead))) {
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{Text: "Silences", SubTitle: "Stop notifications from one or more alerting rules", Id: "silences", Url: s.cfg.AppSubURL + "/alerting/silences", Icon: "bell-slash"})
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{Text: "Alert groups", SubTitle: "See grouped alerts from an Alertmanager instance", Id: "groups", Url: s.cfg.AppSubURL + "/alerting/groups", Icon: "layer-group"})
-	}
-
-	if c.OrgRole == org.RoleAdmin {
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-			Text: "Admin", Id: "alerting-admin", Url: s.cfg.AppSubURL + "/alerting/admin",
-			Icon: "cog",
-		})
-	}
-
-	fallbackHasEditPerm := func(*models.ReqContext) bool { return hasEditPerm }
-
-	if hasAccess(fallbackHasEditPerm, ac.EvalAny(ac.EvalPermission(ac.ActionAlertingRuleCreate), ac.EvalPermission(ac.ActionAlertingRuleExternalWrite))) {
-		if !s.features.IsEnabled(featuremgmt.FlagTopnav) {
-			alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-				Text: "Divider", Divider: true, Id: "divider", HideFromTabs: true,
-			})
-		}
-
-		alertChildNavs = append(alertChildNavs, &navtree.NavLink{
-			Text: "New alert rule", SubTitle: "Create an alert rule", Id: "alert",
-			Icon: "plus", Url: s.cfg.AppSubURL + "/alerting/new", HideFromTabs: true, ShowIconInNavbar: true, IsCreateAction: true,
-		})
-	}
-
-	if len(alertChildNavs) > 0 {
-		var alertNav = navtree.NavLink{
-			Text:       "Alerting",
-			SubTitle:   "Learn about problems in your systems moments after they occur",
-			Id:         navtree.NavIDAlerting,
-			Icon:       "bell",
-			Children:   alertChildNavs,
-			Section:    navtree.NavSectionCore,
-			SortWeight: navtree.WeightAlerting,
-		}
-
-		if s.features.IsEnabled(featuremgmt.FlagTopnav) {
-			alertNav.Url = s.cfg.AppSubURL + "/alerting"
-		} else {
-			alertNav.Url = s.cfg.AppSubURL + "/alerting/list"
-		}
-
-		return &alertNav
-	}
-
-	return nil
 }
 
 func (s *ServiceImpl) buildDataConnectionsNavLink(c *models.ReqContext) *navtree.NavLink {

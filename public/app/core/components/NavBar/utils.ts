@@ -138,11 +138,6 @@ export const getActiveItem = (
         if (isBetterMatch(link, currentBestMatch)) {
           currentBestMatch = link;
         }
-      } else if (linkPathname === '/alerting/list' && pathname.startsWith('/alerting/notification/')) {
-        // alert channel match
-        // TODO refactor routes such that we don't need this custom logic
-        currentBestMatch = link;
-        break;
       } else if (linkPathname === dashboardLinkMatch && pathname.startsWith('/d/')) {
         // dashboard match
         // TODO refactor routes such that we don't need this custom logic

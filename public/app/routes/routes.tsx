@@ -8,7 +8,6 @@ import config from 'app/core/config';
 import { contextSrv } from 'app/core/services/context_srv';
 import UserAdminPage from 'app/features/admin/UserAdminPage';
 import LdapPage from 'app/features/admin/ldap/LdapPage';
-import { getAlertingRoutes } from 'app/features/alerting/routes';
 import { getRoutes as getDataConnectionsRoutes } from 'app/features/connections/routes';
 import { DATASOURCES_ROUTES } from 'app/features/datasources/constants';
 import { getLiveRoutes } from 'app/features/live/pages/routes';
@@ -204,20 +203,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       path: '/dashboards/f/:uid',
       component: SafeDynamicImport(
         () => import(/* webpackChunkName: "DashboardListPage"*/ 'app/features/search/components/DashboardListPage')
-      ),
-    },
-    {
-      path: '/explore',
-      pageClass: 'page-explore',
-      roles: () =>
-        contextSrv.evaluatePermission(
-          () => (config.viewersCanEdit ? [] : ['Editor', 'Admin']),
-          [AccessControlAction.DataSourcesExplore]
-        ),
-      component: SafeDynamicImport(() =>
-        config.exploreEnabled
-          ? import(/* webpackChunkName: "explore" */ 'app/features/explore/Wrapper')
-          : import(/* webpackChunkName: "explore-feature-toggle-page" */ 'app/features/explore/FeatureTogglePage')
       ),
     },
     ...topnavRoutes,
@@ -436,23 +421,9 @@ export function getAppRoutes(): RouteDescriptor[] {
       ),
     },
     {
-      path: '/sandbox/test',
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "TestStuffPage"*/ 'app/features/sandbox/TestStuffPage')
-      ),
-    },
-    {
       path: '/dashboards/f/:uid/:slug/library-panels',
       component: SafeDynamicImport(
         () => import(/* webpackChunkName: "FolderLibraryPanelsPage"*/ 'app/features/folders/FolderLibraryPanelsPage')
-      ),
-    },
-    {
-      path: '/dashboards/f/:uid/:slug/alerting',
-      roles: () =>
-        contextSrv.evaluatePermission(() => ['Viewer', 'Editor', 'Admin'], [AccessControlAction.AlertingRuleRead]),
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "FolderAlerting"*/ 'app/features/folders/FolderAlerting')
       ),
     },
     {
@@ -471,7 +442,6 @@ export function getAppRoutes(): RouteDescriptor[] {
     ...getDynamicDashboardRoutes(),
     ...getPluginCatalogRoutes(),
     ...getLiveRoutes(),
-    ...getAlertingRoutes(),
     ...getProfileRoutes(),
     ...getQueryLibraryRoutes(),
     ...extraRoutes,

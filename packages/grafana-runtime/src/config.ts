@@ -44,13 +44,7 @@ export class GrafanaBootConfig implements GrafanaConfig {
   feedbackLinksEnabled = true;
   disableLoginForm = false;
   defaultDatasource = ''; // UID
-  alertingEnabled = false;
-  alertingErrorOrTimeout = '';
-  alertingNoDataOrNullValues = '';
-  alertingMinInterval = 1;
-  angularSupportEnabled = false;
   authProxyEnabled = false;
-  exploreEnabled = false;
   queryHistoryEnabled = false;
   helpEnabled = false;
   profileEnabled = false;
@@ -121,8 +115,6 @@ export class GrafanaBootConfig implements GrafanaConfig {
   };
   geomapDefaultBaseLayerConfig?: MapLayerOptions;
   geomapDisableCustomBaseLayer?: boolean;
-  unifiedAlertingEnabled = false;
-  unifiedAlerting = { minInterval: '' };
   applicationInsightsConnectionString?: string;
   applicationInsightsEndpointUrl?: string;
   recordedQueries = {

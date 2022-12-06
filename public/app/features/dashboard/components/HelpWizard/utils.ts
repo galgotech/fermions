@@ -9,7 +9,6 @@ import {
   DataFrameJSON,
   LoadingState,
   dataFrameToJSON,
-  DataTopic,
 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { PanelModel } from 'app/features/dashboard/state';
@@ -21,16 +20,6 @@ export function getPanelDataFrames(data?: PanelData): DataFrameJSON[] {
   if (data?.series) {
     for (const f of data.series) {
       frames.push(dataFrameToJSON(f));
-    }
-  }
-  if (data?.annotations) {
-    for (const f of data.annotations) {
-      const json = dataFrameToJSON(f);
-      if (!json.schema?.meta) {
-        json.schema!.meta = {};
-      }
-      json.schema!.meta.dataTopic = DataTopic.Annotations;
-      frames.push(json);
     }
   }
   return frames;
@@ -87,7 +76,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
         .join(', ')}</td>
     </tr>
     ${getDataRow(data, frames)}
-    ${getAnnotationsRow(data)}
     <tr>
       <th>Grafana</th>
       <td>${grafanaVersion} // ${config.buildInfo.edition}</td>
@@ -99,38 +87,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
     ...saveModel,
     ...dashboard.panels[0],
   };
-
-  if (data.annotations?.length) {
-    dashboard.panels.push({
-      id: 7,
-      gridPos: {
-        h: 6,
-        w: 24,
-        x: 0,
-        y: 20,
-      },
-      type: 'table',
-      title: 'Annotations',
-      datasource: {
-        type: 'datasource',
-        uid: '-- Dashboard --',
-      },
-      options: {
-        showTypeIcons: true,
-      },
-      targets: [
-        {
-          datasource: {
-            type: 'datasource',
-            uid: '-- Dashboard --',
-          },
-          panelId: 2,
-          topic: DataTopic.Annotations,
-          refId: 'A',
-        },
-      ],
-    });
-  }
 
   dashboard.panels[1].options.content = html;
   dashboard.panels[2].options.content = JSON.stringify(saveModel, null, 2);
@@ -164,17 +120,6 @@ function getDataRow(data: PanelData, frames: DataFrameJSON[]): string {
     '</td>' +
     '</tr>'
   );
-}
-
-function getAnnotationsRow(data: PanelData): string {
-  if (!data.annotations?.length) {
-    return '';
-  }
-
-  return `<tr>
-  <th>Annotations</th>
-  <td>${data.annotations.map((a, idx) => `<span>${a.length}</span>`)}</td>
-</tr>`;
 }
 
 // eslint-disable-next-line

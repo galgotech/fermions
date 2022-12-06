@@ -2,7 +2,6 @@ package statscollector
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -38,7 +37,6 @@ type Service struct {
 
 	startTime                time.Time
 	concurrentUserStatsCache memoConcurrentUserStats
-	promFlavorCache          memoPrometheusFlavor
 	usageStatProviders       []registry.ProvidesUsageStats
 }
 
@@ -73,9 +71,6 @@ func ProvideService(
 		s.collectConcurrentUsers,
 		s.collectDatasourceStats,
 		s.collectDatasourceAccess,
-		s.collectElasticStats,
-		s.collectAlertNotifierStats,
-		s.collectPrometheusFlavors,
 		s.collectAdditionalMetrics,
 	}
 	for _, c := range collectors {
@@ -124,7 +119,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.plugins.apps.count"] = s.appCount(ctx)
 	m["stats.plugins.panels.count"] = s.panelCount(ctx)
 	m["stats.plugins.datasources.count"] = s.dataSourceCount(ctx)
-	m["stats.alerts.count"] = statsQuery.Result.Alerts
 	m["stats.active_users.count"] = statsQuery.Result.ActiveUsers
 	m["stats.active_admins.count"] = statsQuery.Result.ActiveAdmins
 	m["stats.active_editors.count"] = statsQuery.Result.ActiveEditors
@@ -145,8 +139,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.teams.count"] = statsQuery.Result.Teams
 	m["stats.total_auth_token.count"] = statsQuery.Result.AuthTokens
 	m["stats.dashboard_versions.count"] = statsQuery.Result.DashboardVersions
-	m["stats.annotations.count"] = statsQuery.Result.Annotations
-	m["stats.alert_rules.count"] = statsQuery.Result.AlertRules
 	m["stats.library_panels.count"] = statsQuery.Result.LibraryPanels
 	m["stats.library_variables.count"] = statsQuery.Result.LibraryVariables
 	m["stats.dashboards_viewers_can_edit.count"] = statsQuery.Result.DashboardsViewersCanEdit
@@ -217,21 +209,6 @@ func (s *Service) collectAdditionalMetrics(ctx context.Context) (map[string]inte
 	return m, nil
 }
 
-func (s *Service) collectAlertNotifierStats(ctx context.Context) (map[string]interface{}, error) {
-	m := map[string]interface{}{}
-	// get stats about alert notifier usage
-	anStats := models.GetAlertNotifierUsageStatsQuery{}
-	if err := s.statsService.GetAlertNotifiersUsageStats(ctx, &anStats); err != nil {
-		s.log.Error("Failed to get alert notification stats", "error", err)
-		return nil, err
-	}
-
-	for _, stats := range anStats.Result {
-		m["stats.alert_notifiers."+stats.Type+".count"] = stats.Count
-	}
-	return m, nil
-}
-
 func (s *Service) collectDatasourceStats(ctx context.Context) (map[string]interface{}, error) {
 	m := map[string]interface{}{}
 	dsStats := models.GetDataSourceStatsQuery{}
@@ -253,27 +230,6 @@ func (s *Service) collectDatasourceStats(ctx context.Context) (map[string]interf
 	}
 	m["stats.ds.other.count"] = dsOtherCount
 
-	return m, nil
-}
-
-func (s *Service) collectElasticStats(ctx context.Context) (map[string]interface{}, error) {
-	m := map[string]interface{}{}
-	esDataSourcesQuery := datasources.GetDataSourcesByTypeQuery{Type: datasources.DS_ES}
-	if err := s.datasources.GetDataSourcesByType(ctx, &esDataSourcesQuery); err != nil {
-		s.log.Error("Failed to get elasticsearch json data", "error", err)
-		return nil, err
-	}
-	for _, data := range esDataSourcesQuery.Result {
-		esVersion, err := data.JsonData.Get("esVersion").String()
-		if err != nil {
-			continue
-		}
-		statName := fmt.Sprintf("stats.ds.elasticsearch.v%s.count", strings.ReplaceAll(esVersion, ".", "_"))
-
-		count, _ := m[statName].(int64)
-
-		m[statName] = count + 1
-	}
 	return m, nil
 }
 
@@ -340,8 +296,6 @@ func (s *Service) updateTotalStats(ctx context.Context) bool {
 	metrics.StatsTotalAdmins.Set(float64(statsQuery.Result.Admins))
 	metrics.StatsTotalActiveAdmins.Set(float64(statsQuery.Result.ActiveAdmins))
 	metrics.StatsTotalDashboardVersions.Set(float64(statsQuery.Result.DashboardVersions))
-	metrics.StatsTotalAnnotations.Set(float64(statsQuery.Result.Annotations))
-	metrics.StatsTotalAlertRules.Set(float64(statsQuery.Result.AlertRules))
 	metrics.StatsTotalLibraryPanels.Set(float64(statsQuery.Result.LibraryPanels))
 	metrics.StatsTotalLibraryVariables.Set(float64(statsQuery.Result.LibraryVariables))
 

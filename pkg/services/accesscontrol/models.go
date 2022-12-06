@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/org"
 )
 
@@ -364,59 +363,14 @@ const (
 	// Team related scopes
 	ScopeTeamsAll = "teams:*"
 
-	// Annotations related actions
-	ActionAnnotationsCreate = "annotations:create"
-	ActionAnnotationsDelete = "annotations:delete"
-	ActionAnnotationsRead   = "annotations:read"
-	ActionAnnotationsWrite  = "annotations:write"
-
 	// Alert scopes are divided into two groups. The internal (to Grafana) and the external ones.
 	// For the Grafana ones, given we have ACID control we're able to provide better granularity by defining CRUD options.
 	// For the external ones, we only have read and write permissions due to the lack of atomicity control of the external system.
-
-	// Alerting rules actions
-	ActionAlertingRuleCreate = "alert.rules:create"
-	ActionAlertingRuleRead   = "alert.rules:read"
-	ActionAlertingRuleUpdate = "alert.rules:write"
-	ActionAlertingRuleDelete = "alert.rules:delete"
-
-	// Alerting instances (+silences) actions
-	ActionAlertingInstanceCreate = "alert.instances:create"
-	ActionAlertingInstanceUpdate = "alert.instances:write"
-	ActionAlertingInstanceRead   = "alert.instances:read"
-
-	// Alerting Notification policies actions
-	ActionAlertingNotificationsRead  = "alert.notifications:read"
-	ActionAlertingNotificationsWrite = "alert.notifications:write"
-
-	// External alerting rule actions. We can only narrow it down to writes or reads, as we don't control the atomicity in the external system.
-	ActionAlertingRuleExternalWrite = "alert.rules.external:write"
-	ActionAlertingRuleExternalRead  = "alert.rules.external:read"
-
-	// External alerting instances actions. We can only narrow it down to writes or reads, as we don't control the atomicity in the external system.
-	ActionAlertingInstancesExternalWrite = "alert.instances.external:write"
-	ActionAlertingInstancesExternalRead  = "alert.instances.external:read"
-
-	// External alerting notifications actions. We can only narrow it down to writes or reads, as we don't control the atomicity in the external system.
-	ActionAlertingNotificationsExternalWrite = "alert.notifications.external:write"
-	ActionAlertingNotificationsExternalRead  = "alert.notifications.external:read"
-
-	// Alerting provisioning actions
-	ActionAlertingProvisioningRead  = "alert.provisioning:read"
-	ActionAlertingProvisioningWrite = "alert.provisioning:write"
 )
 
 var (
 	// Team scope
 	ScopeTeamsID = Scope("teams", "id", Parameter(":teamId"))
-
-	// Annotation scopes
-	ScopeAnnotationsRoot             = "annotations"
-	ScopeAnnotationsProvider         = NewScopeProvider(ScopeAnnotationsRoot)
-	ScopeAnnotationsAll              = ScopeAnnotationsProvider.GetResourceAllScope()
-	ScopeAnnotationsID               = Scope(ScopeAnnotationsRoot, "id", Parameter(":annotationId"))
-	ScopeAnnotationsTypeDashboard    = ScopeAnnotationsProvider.GetResourceScopeType(annotations.Dashboard.String())
-	ScopeAnnotationsTypeOrganization = ScopeAnnotationsProvider.GetResourceScopeType(annotations.Organization.String())
 )
 
 func BuiltInRolesWithParents(builtInRoles []string) map[string]struct{} {

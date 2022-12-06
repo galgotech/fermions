@@ -8,7 +8,6 @@ import {
   getDefaultTimeRange,
   LoadingState,
   PanelData,
-  DataTopic,
 } from '@grafana/data';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { QueryRunnerOptions } from 'app/features/query/state/PanelQueryRunner';
@@ -56,14 +55,6 @@ export function runSharedRequest(options: QueryRunnerOptions, query: DashboardQu
       })
       .subscribe({
         next: (data: PanelData) => {
-          // Use annotation data for series
-          if (query?.topic === DataTopic.Annotations) {
-            data = {
-              ...data,
-              series: data.annotations ?? [],
-              annotations: undefined, // remove annotations
-            };
-          }
           subscriber.next(data);
         },
       });

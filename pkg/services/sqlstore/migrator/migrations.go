@@ -81,10 +81,6 @@ func (m *RawSQLMigration) Postgres(sql string) *RawSQLMigration {
 	return m.Set(Postgres, sql)
 }
 
-func (m *RawSQLMigration) Mssql(sql string) *RawSQLMigration {
-	return m.Set(MSSQL, sql)
-}
-
 type AddColumnMigration struct {
 	MigrationBase
 	tableName string

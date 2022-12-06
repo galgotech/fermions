@@ -4,7 +4,6 @@ import {
   EventBusSrv,
   EventBus,
   DashboardCursorSync,
-  AnnotationEventUIModel,
   ThresholdsConfig,
   SplitOpen,
   CoreApp,
@@ -30,13 +29,6 @@ export interface PanelContext {
   onSeriesColorChange?: (label: string, color: string) => void;
 
   onToggleSeriesVisibility?: (label: string, mode: SeriesVisibilityChangeMode) => void;
-
-  canAddAnnotations?: () => boolean;
-  canEditAnnotations?: (dashboardUID?: string) => boolean;
-  canDeleteAnnotations?: (dashboardUID?: string) => boolean;
-  onAnnotationCreate?: (annotation: AnnotationEventUIModel) => void;
-  onAnnotationUpdate?: (annotation: AnnotationEventUIModel) => void;
-  onAnnotationDelete?: (id: string) => void;
 
   /**
    * Enables modifying thresholds directly from the panel

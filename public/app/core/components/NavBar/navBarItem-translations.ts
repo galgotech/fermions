@@ -41,14 +41,6 @@ export function getNavTitle(navId: string | undefined) {
       return t('nav.new-folder.title', 'New folder');
     case 'scenes':
       return t('nav.scenes.title', 'Scenes');
-    case 'explore':
-      return t('nav.explore.title', 'Explore');
-    case 'alerting':
-      return t('nav.alerting.title', 'Alerting');
-    case 'alerting-legacy':
-      return t('nav.alerting-legacy.title', 'Alerting (legacy)');
-    case 'alert-list':
-      return t('nav.alerting-list.title', 'Alert rules');
     case 'receivers':
       return t('nav.alerting-receivers.title', 'Contact points');
     case 'am-routes':

@@ -26,8 +26,8 @@ type Manager interface {
 }
 
 // Provision alert notifiers
-func Provision(ctx context.Context, configDirectory string, alertingService Manager, orgService org.Service, encryptionService encryption.Internal, notificationService *notifications.NotificationService) error {
-	dc := newNotificationProvisioner(orgService, alertingService, encryptionService, notificationService, log.New("provisioning.notifiers"))
+func Provision(ctx context.Context, configDirectory string, orgService org.Service, encryptionService encryption.Internal, notificationService *notifications.NotificationService) error {
+	dc := newNotificationProvisioner(orgService, encryptionService, notificationService, log.New("provisioning.notifiers"))
 	return dc.applyChanges(ctx, configDirectory)
 }
 
@@ -39,10 +39,9 @@ type NotificationProvisioner struct {
 	orgService      org.Service
 }
 
-func newNotificationProvisioner(orgService org.Service, alertingManager Manager, encryptionService encryption.Internal, notifiationService *notifications.NotificationService, log log.Logger) NotificationProvisioner {
+func newNotificationProvisioner(orgService org.Service, encryptionService encryption.Internal, notifiationService *notifications.NotificationService, log log.Logger) NotificationProvisioner {
 	return NotificationProvisioner{
-		log:             log,
-		alertingManager: alertingManager,
+		log: log,
 		cfgProvider: &configReader{
 			encryptionService:   encryptionService,
 			notificationService: notifiationService,

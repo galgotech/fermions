@@ -7,8 +7,6 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/grafana/grafana/pkg/tsdb/parca"
-	"github.com/grafana/grafana/pkg/tsdb/phlare"
 
 	sdkhttpclient "github.com/grafana/grafana-plugin-sdk-go/backend/httpclient"
 	"github.com/grafana/grafana/pkg/api"
@@ -39,7 +37,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/accesscontrol/acimpl"
 	"github.com/grafana/grafana/pkg/services/accesscontrol/ossaccesscontrol"
-	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/auth/jwt"
 	"github.com/grafana/grafana/pkg/services/cleanup"
 	"github.com/grafana/grafana/pkg/services/comments"
@@ -70,8 +67,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/login/loginservice"
 	"github.com/grafana/grafana/pkg/services/loginattempt"
 	"github.com/grafana/grafana/pkg/services/loginattempt/loginattemptimpl"
-	"github.com/grafana/grafana/pkg/services/ngalert"
-	ngmetrics "github.com/grafana/grafana/pkg/services/ngalert/metrics"
 	"github.com/grafana/grafana/pkg/services/notifications"
 	"github.com/grafana/grafana/pkg/services/oauthtoken"
 	"github.com/grafana/grafana/pkg/services/org/orgimpl"
@@ -115,23 +110,9 @@ import (
 	"github.com/grafana/grafana/pkg/services/updatechecker"
 	"github.com/grafana/grafana/pkg/services/user/userimpl"
 	"github.com/grafana/grafana/pkg/setting"
-	"github.com/grafana/grafana/pkg/tsdb/azuremonitor"
-	"github.com/grafana/grafana/pkg/tsdb/cloudmonitoring"
-	"github.com/grafana/grafana/pkg/tsdb/cloudwatch"
-	"github.com/grafana/grafana/pkg/tsdb/elasticsearch"
 	"github.com/grafana/grafana/pkg/tsdb/grafanads"
-	"github.com/grafana/grafana/pkg/tsdb/graphite"
-	"github.com/grafana/grafana/pkg/tsdb/influxdb"
 	"github.com/grafana/grafana/pkg/tsdb/legacydata"
 	legacydataservice "github.com/grafana/grafana/pkg/tsdb/legacydata/service"
-	"github.com/grafana/grafana/pkg/tsdb/loki"
-	"github.com/grafana/grafana/pkg/tsdb/mssql"
-	"github.com/grafana/grafana/pkg/tsdb/mysql"
-	"github.com/grafana/grafana/pkg/tsdb/opentsdb"
-	"github.com/grafana/grafana/pkg/tsdb/postgres"
-	"github.com/grafana/grafana/pkg/tsdb/prometheus"
-	"github.com/grafana/grafana/pkg/tsdb/tempo"
-	"github.com/grafana/grafana/pkg/tsdb/testdatasource"
 	"github.com/grafana/grafana/pkg/web"
 )
 
@@ -155,9 +136,6 @@ var wireSet = wire.NewSet(
 	hooks.ProvideService,
 	legacydataservice.ProvideService,
 	wire.Bind(new(legacydata.RequestHandler), new(*legacydataservice.Service)),
-	alerting.ProvideAlertStore,
-	alerting.ProvideAlertEngine,
-	wire.Bind(new(alerting.UsageStatsQuerier), new(*alerting.AlertEngine)),
 	api.ProvideHTTPServer,
 	query.ProvideService,
 	thumbs.ProvideService,
@@ -170,12 +148,6 @@ var wireSet = wire.NewSet(
 	pluginsintegration.WireSet,
 	pluginDashboards.ProvideFileStoreManager,
 	wire.Bind(new(pluginDashboards.FileStore), new(*pluginDashboards.FileStoreManager)),
-	cloudwatch.ProvideService,
-	cloudmonitoring.ProvideService,
-	azuremonitor.ProvideService,
-	postgres.ProvideService,
-	mysql.ProvideService,
-	mssql.ProvideService,
 	store.ProvideEntityEventsService,
 	httpclientprovider.New,
 	wire.Bind(new(httpclient.Provider), new(*sdkhttpclient.Provider)),
@@ -206,7 +178,6 @@ var wireSet = wire.NewSet(
 	contexthandler.ProvideService,
 	jwt.ProvideService,
 	wire.Bind(new(models.JWTService), new(*jwt.AuthService)),
-	ngalert.ProvideService,
 	librarypanels.ProvideService,
 	wire.Bind(new(librarypanels.Service), new(*librarypanels.LibraryPanelService)),
 	libraryelements.ProvideService,
@@ -214,19 +185,10 @@ var wireSet = wire.NewSet(
 	notifications.ProvideService,
 	notifications.ProvideSmtpService,
 	metrics.ProvideService,
-	testdatasource.ProvideService,
 	social.ProvideService,
-	influxdb.ProvideService,
 	wire.Bind(new(social.Service), new(*social.SocialService)),
 	oauthtoken.ProvideService,
 	wire.Bind(new(oauthtoken.OAuthTokenService), new(*oauthtoken.Service)),
-	tempo.ProvideService,
-	loki.ProvideService,
-	graphite.ProvideService,
-	prometheus.ProvideService,
-	elasticsearch.ProvideService,
-	phlare.ProvideService,
-	parca.ProvideService,
 	secretsMigrator.ProvideSecretsMigrator,
 	wire.Bind(new(secrets.Migrator), new(*secretsMigrator.SecretsMigrator)),
 	grafanads.ProvideService,
@@ -234,7 +196,6 @@ var wireSet = wire.NewSet(
 	wire.Bind(new(datasources.DataSourceService), new(*datasourceservice.Service)),
 	pluginSettings.ProvideService,
 	wire.Bind(new(pluginsettings.Service), new(*pluginSettings.Service)),
-	alerting.ProvideService,
 	database.ProvideServiceAccountsStore,
 	wire.Bind(new(serviceaccounts.Store), new(*database.ServiceAccountsStoreImpl)),
 	ossaccesscontrol.ProvideServiceAccountPermissions,
@@ -256,8 +217,6 @@ var wireSet = wire.NewSet(
 	plugindashboardsservice.ProvideService,
 	wire.Bind(new(plugindashboards.Service), new(*plugindashboardsservice.Service)),
 	plugindashboardsservice.ProvideDashboardUpdater,
-	alerting.ProvideDashAlertExtractorService,
-	wire.Bind(new(alerting.DashAlertExtractor), new(*alerting.DashAlertExtractorService)),
 	comments.ProvideService,
 	guardian.ProvideService,
 	sanitizer.ProvideService,
@@ -285,7 +244,6 @@ var wireSet = wire.NewSet(
 	userimpl.ProvideService,
 	orgimpl.ProvideService,
 	teamimpl.ProvideService,
-	ngmetrics.ProvideServiceForTest,
 	notifications.MockNotificationService,
 	entitystoredummy.ProvideFakeEntityServer,
 	wire.Bind(new(notifications.TempUserStore), new(*dbtest.FakeDB)),
@@ -296,7 +254,6 @@ var wireSet = wire.NewSet(
 	wire.Bind(new(sqlstore.Store), new(*sqlstore.SQLStore)),
 	wire.Bind(new(db.DB), new(*dbtest.FakeDB)),
 	prefimpl.ProvideService,
-	opentsdb.ProvideService,
 	acimpl.ProvideAccessControl,
 	wire.Bind(new(accesscontrol.AccessControl), new(*acimpl.AccessControl)),
 	tagimpl.ProvideService,

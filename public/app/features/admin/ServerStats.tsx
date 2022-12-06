@@ -66,14 +66,6 @@ export const ServerStats = () => {
                 )
               }
             />
-            <StatCard
-              content={[{ name: 'Alerts', value: stats.alerts }]}
-              footer={
-                <LinkButton href={'/alerting/list'} variant={'secondary'}>
-                  Alerts
-                </LinkButton>
-              }
-            />
           </div>
           <StatCard
             content={[

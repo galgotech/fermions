@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"os"
 
 	"xorm.io/core"
 
@@ -30,27 +29,3 @@ var InitTestDB = sqlstore.InitTestDB
 var InitTestDBwithCfg = sqlstore.InitTestDBWithCfg
 var ProvideService = sqlstore.ProvideService
 var NewSqlBuilder = sqlstore.NewSqlBuilder
-
-func IsTestDbMySQL() bool {
-	if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-		return db == migrator.MySQL
-	}
-
-	return false
-}
-
-func IsTestDbPostgres() bool {
-	if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-		return db == migrator.Postgres
-	}
-
-	return false
-}
-
-func IsTestDBMSSQL() bool {
-	if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-		return db == migrator.MSSQL
-	}
-
-	return false
-}

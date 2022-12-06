@@ -19,7 +19,6 @@ type GlobalQuota struct {
 	Dashboard  int64 `target:"dashboard"`
 	ApiKey     int64 `target:"api_key"`
 	Session    int64 `target:"-"`
-	AlertRule  int64 `target:"alert_rule"`
 	File       int64 `target:"file"`
 }
 
@@ -35,19 +34,12 @@ func (cfg *Cfg) readQuotaSettings() {
 	quota := cfg.Raw.Section("quota")
 	cfg.Quota.Enabled = quota.Key("enabled").MustBool(false)
 
-	var alertOrgQuota int64
-	var alertGlobalQuota int64
-	if cfg.UnifiedAlerting.IsEnabled() {
-		alertOrgQuota = quota.Key("org_alert_rule").MustInt64(100)
-		alertGlobalQuota = quota.Key("global_alert_rule").MustInt64(-1)
-	}
 	// per ORG Limits
 	cfg.Quota.Org = OrgQuota{
 		User:       quota.Key("org_user").MustInt64(10),
 		DataSource: quota.Key("org_data_source").MustInt64(10),
 		Dashboard:  quota.Key("org_dashboard").MustInt64(10),
 		ApiKey:     quota.Key("org_api_key").MustInt64(10),
-		AlertRule:  alertOrgQuota,
 	}
 
 	// per User limits
@@ -64,6 +56,5 @@ func (cfg *Cfg) readQuotaSettings() {
 		ApiKey:     quota.Key("global_api_key").MustInt64(-1),
 		Session:    quota.Key("global_session").MustInt64(-1),
 		File:       quota.Key("global_file").MustInt64(-1),
-		AlertRule:  alertGlobalQuota,
 	}
 }

@@ -148,21 +148,6 @@ var (
 	LDAPAllowSignup       bool
 	LDAPActiveSyncEnabled bool
 
-	// Alerting
-	AlertingEnabled            *bool
-	ExecuteAlerts              bool
-	AlertingRenderLimit        int
-	AlertingErrorOrTimeout     string
-	AlertingNoDataOrNullValues string
-
-	AlertingEvaluationTimeout   time.Duration
-	AlertingNotificationTimeout time.Duration
-	AlertingMaxAttempts         int
-	AlertingMinInterval         int64
-
-	// Explore UI
-	ExploreEnabled bool
-
 	// Help UI
 	HelpEnabled bool
 
@@ -382,13 +367,6 @@ type Cfg struct {
 	// Service Accounts
 	SATokenExpirationDayLimit int
 
-	// Annotations
-	AnnotationCleanupJobBatchSize      int64
-	AnnotationMaximumTagsLength        int64
-	AlertingAnnotationCleanupSetting   AnnotationCleanupSettings
-	DashboardAnnotationCleanupSettings AnnotationCleanupSettings
-	APIAnnotationCleanupSettings       AnnotationCleanupSettings
-
 	// Sentry config
 	Sentry Sentry
 
@@ -457,9 +435,6 @@ type Cfg struct {
 	// Geomap base layer config
 	GeomapDefaultBaseLayerConfig map[string]interface{}
 	GeomapEnableCustomBaseLayers bool
-
-	// Unified Alerting
-	UnifiedAlerting UnifiedAlertingSettings
 
 	// Query history
 	QueryHistoryEnabled bool
@@ -620,44 +595,6 @@ func (cfg *Cfg) readGrafanaEnvironmentMetrics() error {
 
 		cfg.MetricsGrafanaEnvironmentInfo[string(labelName)] = string(labelValue)
 	}
-
-	return nil
-}
-
-func (cfg *Cfg) readAnnotationSettings() error {
-	section := cfg.Raw.Section("annotations")
-	cfg.AnnotationCleanupJobBatchSize = section.Key("cleanupjob_batchsize").MustInt64(100)
-	cfg.AnnotationMaximumTagsLength = section.Key("tags_length").MustInt64(500)
-	switch {
-	case cfg.AnnotationMaximumTagsLength > 4096:
-		// ensure that the configuration does not exceed the respective column size
-		return fmt.Errorf("[annotations.tags_length] configuration exceeds the maximum allowed (4096)")
-	case cfg.AnnotationMaximumTagsLength > 500:
-		cfg.Logger.Info("[annotations.tags_length] has been increased from its default value; this may affect the performance", "tagLength", cfg.AnnotationMaximumTagsLength)
-	case cfg.AnnotationMaximumTagsLength < 500:
-		cfg.Logger.Warn("[annotations.tags_length] is too low; the minimum allowed (500) is enforced")
-		cfg.AnnotationMaximumTagsLength = 500
-	}
-
-	dashboardAnnotation := cfg.Raw.Section("annotations.dashboard")
-	apiIAnnotation := cfg.Raw.Section("annotations.api")
-	alertingSection := cfg.Raw.Section("alerting")
-
-	var newAnnotationCleanupSettings = func(section *ini.Section, maxAgeField string) AnnotationCleanupSettings {
-		maxAge, err := gtime.ParseDuration(section.Key(maxAgeField).MustString(""))
-		if err != nil {
-			maxAge = 0
-		}
-
-		return AnnotationCleanupSettings{
-			MaxAge:   maxAge,
-			MaxCount: section.Key("max_annotations_to_keep").MustInt64(0),
-		}
-	}
-
-	cfg.AlertingAnnotationCleanupSetting = newAnnotationCleanupSettings(alertingSection, "max_annotation_age")
-	cfg.DashboardAnnotationCleanupSettings = newAnnotationCleanupSettings(dashboardAnnotation, "max_age")
-	cfg.APIAnnotationCleanupSettings = newAnnotationCleanupSettings(apiIAnnotation, "max_age")
 
 	return nil
 }
@@ -1019,13 +956,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 	cfg.ApplicationInsightsEndpointUrl = analytics.Key("application_insights_endpoint_url").String()
 	cfg.FeedbackLinksEnabled = analytics.Key("feedback_links_enabled").MustBool(true)
 
-	if err := readAlertingSettings(iniFile); err != nil {
-		return err
-	}
-
-	explore := iniFile.Section("explore")
-	ExploreEnabled = explore.Key("enabled").MustBool(true)
-
 	help := iniFile.Section("help")
 	HelpEnabled = help.Key("enabled").MustBool(true)
 
@@ -1046,10 +976,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 		return err
 	}
 
-	if err := cfg.ReadUnifiedAlertingSettings(iniFile); err != nil {
-		return err
-	}
-
 	// check old location for this option
 	if panelsSection.Key("enable_alpha").MustBool(false) {
 		cfg.PluginsEnableAlpha = true
@@ -1060,9 +986,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 	cfg.readAzureSettings()
 	cfg.readSessionConfig()
 	cfg.readSmtpSettings()
-	if err := cfg.readAnnotationSettings(); err != nil {
-		return err
-	}
 
 	cfg.readQuotaSettings()
 
@@ -1528,29 +1451,6 @@ func (cfg *Cfg) readRenderingSettings(iniFile *ini.File) error {
 	return nil
 }
 
-func readAlertingSettings(iniFile *ini.File) error {
-	alerting := iniFile.Section("alerting")
-	enabled, err := alerting.Key("enabled").Bool()
-	AlertingEnabled = nil
-	if err == nil {
-		AlertingEnabled = &enabled
-	}
-	ExecuteAlerts = alerting.Key("execute_alerts").MustBool(true)
-	AlertingRenderLimit = alerting.Key("concurrent_render_limit").MustInt(5)
-
-	AlertingErrorOrTimeout = valueAsString(alerting, "error_or_timeout", "alerting")
-	AlertingNoDataOrNullValues = valueAsString(alerting, "nodata_or_nullvalues", "no_data")
-
-	evaluationTimeoutSeconds := alerting.Key("evaluation_timeout_seconds").MustInt64(30)
-	AlertingEvaluationTimeout = time.Second * time.Duration(evaluationTimeoutSeconds)
-	notificationTimeoutSeconds := alerting.Key("notification_timeout_seconds").MustInt64(30)
-	AlertingNotificationTimeout = time.Second * time.Duration(notificationTimeoutSeconds)
-	AlertingMaxAttempts = alerting.Key("max_attempts").MustInt(3)
-	AlertingMinInterval = alerting.Key("min_interval_seconds").MustInt64(1)
-
-	return nil
-}
-
 func readGRPCServerSettings(cfg *Cfg, iniFile *ini.File) error {
 	server := iniFile.Section("grpc_server")
 	errPrefix := "grpc_server:"
@@ -1611,12 +1511,6 @@ func readGRPCServerSettings(cfg *Cfg, iniFile *ini.File) error {
 		return fmt.Errorf("%s unsupported network %s", errPrefix, cfg.GRPCServerNetwork)
 	}
 	return nil
-}
-
-// IsLegacyAlertingEnabled returns whether the legacy alerting is enabled or not.
-// It's safe to be used only after readAlertingSettings() and ReadUnifiedAlertingSettings() are executed.
-func IsLegacyAlertingEnabled() bool {
-	return AlertingEnabled != nil && *AlertingEnabled
 }
 
 func (cfg *Cfg) readServerSettings(iniFile *ini.File) error {

@@ -219,7 +219,6 @@ func (ss *sqlStore) Delete(ctx context.Context, cmd *org.DeleteOrgCommand) error
 			"DELETE FROM org_user WHERE org_id = ?",
 			"DELETE FROM org WHERE id = ?",
 			"DELETE FROM temp_user WHERE org_id = ?",
-			"DELETE FROM ngalert_configuration WHERE org_id = ?",
 			"DELETE FROM alert_configuration WHERE org_id = ?",
 			"DELETE FROM alert_instance WHERE rule_org_id = ?",
 			"DELETE FROM alert_notification WHERE org_id = ?",

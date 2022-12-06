@@ -9,13 +9,10 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/encryption"
 	"github.com/grafana/grafana/pkg/services/notifications"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/provisioning/utils"
-	"github.com/grafana/grafana/pkg/setting"
 	"gopkg.in/yaml.v2"
 )
 
@@ -56,10 +53,6 @@ func (cr *configReader) readConfig(ctx context.Context, path string) ([]*notific
 	}
 
 	if err := cr.checkOrgIDAndOrgName(ctx, notifications); err != nil {
-		return nil, err
-	}
-
-	if err := cr.validateNotifications(notifications); err != nil {
 		return nil, err
 	}
 
@@ -151,39 +144,6 @@ func (cr *configReader) validateRequiredField(notifications []*notificationsAsCo
 
 		if len(errStrings) != 0 {
 			return fmt.Errorf(strings.Join(errStrings, "\n"))
-		}
-	}
-
-	return nil
-}
-
-func (cr *configReader) validateNotifications(notifications []*notificationsAsConfig) error {
-	for i := range notifications {
-		if notifications[i].Notifications == nil {
-			continue
-		}
-
-		for _, notification := range notifications[i].Notifications {
-			encryptedSecureSettings, err := cr.encryptionService.EncryptJsonData(
-				context.Background(),
-				notification.SecureSettings,
-				setting.SecretKey,
-			)
-
-			if err != nil {
-				return err
-			}
-
-			_, err = alerting.InitNotifier(&models.AlertNotification{
-				Name:           notification.Name,
-				Settings:       notification.SettingsToJSON(),
-				SecureSettings: encryptedSecureSettings,
-				Type:           notification.Type,
-			}, cr.encryptionService.GetDecryptedValue, cr.notificationService)
-
-			if err != nil {
-				return err
-			}
 		}
 	}
 

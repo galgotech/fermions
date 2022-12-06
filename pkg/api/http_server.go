@@ -43,8 +43,6 @@ import (
 	"github.com/grafana/grafana/pkg/plugins/plugincontext"
 	"github.com/grafana/grafana/pkg/registry/corekind"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/alerting"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/apikey"
 	"github.com/grafana/grafana/pkg/services/cleanup"
 	"github.com/grafana/grafana/pkg/services/comments"
@@ -67,7 +65,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/login"
 	loginAttempt "github.com/grafana/grafana/pkg/services/loginattempt"
 	"github.com/grafana/grafana/pkg/services/navtree"
-	"github.com/grafana/grafana/pkg/services/ngalert"
 	"github.com/grafana/grafana/pkg/services/notifications"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/plugindashboards"
@@ -149,8 +146,6 @@ type HTTPServer struct {
 	QueryLibraryService          querylibrary.Service
 	ContextHandler               *contexthandler.ContextHandler
 	SQLStore                     sqlstore.Store
-	AlertEngine                  *alerting.AlertEngine
-	AlertNG                      *ngalert.AlertNG
 	LibraryPanelService          librarypanels.Service
 	LibraryElementService        libraryelements.Service
 	SocialService                social.Service
@@ -180,7 +175,6 @@ type HTTPServer struct {
 	folderService                folder.Service
 	DatasourcePermissionsService permissions.DatasourcePermissionsService
 	commentsService              *comments.Service
-	AlertNotificationService     *alerting.AlertNotificationService
 	PluginSettings               pluginSettings.Service
 	AvatarCacheServer            *avatar.AvatarCacheServer
 	preferenceService            pref.Service
@@ -201,7 +195,6 @@ type HTTPServer struct {
 	orgService             org.Service
 	teamService            team.Service
 	accesscontrolService   accesscontrol.Service
-	annotationsRepo        annotations.Repository
 	tagService             tag.Service
 	oauthTokenService      oauthtoken.OAuthTokenService
 	statsService           stats.Service
@@ -213,7 +206,7 @@ type ServerOptions struct {
 
 func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routing.RouteRegister, bus bus.Bus,
 	renderService rendering.Service, licensing models.Licensing, hooksService *hooks.HooksService,
-	cacheService *localcache.CacheService, sqlStore *sqlstore.SQLStore, alertEngine *alerting.AlertEngine,
+	cacheService *localcache.CacheService, sqlStore *sqlstore.SQLStore,
 	pluginRequestValidator models.PluginRequestValidator, pluginStaticRouteResolver plugins.StaticRouteResolver,
 	pluginDashboardService plugindashboards.Service, pluginStore plugins.Store, pluginClient plugins.Client,
 	pluginErrorResolver plugins.ErrorResolver, pluginInstaller plugins.Installer, settingsProvider setting.Provider,
@@ -224,7 +217,7 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 	dataSourceProxy *datasourceproxy.DataSourceProxyService, searchService *search.SearchService,
 	live *live.GrafanaLive, livePushGateway *pushhttp.Gateway, plugCtxProvider *plugincontext.Provider,
 	contextHandler *contexthandler.ContextHandler, features *featuremgmt.FeatureManager,
-	alertNG *ngalert.AlertNG, libraryPanelService librarypanels.Service, libraryElementService libraryelements.Service,
+	libraryPanelService librarypanels.Service, libraryElementService libraryelements.Service,
 	quotaService quota.Service, socialService social.Service, tracer tracing.Tracer, exportService export.ExportService,
 	encryptionService encryption.Internal, grafanaUpdateChecker *updatechecker.GrafanaService,
 	pluginsUpdateChecker *updatechecker.PluginsService, searchUsersService searchusers.Service,
@@ -233,7 +226,7 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 	authInfoService login.AuthInfoService, storageService store.StorageService, httpEntityStore httpentitystore.HTTPEntityStore,
 	notificationService *notifications.NotificationService, dashboardService dashboards.DashboardService,
 	dashboardProvisioningService dashboards.DashboardProvisioningService, folderService folder.Service,
-	datasourcePermissionsService permissions.DatasourcePermissionsService, alertNotificationService *alerting.AlertNotificationService,
+	datasourcePermissionsService permissions.DatasourcePermissionsService,
 	commentsService *comments.Service, pluginSettings pluginSettings.Service,
 	avatarCacheServer *avatar.AvatarCacheServer, preferenceService pref.Service,
 	teamsPermissionsService accesscontrol.TeamPermissionsService, folderPermissionsService accesscontrol.FolderPermissionsService,
@@ -245,7 +238,7 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 	publicDashboardsApi *publicdashboardsApi.Api, userService user.Service, tempUserService tempUser.Service,
 	loginAttemptService loginAttempt.Service, orgService org.Service, teamService team.Service,
 	accesscontrolService accesscontrol.Service, dashboardThumbsService thumbs.DashboardThumbService, navTreeService navtree.Service,
-	annotationRepo annotations.Repository, tagService tag.Service, searchv2HTTPService searchV2.SearchHTTPService,
+	tagService tag.Service, searchv2HTTPService searchV2.SearchHTTPService,
 	queryLibraryHTTPService querylibrary.HTTPService, queryLibraryService querylibrary.Service, oauthTokenService oauthtoken.OAuthTokenService,
 	statsService stats.Service,
 ) (*HTTPServer, error) {
@@ -261,7 +254,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		HooksService:                 hooksService,
 		CacheService:                 cacheService,
 		SQLStore:                     sqlStore,
-		AlertEngine:                  alertEngine,
 		PluginRequestValidator:       pluginRequestValidator,
 		pluginInstaller:              pluginInstaller,
 		pluginClient:                 pluginClient,
@@ -293,7 +285,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		LivePushGateway:              livePushGateway,
 		PluginContextProvider:        plugCtxProvider,
 		ContextHandler:               contextHandler,
-		AlertNG:                      alertNG,
 		LibraryPanelService:          libraryPanelService,
 		LibraryElementService:        libraryElementService,
 		QuotaService:                 quotaService,
@@ -324,7 +315,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		DatasourcePermissionsService: datasourcePermissionsService,
 		commentsService:              commentsService,
 		teamPermissionsService:       teamsPermissionsService,
-		AlertNotificationService:     alertNotificationService,
 		PluginSettings:               pluginSettings,
 		AvatarCacheServer:            avatarCacheServer,
 		preferenceService:            preferenceService,
@@ -345,7 +335,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		teamService:                  teamService,
 		navTreeService:               navTreeService,
 		accesscontrolService:         accesscontrolService,
-		annotationsRepo:              annotationRepo,
 		tagService:                   tagService,
 		QueryLibraryHTTPService:      queryLibraryHTTPService,
 		QueryLibraryService:          queryLibraryService,
@@ -356,9 +345,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		hs.log.Debug("Using provided listener")
 	}
 	hs.registerRoutes()
-
-	// Register access control scope resolver for annotations
-	hs.AccessControl.RegisterScopeAttributeResolver(AnnotationTypeScopeResolver(hs.annotationsRepo))
 
 	if err := hs.declareFixedRoles(); err != nil {
 		return nil, err

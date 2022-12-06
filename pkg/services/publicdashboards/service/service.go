@@ -9,7 +9,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/publicdashboards"
 	"github.com/grafana/grafana/pkg/services/publicdashboards/internal/tokens"
@@ -31,7 +30,6 @@ type PublicDashboardServiceImpl struct {
 	store              publicdashboards.Store
 	intervalCalculator intervalv2.Calculator
 	QueryDataService   *query.Service
-	AnnotationsRepo    annotations.Repository
 	ac                 accesscontrol.AccessControl
 }
 
@@ -47,7 +45,6 @@ func ProvideService(
 	cfg *setting.Cfg,
 	store publicdashboards.Store,
 	qds *query.Service,
-	anno annotations.Repository,
 	ac accesscontrol.AccessControl,
 ) *PublicDashboardServiceImpl {
 	return &PublicDashboardServiceImpl{
@@ -56,7 +53,6 @@ func ProvideService(
 		store:              store,
 		intervalCalculator: intervalv2.NewCalculator(),
 		QueryDataService:   qds,
-		AnnotationsRepo:    anno,
 		ac:                 ac,
 	}
 }
@@ -156,15 +152,14 @@ func (pd *PublicDashboardServiceImpl) Create(ctx context.Context, u *user.Signed
 
 	cmd := SavePublicDashboardCommand{
 		PublicDashboard: PublicDashboard{
-			Uid:                uid,
-			DashboardUid:       dto.DashboardUid,
-			OrgId:              dto.OrgId,
-			IsEnabled:          dto.PublicDashboard.IsEnabled,
-			AnnotationsEnabled: dto.PublicDashboard.AnnotationsEnabled,
-			TimeSettings:       dto.PublicDashboard.TimeSettings,
-			CreatedBy:          dto.UserId,
-			CreatedAt:          time.Now(),
-			AccessToken:        accessToken,
+			Uid:          uid,
+			DashboardUid: dto.DashboardUid,
+			OrgId:        dto.OrgId,
+			IsEnabled:    dto.PublicDashboard.IsEnabled,
+			TimeSettings: dto.PublicDashboard.TimeSettings,
+			CreatedBy:    dto.UserId,
+			CreatedAt:    time.Now(),
+			AccessToken:  accessToken,
 		},
 	}
 
@@ -222,7 +217,6 @@ func (pd *PublicDashboardServiceImpl) Update(ctx context.Context, u *user.Signed
 		PublicDashboard: PublicDashboard{
 			Uid:                  existingPubdash.Uid,
 			IsEnabled:            dto.PublicDashboard.IsEnabled,
-			AnnotationsEnabled:   dto.PublicDashboard.AnnotationsEnabled,
 			TimeSelectionEnabled: dto.PublicDashboard.TimeSelectionEnabled,
 			TimeSettings:         dto.PublicDashboard.TimeSettings,
 			UpdatedBy:            dto.UserId,

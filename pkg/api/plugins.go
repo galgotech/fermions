@@ -24,7 +24,6 @@ import (
 	"github.com/grafana/grafana/pkg/plugins/storage"
 	ac "github.com/grafana/grafana/pkg/services/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	"github.com/grafana/grafana/pkg/setting"
@@ -103,10 +102,6 @@ func (hs *HTTPServer) GetPluginList(c *models.ReqContext) response.Response {
 			if enabledFilter == "1" && !pluginSetting.Enabled {
 				continue
 			}
-		}
-
-		if (pluginDef.ID == "parca" || pluginDef.ID == "phlare") && !hs.Features.IsEnabled(featuremgmt.FlagFlameGraph) {
-			continue
 		}
 
 		filteredPluginDefinitions = append(filteredPluginDefinitions, pluginDef)

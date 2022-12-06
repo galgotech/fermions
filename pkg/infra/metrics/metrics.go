@@ -61,24 +61,6 @@ var (
 	// MApiDashboardInsert is a metric dashboards inserted
 	MApiDashboardInsert prometheus.Counter
 
-	// MAlertingResultState is a metric alert execution result counter
-	MAlertingResultState *prometheus.CounterVec
-
-	// MAlertingNotificationSent is a metric counter for how many alert notifications been sent
-	MAlertingNotificationSent *prometheus.CounterVec
-
-	// MAlertingNotificationSent is a metric counter for how many alert notifications that failed
-	MAlertingNotificationFailed *prometheus.CounterVec
-
-	// MAwsCloudWatchGetMetricStatistics is a metric counter for getting metric statistics from aws
-	MAwsCloudWatchGetMetricStatistics prometheus.Counter
-
-	// MAwsCloudWatchListMetrics is a metric counter for getting list of metrics from aws
-	MAwsCloudWatchListMetrics prometheus.Counter
-
-	// MAwsCloudWatchGetMetricData is a metric counter for getting metric data time series from aws
-	MAwsCloudWatchGetMetricData prometheus.Counter
-
 	// MDBDataSourceQueryByID is a metric counter for getting datasource by id
 	MDBDataSourceQueryByID prometheus.Counter
 
@@ -159,12 +141,6 @@ var (
 
 	// StatsTotalDataSources is a metric total number of defined datasources, labeled by pluginId
 	StatsTotalDataSources *prometheus.GaugeVec
-
-	// StatsTotalAnnotations is a metric of total number of annotations stored in Grafana.
-	StatsTotalAnnotations prometheus.Gauge
-
-	// StatsTotalAlertRules is a metric of total number of alert rules stored in Grafana.
-	StatsTotalAlertRules prometheus.Gauge
 
 	// StatsTotalDashboardVersions is a metric of total number of dashboard versions stored in Grafana.
 	StatsTotalDashboardVersions prometheus.Gauge
@@ -287,42 +263,6 @@ func init() {
 	MApiDashboardInsert = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
 		Name:      "api_models_dashboard_insert_total",
 		Help:      "dashboards inserted ",
-		Namespace: ExporterName,
-	})
-
-	MAlertingResultState = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:      "alerting_result_total",
-		Help:      "alert execution result counter",
-		Namespace: ExporterName,
-	}, []string{"state"})
-
-	MAlertingNotificationSent = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:      "alerting_notification_sent_total",
-		Help:      "counter for how many alert notifications have been sent",
-		Namespace: ExporterName,
-	}, []string{"type"})
-
-	MAlertingNotificationFailed = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:      "alerting_notification_failed_total",
-		Help:      "counter for how many alert notifications have failed",
-		Namespace: ExporterName,
-	}, []string{"type"})
-
-	MAwsCloudWatchGetMetricStatistics = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "aws_cloudwatch_get_metric_statistics_total",
-		Help:      "counter for getting metric statistics from aws",
-		Namespace: ExporterName,
-	})
-
-	MAwsCloudWatchListMetrics = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "aws_cloudwatch_list_metrics_total",
-		Help:      "counter for getting list of metrics from aws",
-		Namespace: ExporterName,
-	})
-
-	MAwsCloudWatchGetMetricData = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "aws_cloudwatch_get_metric_data_total",
-		Help:      "counter for getting metric data time series from aws",
 		Namespace: ExporterName,
 	})
 
@@ -480,18 +420,6 @@ func init() {
 		Namespace: ExporterName,
 	})
 
-	StatsTotalAnnotations = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "stat_totals_annotations",
-		Help:      "total amount of annotations in the database",
-		Namespace: ExporterName,
-	})
-
-	StatsTotalAlertRules = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "stat_totals_alert_rules",
-		Help:      "total amount of alert rules in the database",
-		Namespace: ExporterName,
-	})
-
 	MAccessPermissionsSummary = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "access_permissions_duration",
 		Help:    "Histogram for the runtime of permissions check function.",
@@ -597,19 +525,12 @@ func initMetricVars() {
 		MApiDashboardGet,
 		MApiDashboardSearch,
 		MDataSourceProxyReqTimer,
-		MAlertingExecutionTime,
 		MApiAdminUserCreate,
 		MApiLoginPost,
 		MApiLoginOAuth,
 		MApiLoginSAML,
 		MApiOrgCreate,
 		MApiDashboardInsert,
-		MAlertingResultState,
-		MAlertingNotificationSent,
-		MAlertingNotificationFailed,
-		MAwsCloudWatchGetMetricStatistics,
-		MAwsCloudWatchListMetrics,
-		MAwsCloudWatchGetMetricData,
 		MDBDataSourceQueryByID,
 		LDAPUsersSyncExecutionTime,
 		MRenderingRequestTotal,
@@ -617,7 +538,6 @@ func initMetricVars() {
 		MRenderingQueue,
 		MAccessPermissionsSummary,
 		MAccessEvaluationsSummary,
-		MAlertingActiveAlerts,
 		MStatTotalDashboards,
 		MStatTotalFolders,
 		MStatTotalUsers,
@@ -632,7 +552,6 @@ func initMetricVars() {
 		StatsTotalDataSources,
 		grafanaPluginBuildInfoDesc,
 		StatsTotalDashboardVersions,
-		StatsTotalAnnotations,
 		MAccessEvaluationCount,
 		StatsTotalLibraryPanels,
 		StatsTotalLibraryVariables,

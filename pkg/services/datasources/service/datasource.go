@@ -574,10 +574,6 @@ func (s *Service) getCustomHeaders(jsonData *simplejson.Json, decryptedValues ma
 
 func awsServiceNamespace(dsType string) string {
 	switch dsType {
-	case datasources.DS_ES, datasources.DS_ES_OPEN_DISTRO, datasources.DS_ES_OPENSEARCH:
-		return "es"
-	case datasources.DS_PROMETHEUS, datasources.DS_ALERTMANAGER:
-		return "aps"
 	default:
 		panic(fmt.Sprintf("Unsupported datasource %q", dsType))
 	}

@@ -57,7 +57,6 @@ func (api *Api) RegisterAPIEndpoints() {
 
 	api.RouteRegister.Get("/api/public/dashboards/:accessToken", routing.Wrap(api.ViewPublicDashboard))
 	api.RouteRegister.Post("/api/public/dashboards/:accessToken/panels/:panelId/query", routing.Wrap(api.QueryPublicDashboard))
-	api.RouteRegister.Get("/api/public/dashboards/:accessToken/annotations", routing.Wrap(api.GetAnnotations))
 
 	// Auth endpoints
 	auth := accesscontrol.Middleware(api.AccessControl)

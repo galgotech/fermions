@@ -13,7 +13,6 @@ import {
 import { react2AngularDirective } from 'app/angular/react2angular';
 import { FolderPicker } from 'app/core/components/Select/FolderPicker';
 import { TimePickerSettings } from 'app/features/dashboard/components/DashboardSettings/TimePickerSettings';
-import { QueryEditor as CloudMonitoringQueryEditor } from 'app/plugins/datasource/cloud-monitoring/components/QueryEditor';
 
 import EmptyListCTA from '../core/components/EmptyListCTA/EmptyListCTA';
 import { Footer } from '../core/components/Footer/Footer';
@@ -76,14 +75,6 @@ export function registerAngularDirectives() {
     'className',
     'placeholder',
     ['variables', { watchDepth: 'reference' }],
-  ]);
-  react2AngularDirective('cloudMonitoringQueryEditor', CloudMonitoringQueryEditor, [
-    'target',
-    'onQueryChange',
-    'onExecuteQuery',
-    ['events', { watchDepth: 'reference' }],
-    ['datasource', { watchDepth: 'reference' }],
-    ['templateSrv', { watchDepth: 'reference' }],
   ]);
   react2AngularDirective('secretFormField', SecretFormField, [
     'value',

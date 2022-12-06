@@ -1,22 +1,18 @@
-import { css } from '@emotion/css';
 import React from 'react';
 
-import { GrafanaTheme2 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { InlineField, InlineSwitch, Input, Badge, useStyles2 } from '@grafana/ui';
+import { InlineField, InlineSwitch, Input } from '@grafana/ui';
 
 export interface Props {
   dataSourceName: string;
   isDefault: boolean;
   onNameChange: (name: string) => void;
   onDefaultChange: (value: boolean) => void;
-  alertingSupported: boolean;
 }
 
-export function BasicSettings({ dataSourceName, isDefault, onDefaultChange, onNameChange, alertingSupported }: Props) {
+export function BasicSettings({ dataSourceName, isDefault, onDefaultChange, onNameChange }: Props) {
   return (
     <>
-      {<AlertingEnabled enabled={alertingSupported} />}
       <div className="gf-form-group" aria-label="Datasource settings page basic settings">
         <div className="gf-form-inline">
           {/* Name */}
@@ -54,22 +50,3 @@ export function BasicSettings({ dataSourceName, isDefault, onDefaultChange, onNa
     </>
   );
 }
-
-export function AlertingEnabled({ enabled }: { enabled: boolean }) {
-  const styles = useStyles2(getStyles);
-  return (
-    <div className={styles.badge}>
-      {enabled ? (
-        <Badge color="green" icon="check-circle" text="Alerting supported" />
-      ) : (
-        <Badge color="orange" icon="exclamation-triangle" text="Alerting not supported" />
-      )}
-    </div>
-  );
-}
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  badge: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-});

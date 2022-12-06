@@ -16,7 +16,6 @@ import { AccessControlDashboardPermissions } from '../DashboardPermissions/Acces
 import { DashboardPermissions } from '../DashboardPermissions/DashboardPermissions';
 import { SaveDashboardAsButton, SaveDashboardButton } from '../SaveDashboard/SaveDashboardButton';
 
-import { AnnotationsSettings } from './AnnotationsSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { JsonEditorSettings } from './JsonEditorSettings';
 import { LinksSettings } from './LinksSettings';
@@ -84,15 +83,6 @@ function getSettingsPages(dashboard: DashboardModel) {
       id: 'settings',
       icon: 'sliders-v-alt',
       component: GeneralSettings,
-    });
-
-    pages.push({
-      title: 'Annotations',
-      id: 'annotations',
-      icon: 'comment-alt',
-      component: AnnotationsSettings,
-      subTitle:
-        'Annotation queries return events that can be visualized as event markers in graphs across the dashboard.',
     });
 
     pages.push({

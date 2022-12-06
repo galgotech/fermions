@@ -7,95 +7,12 @@ import (
 	"github.com/grafana/grafana/pkg/api/dtos"
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	dashmodels "github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/publicdashboards/models"
 	"github.com/grafana/grafana/pkg/services/publicdashboards/validation"
 	"github.com/grafana/grafana/pkg/services/user"
-	"github.com/grafana/grafana/pkg/tsdb/grafanads"
 )
-
-// FindAnnotations returns annotations for a public dashboard
-func (pd *PublicDashboardServiceImpl) FindAnnotations(ctx context.Context, reqDTO models.AnnotationsQueryDTO, accessToken string) ([]models.AnnotationEvent, error) {
-	pub, dash, err := pd.FindPublicDashboardAndDashboardByAccessToken(ctx, accessToken)
-	if err != nil {
-		return nil, err
-	}
-
-	if !pub.AnnotationsEnabled {
-		return []models.AnnotationEvent{}, nil
-	}
-
-	annoDto, err := UnmarshalDashboardAnnotations(dash.Data)
-	if err != nil {
-		return nil, models.ErrInternalServerError.Errorf("FindAnnotations: failed to unmarshal dashboard annotations: %w", err)
-	}
-
-	anonymousUser := buildAnonymousUser(ctx, dash)
-
-	uniqueEvents := make(map[int64]models.AnnotationEvent, 0)
-	for _, anno := range annoDto.Annotations.List {
-		// skip annotations that are not enabled or are not a grafana datasource
-		if !anno.Enable || (*anno.Datasource.Uid != grafanads.DatasourceUID && *anno.Datasource.Uid != grafanads.DatasourceName) {
-			continue
-		}
-		annoQuery := &annotations.ItemQuery{
-			From:         reqDTO.From,
-			To:           reqDTO.To,
-			OrgId:        dash.OrgId,
-			DashboardId:  dash.Id,
-			DashboardUid: dash.Uid,
-			Limit:        anno.Target.Limit,
-			MatchAny:     anno.Target.MatchAny,
-			SignedInUser: anonymousUser,
-		}
-
-		if anno.Target.Type == "tags" {
-			annoQuery.DashboardId = 0
-			annoQuery.Tags = anno.Target.Tags
-		}
-
-		annotationItems, err := pd.AnnotationsRepo.Find(ctx, annoQuery)
-		if err != nil {
-			return nil, models.ErrInternalServerError.Errorf("FindAnnotations: failed to find annotations: %w", err)
-		}
-
-		for _, item := range annotationItems {
-			event := models.AnnotationEvent{
-				Id:          item.Id,
-				DashboardId: item.DashboardId,
-				Tags:        item.Tags,
-				IsRegion:    item.TimeEnd > 0 && item.Time != item.TimeEnd,
-				Text:        item.Text,
-				Color:       *anno.IconColor,
-				Time:        item.Time,
-				TimeEnd:     item.TimeEnd,
-				Source:      anno,
-			}
-
-			// We want dashboard annotations to reference the panel they're for. If no panelId is provided, they'll show up on all panels
-			// which is only intended for tag and org annotations.
-			if anno.Type == "dashboard" {
-				event.PanelId = item.PanelId
-			}
-
-			// We want events from tag queries to overwrite existing events
-			_, has := uniqueEvents[event.Id]
-			if !has || (has && anno.Target.Type == "tags") {
-				uniqueEvents[event.Id] = event
-			}
-		}
-	}
-
-	var results []models.AnnotationEvent
-	for _, result := range uniqueEvents {
-		results = append(results, result)
-	}
-
-	return results, nil
-}
 
 // GetMetricRequest returns a metric request for the given panel and query
 func (pd *PublicDashboardServiceImpl) GetMetricRequest(ctx context.Context, dashboard *dashmodels.Dashboard, publicDashboard *models.PublicDashboard, panelId int64, queryDto models.PublicDashboardQueryDTO) (dtos.MetricRequest, error) {
@@ -181,8 +98,6 @@ func buildAnonymousUser(ctx context.Context, dashboard *dashmodels.Dashboard) *u
 	// Create a user with blank permissions
 	anonymousUser := &user.SignedInUser{OrgID: dashboard.OrgId, Permissions: make(map[int64]map[string][]string)}
 
-	// Scopes needed for Annotation queries
-	annotationScopes := []string{accesscontrol.ScopeAnnotationsTypeDashboard}
 	// Need to access all dashboards since tags annotations span across all dashboards
 	dashboardScopes := []string{dashboards.ScopeDashboardsProvider.GetResourceAllScope()}
 
@@ -199,7 +114,6 @@ func buildAnonymousUser(ctx context.Context, dashboard *dashmodels.Dashboard) *u
 	permissions := make(map[string][]string)
 	permissions[datasources.ActionQuery] = queryScopes
 	permissions[datasources.ActionRead] = readScopes
-	permissions[accesscontrol.ActionAnnotationsRead] = annotationScopes
 	permissions[dashboards.ActionDashboardsRead] = dashboardScopes
 
 	anonymousUser.Permissions[dashboard.OrgId] = permissions

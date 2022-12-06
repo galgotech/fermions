@@ -2,7 +2,6 @@ import { cloneDeep, defaults as _defaults, filter, indexOf, isEqual, map, maxBy,
 import { Subscription } from 'rxjs';
 
 import {
-  AnnotationQuery,
   AppEvent,
   DashboardCursorSync,
   dateTime,
@@ -16,7 +15,6 @@ import {
   TimeZone,
 } from '@grafana/data';
 import { RefreshEvent, TimeRangeUpdatedEvent } from '@grafana/runtime';
-import { DEFAULT_ANNOTATION_COLOR } from '@grafana/ui';
 import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT, REPEAT_DIR_VERTICAL } from 'app/core/constants';
 import { contextSrv } from 'app/core/services/context_srv';
 import { sortedDeepCloneWithoutNulls } from 'app/core/utils/object';
@@ -83,7 +81,6 @@ export class DashboardModel implements TimeModel {
   timepicker: any;
   templating: { list: any[] };
   private originalTemplating: any;
-  annotations: { list: AnnotationQuery[] };
   refresh: any;
   schemaVersion: number;
   version: number;
@@ -145,7 +142,6 @@ export class DashboardModel implements TimeModel {
     this.timepicker = data.timepicker ?? {};
     this.liveNow = Boolean(data.liveNow);
     this.templating = this.ensureListExist(data.templating);
-    this.annotations = this.ensureListExist(data.annotations);
     this.refresh = data.refresh;
     this.schemaVersion = data.schemaVersion ?? 0;
     this.fiscalYearStartMonth = data.fiscalYearStartMonth ?? 0;
@@ -162,7 +158,6 @@ export class DashboardModel implements TimeModel {
     this.initMeta(meta);
     this.updateSchema(data);
 
-    this.addBuiltInAnnotationQuery();
     this.sortPanelsByGridPos();
     this.panelsAffectedByVariableChange = null;
     this.appEventsSubscription = new Subscription();
@@ -174,23 +169,6 @@ export class DashboardModel implements TimeModel {
     this.appEventsSubscription.add(
       appEvents.subscribe(VariablesChangedInUrl, this.variablesChangedInUrlHandler.bind(this))
     );
-  }
-
-  addBuiltInAnnotationQuery() {
-    const found = this.annotations.list.some((item) => item.builtIn === 1);
-    if (found) {
-      return;
-    }
-
-    this.annotations.list.unshift({
-      datasource: { uid: '-- Grafana --', type: 'grafana' },
-      name: 'Annotations & Alerts',
-      type: 'dashboard',
-      iconColor: DEFAULT_ANNOTATION_COLOR,
-      enable: true,
-      hide: true,
-      builtIn: 1,
-    });
   }
 
   private initMeta(meta?: DashboardMeta) {
@@ -822,8 +800,7 @@ export class DashboardModel implements TimeModel {
   isSubMenuVisible() {
     return (
       this.links.length > 0 ||
-      this.getVariables().some((variable) => variable.hide !== 2) ||
-      this.annotations.list.some((annotation) => !annotation.hide)
+      this.getVariables().some((variable) => variable.hide !== 2)
     );
   }
 
@@ -1083,46 +1060,6 @@ export class DashboardModel implements TimeModel {
 
   getVariables() {
     return this.getVariablesFromState(this.uid);
-  }
-
-  canEditAnnotations(dashboardUID?: string) {
-    let canEdit = true;
-
-    // if RBAC is enabled there are additional conditions to check
-    if (contextSrv.accessControlEnabled()) {
-      // dashboardUID is falsy when it is an organizational annotation
-      if (!dashboardUID) {
-        canEdit = !!this.meta.annotationsPermissions?.organization.canEdit;
-      } else {
-        canEdit = !!this.meta.annotationsPermissions?.dashboard.canEdit;
-      }
-    }
-    return this.canEditDashboard() && canEdit;
-  }
-
-  canDeleteAnnotations(dashboardUID?: string) {
-    let canDelete = true;
-
-    if (contextSrv.accessControlEnabled()) {
-      // dashboardUID is falsy when it is an organizational annotation
-      if (!dashboardUID) {
-        canDelete = !!this.meta.annotationsPermissions?.organization.canDelete;
-      } else {
-        canDelete = !!this.meta.annotationsPermissions?.dashboard.canDelete;
-      }
-    }
-    return canDelete && this.canEditDashboard();
-  }
-
-  canAddAnnotations() {
-    // When the builtin annotations are disabled, we should not add any in the UI
-    const found = this.annotations.list.find((item) => item.builtIn === 1);
-    if (found?.enable === false || !this.canEditDashboard()) {
-      return false;
-    }
-
-    // If RBAC is enabled there are additional conditions to check.
-    return !contextSrv.accessControlEnabled() || Boolean(this.meta.annotationsPermissions?.dashboard.canAdd);
   }
 
   canEditDashboard() {

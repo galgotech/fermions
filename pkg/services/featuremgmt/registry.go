@@ -70,28 +70,6 @@ var (
 			FrontendOnly: true,
 		},
 		{
-			Name:        "panelTitleSearch",
-			Description: "Search for dashboards using panel title",
-			State:       FeatureStateBeta,
-		},
-		{
-			Name:         "tempoApmTable",
-			Description:  "Show APM table",
-			State:        FeatureStateAlpha,
-			FrontendOnly: true,
-		},
-		{
-			Name:        "prometheusAzureOverrideAudience",
-			Description: "Experimental. Allow override default AAD audience for Azure Prometheus endpoint",
-			State:       FeatureStateBeta,
-		},
-		{
-			Name:         "influxdbBackendMigration",
-			Description:  "Query InfluxDB InfluxQL without the proxy",
-			State:        FeatureStateAlpha,
-			FrontendOnly: true,
-		},
-		{
 			Name:            "showFeatureFlagsInUI",
 			Description:     "Show feature flags in the settings UI",
 			State:           FeatureStateAlpha,
@@ -162,13 +140,6 @@ var (
 			RequiresDevMode: true,
 		},
 		{
-			Name:            "azureMonitorResourcePickerForMetrics",
-			Description:     "New UI for Azure Monitor Metrics Query",
-			State:           FeatureStateAlpha,
-			RequiresDevMode: true,
-			FrontendOnly:    true,
-		},
-		{
 			Name:         "exploreMixedDatasource",
 			Description:  "Enable mixed datasource in Explore",
 			State:        FeatureStateAlpha,
@@ -191,12 +162,6 @@ var (
 			Name:        "correlations",
 			Description: "Correlations page",
 			State:       FeatureStateAlpha,
-		},
-		{
-			Name:        "cloudWatchDynamicLabels",
-			Description: "Use dynamic labels instead of alias patterns in CloudWatch datasource",
-			State:       FeatureStateStable,
-			Expression:  "true", // enabled by default
 		},
 		{
 			Name:        "datasourceQueryMultiStatus",
@@ -295,11 +260,6 @@ var (
 		{
 			Name:        "flameGraph",
 			Description: "Show the flame graph",
-			State:       FeatureStateAlpha,
-		},
-		{
-			Name:        "cloudWatchCrossAccountQuerying",
-			Description: "Use cross-account querying in CloudWatch datasource",
 			State:       FeatureStateAlpha,
 		},
 		{

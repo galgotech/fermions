@@ -3,10 +3,7 @@ import React, { FC, useEffect } from 'react';
 import { Subscription } from 'rxjs';
 
 import { GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { Tab, TabContent, TabsBar, toIconName, useForceUpdate, useStyles2 } from '@grafana/ui';
-import AlertTabIndex from 'app/features/alerting/AlertTabIndex';
-import { PanelAlertTab } from 'app/features/alerting/unified/PanelAlertTab';
 import { PanelQueriesChangedEvent } from 'app/types/events';
 
 import { DashboardModel, PanelModel } from '../../state';
@@ -41,9 +38,6 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
     <div className={styles.wrapper}>
       <TabsBar className={styles.tabBar} hideBorder>
         {tabs.map((tab) => {
-          if (tab.id === PanelEditorTabId.Alert) {
-            return renderAlertTab(tab, panel, dashboard, onChangeTab);
-          }
           return (
             <Tab
               key={tab.id}
@@ -58,7 +52,6 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
       </TabsBar>
       <TabContent className={styles.tabContent}>
         {activeTab.id === PanelEditorTabId.Query && <PanelEditorQueries panel={panel} queries={panel.targets} />}
-        {activeTab.id === PanelEditorTabId.Alert && <AlertTabIndex panel={panel} dashboard={dashboard} />}
       </TabContent>
     </div>
   );
@@ -72,48 +65,6 @@ function getCounter(panel: PanelModel, tab: PanelEditorTab) {
       return panel.targets.length;
     case PanelEditorTabId.Alert:
       return panel.alert ? 1 : 0;
-  }
-
-  return null;
-}
-
-function renderAlertTab(
-  tab: PanelEditorTab,
-  panel: PanelModel,
-  dashboard: DashboardModel,
-  onChangeTab: (tab: PanelEditorTab) => void
-) {
-  const alertingDisabled = !config.alertingEnabled && !config.unifiedAlertingEnabled;
-
-  if (alertingDisabled) {
-    return null;
-  }
-
-  if (config.unifiedAlertingEnabled) {
-    return (
-      <PanelAlertTab
-        key={tab.id}
-        label={tab.text}
-        active={tab.active}
-        onChangeTab={() => onChangeTab(tab)}
-        icon={toIconName(tab.icon)}
-        panel={panel}
-        dashboard={dashboard}
-      />
-    );
-  }
-
-  if (config.alertingEnabled) {
-    return (
-      <Tab
-        key={tab.id}
-        label={tab.text}
-        active={tab.active}
-        onChangeTab={() => onChangeTab(tab)}
-        icon={toIconName(tab.icon)}
-        counter={getCounter(panel, tab)}
-      />
-    );
   }
 
   return null;

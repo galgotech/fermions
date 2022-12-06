@@ -52,7 +52,6 @@ func (m *SecretsMigrator) ReEncryptSecrets(ctx context.Context) (bool, error) {
 		b64Secret{simpleSecret: simpleSecret{tableName: "secrets", columnName: "value"}, hasUpdatedColumn: true, encoding: base64.RawStdEncoding},
 		jsonSecret{tableName: "data_source"},
 		jsonSecret{tableName: "plugin_setting"},
-		alertingSecret{},
 	}
 
 	var anyFailure bool
@@ -81,7 +80,6 @@ func (m *SecretsMigrator) RollBackSecrets(ctx context.Context) (bool, error) {
 		b64Secret{simpleSecret: simpleSecret{tableName: "secrets", columnName: "value"}, hasUpdatedColumn: true, encoding: base64.RawStdEncoding},
 		jsonSecret{tableName: "data_source"},
 		jsonSecret{tableName: "plugin_setting"},
-		alertingSecret{},
 	}
 
 	var anyFailure bool
@@ -140,8 +138,6 @@ type b64Secret struct {
 type jsonSecret struct {
 	tableName string
 }
-
-type alertingSecret struct{}
 
 func nowInUTC() string {
 	return time.Now().UTC().Format("2006-01-02 15:04:05")

@@ -6,7 +6,6 @@ import { getLinkSrv } from 'app/features/panel/panellinks/link_srv';
 
 import coreModule from './core_module';
 import { UtilSrv } from './services/UtilSrv';
-import { AnnotationsSrv } from './services/annotations_srv';
 
 export function registerComponents() {
   coreModule.factory('backendSrv', () => getBackendSrv());
@@ -15,6 +14,5 @@ export function registerComponents() {
   coreModule.factory('datasourceSrv', () => getDataSourceSrv());
   coreModule.factory('linkSrv', () => getLinkSrv());
   coreModule.factory('validationSrv', () => validationSrv);
-  coreModule.service('annotationsSrv', AnnotationsSrv);
   coreModule.service('utilSrv', UtilSrv);
 }

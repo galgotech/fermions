@@ -33,19 +33,13 @@ node_modules: package.json yarn.lock ## Install node modules.
 ##@ Swagger
 SPEC_TARGET = public/api-spec.json
 MERGED_SPEC_TARGET := public/api-merged.json
-NGALERT_SPEC_TARGET = pkg/services/ngalert/api/tooling/api.json
 
-$(NGALERT_SPEC_TARGET):
-	+$(MAKE) -C pkg/services/ngalert/api/tooling api.json
-
-$(MERGED_SPEC_TARGET): $(SPEC_TARGET) $(NGALERT_SPEC_TARGET) $(SWAGGER) ## Merge generated and ngalert API specs
+$(MERGED_SPEC_TARGET): $(SPEC_TARGET) $(SWAGGER) ## Merge generated API specs
 	# known conflicts DsPermissionType, AddApiKeyCommand, Json, Duration (identical models referenced by both specs)
-	$(SWAGGER) mixin $(SPEC_TARGET) $(NGALERT_SPEC_TARGET) --ignore-conflicts -o $(MERGED_SPEC_TARGET)
+	$(SWAGGER) mixin $(SPEC_TARGET) --ignore-conflicts -o $(MERGED_SPEC_TARGET)
 
 $(SPEC_TARGET): $(SWAGGER) ## Generate API Swagger specification
 	SWAGGER_GENERATE_EXTENSION=false $(SWAGGER) generate spec -m -w pkg/server -o $(SPEC_TARGET) \
-	-x "github.com/grafana/grafana/pkg/services/ngalert/api/tooling/definitions" \
-	-x "github.com/prometheus/alertmanager" \
 	-i pkg/api/swagger_tags.json \
 	--exclude-tag=alpha
 

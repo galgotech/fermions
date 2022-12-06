@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { makeClassES5Compatible } from '../utils/makeClassES5Compatible';
 
 import { ScopedVars } from './ScopedVars';
-import { AnnotationEvent, AnnotationQuery, AnnotationSupport } from './annotations';
 import { CoreApp } from './app';
 import { KeyValue, LoadingState, TableData, TimeSeries } from './data';
 import { DataFrame, DataFrameDTO } from './dataFrame';
@@ -57,51 +56,13 @@ export class DataSourcePlugin<
     return this;
   }
 
-  setAnnotationQueryCtrl(AnnotationsQueryCtrl: any) {
-    this.components.AnnotationsQueryCtrl = AnnotationsQueryCtrl;
-    return this;
-  }
-
   setQueryEditor(QueryEditor: ComponentType<QueryEditorProps<DSType, TQuery, TOptions>>) {
     this.components.QueryEditor = QueryEditor;
     return this;
   }
 
-  /** @deprecated Use `setQueryEditor` instead. When using Explore `props.app` is equal to `CoreApp.Explore` */
-  setExploreQueryField(ExploreQueryField: ComponentType<QueryEditorProps<DSType, TQuery, TOptions>>) {
-    this.components.ExploreQueryField = ExploreQueryField;
-    return this;
-  }
-
-  /** @deprecated Use `setQueryEditor` instead. */
-  setExploreMetricsQueryField(ExploreQueryField: ComponentType<QueryEditorProps<DSType, TQuery, TOptions>>) {
-    this.components.ExploreMetricsQueryField = ExploreQueryField;
-    return this;
-  }
-
-  /** @deprecated Use `setQueryEditor` instead. */
-  setExploreLogsQueryField(ExploreQueryField: ComponentType<QueryEditorProps<DSType, TQuery, TOptions>>) {
-    this.components.ExploreLogsQueryField = ExploreQueryField;
-    return this;
-  }
-
   setQueryEditorHelp(QueryEditorHelp: ComponentType<QueryEditorHelpProps<TQuery>>) {
     this.components.QueryEditorHelp = QueryEditorHelp;
-    return this;
-  }
-
-  /**
-   * @deprecated prefer using `setQueryEditorHelp`
-   */
-  setExploreStartPage(ExploreStartPage: ComponentType<QueryEditorHelpProps<TQuery>>) {
-    return this.setQueryEditorHelp(ExploreStartPage);
-  }
-
-  /**
-   * @deprecated -- prefer using {@link StandardVariableSupport} or {@link CustomVariableSupport} or {@link DataSourceVariableSupport} in data source instead
-   */
-  setVariableQueryEditor(VariableQueryEditor: any) {
-    this.components.VariableQueryEditor = VariableQueryEditor;
     return this;
   }
 
@@ -114,7 +75,6 @@ export class DataSourcePlugin<
     this.angularConfigCtrl = pluginExports.ConfigCtrl;
 
     this.components.QueryCtrl = pluginExports.QueryCtrl;
-    this.components.AnnotationsQueryCtrl = pluginExports.AnnotationsQueryCtrl;
     this.components.ExploreQueryField = pluginExports.ExploreQueryField;
     this.components.QueryEditor = pluginExports.QueryEditor;
     this.components.QueryEditorHelp = pluginExports.QueryEditorHelp;
@@ -126,8 +86,6 @@ export interface DataSourcePluginMeta<T extends KeyValue = {}> extends PluginMet
   builtIn?: boolean; // Is this for all
   metrics?: boolean;
   logs?: boolean;
-  annotations?: boolean;
-  alerting?: boolean;
   tracing?: boolean;
   mixed?: boolean;
   hasQueryHelp?: boolean;
@@ -153,7 +111,6 @@ export interface DataSourcePluginComponents<
   TSecureOptions = {}
 > {
   QueryCtrl?: any;
-  AnnotationsQueryCtrl?: any;
   VariableQueryEditor?: any;
   QueryEditor?: ComponentType<QueryEditorProps<DSType, TQuery, TOptions>>;
   /** @deprecated it will be removed in a future release and `QueryEditor` will be used instead. */
@@ -330,22 +287,6 @@ abstract class DataSourceApi<
   getVersion?(optionalOptions?: any): Promise<string>;
 
   interpolateVariablesInQueries?(queries: TQuery[], scopedVars: ScopedVars | {}): TQuery[];
-
-  /**
-   * An annotation processor allows explicit control for how annotations are managed.
-   *
-   * It is only necessary to configure an annotation processor if the default behavior is not desirable
-   */
-  annotations?: AnnotationSupport<TQuery>;
-
-  /**
-   * Can be optionally implemented to allow datasource to be a source of annotations for dashboard.
-   * This function will only be called if an angular {@link AnnotationsQueryCtrl} is configured and
-   * the {@link annotations} is undefined
-   *
-   * @deprecated -- prefer using {@link AnnotationSupport}
-   */
-  annotationQuery?(options: AnnotationQueryRequest<TQuery>): Promise<AnnotationEvent[]>;
 
   /**
    * Defines new variable support
@@ -618,19 +559,6 @@ export interface DataSourceSelectItem {
   name: string;
   value: string | null;
   meta: DataSourcePluginMeta;
-}
-
-/**
- * Options passed to the datasource.annotationQuery method. See docs/plugins/developing/datasource.md
- *
- * @deprecated -- use {@link AnnotationSupport}
- */
-export interface AnnotationQueryRequest<MoreOptions = {}> {
-  range: TimeRange;
-  rangeRaw: RawTimeRange;
-  // Should be DataModel but cannot import that here from the main app. Needs to be moved to package first.
-  dashboard: any;
-  annotation: AnnotationQuery;
 }
 
 export interface HistoryItem<TQuery extends DataQuery = DataQuery> {

@@ -9,10 +9,7 @@ import { PluginMeta, GrafanaPlugin, PluginIncludeType } from './plugin';
  * The app container that is loading another plugin (panel or query editor)
  * */
 export enum CoreApp {
-  CloudAlerting = 'cloud-alerting',
-  UnifiedAlerting = 'unified-alerting',
   Dashboard = 'dashboard',
-  Explore = 'explore',
   Unknown = 'unknown',
   PanelEditor = 'panel-editor',
   PanelViewer = 'panel-viewer',

@@ -51,18 +51,3 @@ func PostgresTestDB() TestDB {
 		ConnStr:    connStr,
 	}
 }
-
-func MSSQLTestDB() TestDB {
-	host := os.Getenv("MSSQL_HOST")
-	if host == "" {
-		host = "localhost"
-	}
-	port := os.Getenv("MSSQL_PORT")
-	if port == "" {
-		port = "1433"
-	}
-	return TestDB{
-		DriverName: "mssql",
-		ConnStr:    fmt.Sprintf("server=%s;port=%s;database=grafanatest;user id=grafana;password=Password!", host, port),
-	}
-}

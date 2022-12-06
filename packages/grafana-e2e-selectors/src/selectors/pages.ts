@@ -74,18 +74,6 @@ export const Pages = {
         timezone: 'Time zone picker select container',
         title: 'Tab General',
       },
-      Annotations: {
-        List: {
-          /**
-           * @deprecated use addAnnotationCTAV2 from Grafana 8.3 instead
-           */
-          addAnnotationCTA: Components.CallToActionCard.button('Add annotation query'),
-          addAnnotationCTAV2: Components.CallToActionCard.buttonV2('Add annotation query'),
-        },
-        Settings: {
-          name: 'Annotations settings name input',
-        },
-      },
       Variables: {
         List: {
           /**

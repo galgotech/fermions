@@ -180,15 +180,12 @@ export class PanelChromeAngularUnconnected extends PureComponent<Props, State> {
     const { errorMessage, data } = this.state;
     const { transparent } = panel;
 
-    const alertState = data.alertState?.state;
-
     const containerClassNames = classNames({
       'panel-container': true,
       'panel-container--absolute': isSoloRoute(locationService.getLocation().pathname),
       'panel-container--transparent': transparent,
       'panel-container--no-title': this.hasOverlayHeader(),
       'panel-has-alert': panel.alert !== undefined,
-      [`panel-alert-state--${alertState}`]: alertState !== undefined,
     });
 
     const panelContentClassNames = classNames({
@@ -208,7 +205,6 @@ export class PanelChromeAngularUnconnected extends PureComponent<Props, State> {
           isViewing={isViewing}
           isEditing={isEditing}
           data={data}
-          alertState={alertState}
         />
         <div className={panelContentClassNames}>
           <div ref={(element) => (this.element = element)} className="panel-height-helper" />

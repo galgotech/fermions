@@ -19,8 +19,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/metrics"
 	"github.com/grafana/grafana/pkg/kinds/dashboard"
 	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	dashver "github.com/grafana/grafana/pkg/services/dashboardversion"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
@@ -155,13 +153,6 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 		creator = hs.getUserLogin(c.Req.Context(), dash.CreatedBy)
 	}
 
-	annotationPermissions := &dtos.AnnotationPermission{}
-
-	if !hs.AccessControl.IsDisabled() {
-		hs.getAnnotationPermissionsByScope(c, &annotationPermissions.Dashboard, accesscontrol.ScopeAnnotationsTypeDashboard)
-		hs.getAnnotationPermissionsByScope(c, &annotationPermissions.Organization, accesscontrol.ScopeAnnotationsTypeOrganization)
-	}
-
 	meta := dtos.DashboardMeta{
 		IsStarred:              isStarred,
 		Slug:                   dash.Slug,
@@ -181,7 +172,6 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 		FolderId:               dash.FolderId,
 		Url:                    dash.GetUrl(),
 		FolderTitle:            "General",
-		AnnotationsPermissions: annotationPermissions,
 		PublicDashboardEnabled: publicDashboardEnabled,
 		HasPublicDashboard:     hasPublicDashboard,
 	}
@@ -238,28 +228,6 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 
 	c.TimeRequest(metrics.MApiDashboardGet)
 	return response.JSON(http.StatusOK, dto)
-}
-
-func (hs *HTTPServer) getAnnotationPermissionsByScope(c *models.ReqContext, actions *dtos.AnnotationActions, scope string) {
-	var err error
-
-	evaluate := accesscontrol.EvalPermission(accesscontrol.ActionAnnotationsCreate, scope)
-	actions.CanAdd, err = hs.AccessControl.Evaluate(c.Req.Context(), c.SignedInUser, evaluate)
-	if err != nil {
-		hs.log.Warn("Failed to evaluate permission", "err", err, "action", accesscontrol.ActionAnnotationsCreate, "scope", scope)
-	}
-
-	evaluate = accesscontrol.EvalPermission(accesscontrol.ActionAnnotationsDelete, scope)
-	actions.CanDelete, err = hs.AccessControl.Evaluate(c.Req.Context(), c.SignedInUser, evaluate)
-	if err != nil {
-		hs.log.Warn("Failed to evaluate permission", "err", err, "action", accesscontrol.ActionAnnotationsDelete, "scope", scope)
-	}
-
-	evaluate = accesscontrol.EvalPermission(accesscontrol.ActionAnnotationsWrite, scope)
-	actions.CanEdit, err = hs.AccessControl.Evaluate(c.Req.Context(), c.SignedInUser, evaluate)
-	if err != nil {
-		hs.log.Warn("Failed to evaluate permission", "err", err, "action", accesscontrol.ActionAnnotationsWrite, "scope", scope)
-	}
 }
 
 func (hs *HTTPServer) getUserLogin(ctx context.Context, userID int64) string {
@@ -449,7 +417,7 @@ func (hs *HTTPServer) postDashboard(c *models.ReqContext, cmd models.SaveDashboa
 		Overwrite: cmd.Overwrite,
 	}
 
-	dashboard, err := hs.DashboardService.SaveDashboard(alerting.WithUAEnabled(ctx, hs.Cfg.UnifiedAlerting.IsEnabled()), dashItem, allowUiUpdate)
+	dashboard, err := hs.DashboardService.SaveDashboard(ctx, dashItem, allowUiUpdate)
 
 	if hs.Live != nil {
 		// Tell everyone listening that the dashboard changed

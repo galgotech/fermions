@@ -2,7 +2,6 @@ package cleanup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -17,9 +16,7 @@ import (
 	"github.com/grafana/grafana/pkg/infra/serverlock"
 	"github.com/grafana/grafana/pkg/infra/tracing"
 	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	dashver "github.com/grafana/grafana/pkg/services/dashboardversion"
-	"github.com/grafana/grafana/pkg/services/ngalert/image"
 	"github.com/grafana/grafana/pkg/services/queryhistory"
 	"github.com/grafana/grafana/pkg/services/shorturls"
 	tempuser "github.com/grafana/grafana/pkg/services/temp_user"
@@ -28,36 +25,32 @@ import (
 
 func ProvideService(cfg *setting.Cfg, serverLockService *serverlock.ServerLockService,
 	shortURLService shorturls.Service, sqlstore db.DB, queryHistoryService queryhistory.Service,
-	dashboardVersionService dashver.Service, deleteExpiredImageService *image.DeleteExpiredService,
-	tempUserService tempuser.Service, tracer tracing.Tracer, annotationCleaner annotations.Cleaner) *CleanUpService {
+	dashboardVersionService dashver.Service,
+	tempUserService tempuser.Service, tracer tracing.Tracer) *CleanUpService {
 	s := &CleanUpService{
-		Cfg:                       cfg,
-		ServerLockService:         serverLockService,
-		ShortURLService:           shortURLService,
-		QueryHistoryService:       queryHistoryService,
-		store:                     sqlstore,
-		log:                       log.New("cleanup"),
-		dashboardVersionService:   dashboardVersionService,
-		deleteExpiredImageService: deleteExpiredImageService,
-		tempUserService:           tempUserService,
-		tracer:                    tracer,
-		annotationCleaner:         annotationCleaner,
+		Cfg:                     cfg,
+		ServerLockService:       serverLockService,
+		ShortURLService:         shortURLService,
+		QueryHistoryService:     queryHistoryService,
+		store:                   sqlstore,
+		log:                     log.New("cleanup"),
+		dashboardVersionService: dashboardVersionService,
+		tempUserService:         tempUserService,
+		tracer:                  tracer,
 	}
 	return s
 }
 
 type CleanUpService struct {
-	log                       log.Logger
-	tracer                    tracing.Tracer
-	store                     db.DB
-	Cfg                       *setting.Cfg
-	ServerLockService         *serverlock.ServerLockService
-	ShortURLService           shorturls.Service
-	QueryHistoryService       queryhistory.Service
-	dashboardVersionService   dashver.Service
-	deleteExpiredImageService *image.DeleteExpiredService
-	tempUserService           tempuser.Service
-	annotationCleaner         annotations.Cleaner
+	log                     log.Logger
+	tracer                  tracing.Tracer
+	store                   db.DB
+	Cfg                     *setting.Cfg
+	ServerLockService       *serverlock.ServerLockService
+	ShortURLService         shorturls.Service
+	QueryHistoryService     queryhistory.Service
+	dashboardVersionService dashver.Service
+	tempUserService         tempuser.Service
 }
 
 type cleanUpJob struct {
@@ -94,8 +87,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 	cleanupJobs := []cleanUpJob{
 		{"clean up temporary files", srv.cleanUpTmpFiles},
 		{"delete expired dashboard versions", srv.deleteExpiredDashboardVersions},
-		{"delete expired images", srv.deleteExpiredImages},
-		{"cleanup old annotations", srv.cleanUpOldAnnotations},
 		{"expire old user invites", srv.expireOldUserInvites},
 		{"delete stale short URLs", srv.deleteStaleShortURLs},
 		{"delete stale query history", srv.deleteStaleQueryHistory},
@@ -115,16 +106,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 	}
 
 	logger.Info("Completed cleanup jobs", "duration", time.Since(start))
-}
-
-func (srv *CleanUpService) cleanUpOldAnnotations(ctx context.Context) {
-	logger := srv.log.FromContext(ctx)
-	affected, affectedTags, err := srv.annotationCleaner.Run(ctx, srv.Cfg)
-	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
-		logger.Error("failed to clean up old annotations", "error", err)
-	} else {
-		logger.Debug("Deleted excess annotations", "annotations affected", affected, "annotation tags affected", affectedTags)
-	}
 }
 
 func (srv *CleanUpService) cleanUpTmpFiles(ctx context.Context) {
@@ -194,18 +175,6 @@ func (srv *CleanUpService) deleteExpiredDashboardVersions(ctx context.Context) {
 		logger.Error("Failed to delete expired dashboard versions", "error", err.Error())
 	} else {
 		logger.Debug("Deleted old/expired dashboard versions", "rows affected", cmd.DeletedRows)
-	}
-}
-
-func (srv *CleanUpService) deleteExpiredImages(ctx context.Context) {
-	logger := srv.log.FromContext(ctx)
-	if !srv.Cfg.UnifiedAlerting.IsEnabled() {
-		return
-	}
-	if rowsAffected, err := srv.deleteExpiredImageService.DeleteExpired(ctx); err != nil {
-		logger.Error("Failed to delete expired images", "error", err.Error())
-	} else {
-		logger.Debug("Deleted expired images", "rows affected", rowsAffected)
 	}
 }
 

@@ -5,13 +5,10 @@ import 'mousetrap/plugins/global-bind/mousetrap-global-bind';
 import { LegacyGraphHoverClearEvent, locationUtil } from '@grafana/data';
 import { config, LocationService } from '@grafana/runtime';
 import appEvents from 'app/core/app_events';
-import { getExploreUrl } from 'app/core/utils/explore';
 import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardDrawer';
 import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { DashboardModel } from 'app/features/dashboard/state';
 
-import { getTimeSrv } from '../../features/dashboard/services/TimeSrv';
-import { getDatasourceSrv } from '../../features/plugins/datasource_srv';
 import {
   RemovePanelEvent,
   ShiftTimeEvent,
@@ -21,7 +18,6 @@ import {
   AbsoluteTimeEvent,
 } from '../../types/events';
 import { HelpModal } from '../components/help/HelpModal';
-import { contextSrv } from '../core';
 
 import { toggleTheme } from './toggleTheme';
 import { withFocusedPanel } from './withFocusedPanelId';
@@ -35,7 +31,6 @@ export class KeybindingSrv {
     if (this.locationService.getLocation().pathname !== '/login') {
       this.bind(['?', 'h'], this.showHelpModal);
       this.bind('g h', this.goToHome);
-      this.bind('g a', this.openAlerting);
       this.bind('g p', this.goToProfile);
       this.bind('s o', this.openSearch);
       this.bind('t a', this.makeAbsoluteTime);
@@ -96,10 +91,6 @@ export class KeybindingSrv {
 
   private closeSearch() {
     this.locationService.partial({ search: null });
-  }
-
-  private openAlerting() {
-    this.locationService.push('/alerting');
   }
 
   private goToHome() {
@@ -253,25 +244,6 @@ export class KeybindingSrv {
     this.bindWithPanelId('i', (panelId) => {
       this.locationService.partial({ inspect: panelId });
     });
-
-    // jump to explore if permissions allow
-    if (contextSrv.hasAccessToExplore()) {
-      this.bindWithPanelId('x', async (panelId) => {
-        const panel = dashboard.getPanelById(panelId)!;
-        const url = await getExploreUrl({
-          panel,
-          datasourceSrv: getDatasourceSrv(),
-          timeSrv: getTimeSrv(),
-        });
-
-        if (url) {
-          const urlWithoutBase = locationUtil.stripBaseFromUrl(url);
-          if (urlWithoutBase) {
-            this.locationService.push(urlWithoutBase);
-          }
-        }
-      });
-    }
 
     // delete panel
     this.bindWithPanelId('p r', (panelId) => {

@@ -208,11 +208,6 @@ export class DashboardExporter {
         }
       }
 
-      // templatize annotations vars
-      for (const annotationDef of saveModel.annotations.list) {
-        await templateizeDatasourceUsage(annotationDef);
-      }
-
       // add grafana version
       requires['grafana'] = {
         type: 'grafana',

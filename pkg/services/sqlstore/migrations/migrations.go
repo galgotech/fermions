@@ -3,7 +3,6 @@ package migrations
 import (
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/ualert"
 	. "github.com/grafana/grafana/pkg/services/sqlstore/migrator"
 )
 
@@ -35,8 +34,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addAppSettingsMigration(mg)
 	addSessionMigration(mg)
 	addPreferencesMigrations(mg)
-	addAlertMigrations(mg)
-	addAnnotationMig(mg)
 	addTestDataMigrations(mg)
 	addDashboardVersionMigration(mg)
 	addTeamMigrations(mg)
@@ -48,8 +45,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addUserAuthTokenMigrations(mg)
 	addCacheMigration(mg)
 	addShortURLMigrations(mg)
-	ualert.AddTablesMigrations(mg)
-	ualert.AddDashAlertMigration(mg)
 	addLibraryElementsMigrations(mg)
 	if mg.Cfg != nil && mg.Cfg.IsFeatureToggleEnabled != nil {
 		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagLiveConfig) {
@@ -60,16 +55,13 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 		}
 	}
 
-	ualert.RerunDashAlertMigration(mg)
 	addSecretsMigration(mg)
 	addKVStoreMigrations(mg)
-	ualert.AddDashboardUIDPanelIDMigration(mg)
 	accesscontrol.AddMigration(mg)
 	addQueryHistoryMigrations(mg)
 
 	accesscontrol.AddTeamMembershipMigrations(mg)
 	accesscontrol.AddDashboardPermissionsMigrator(mg)
-	accesscontrol.AddAlertingPermissionsMigrator(mg)
 
 	addQueryHistoryStarMigrations(mg)
 
@@ -89,20 +81,13 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addEntityEventsTableMigration(mg)
 
 	addPublicDashboardMigration(mg)
-	ualert.CreateDefaultFoldersForAlertingMigration(mg)
 	addDbFileStorageMigration(mg)
 
 	accesscontrol.AddManagedPermissionsMigration(mg, accesscontrol.ManagedPermissionsMigrationID)
-	accesscontrol.AddManagedFolderAlertActionsMigration(mg)
 	accesscontrol.AddActionNameMigrator(mg)
 
-	ualert.UpdateRuleGroupIndexMigration(mg)
-	accesscontrol.AddManagedFolderAlertActionsRepeatMigration(mg)
 	accesscontrol.AddAdminOnlyMigration(mg)
 	accesscontrol.AddSeedAssignmentMigrations(mg)
-	accesscontrol.AddManagedFolderAlertActionsRepeatFixedMigration(mg)
-
-	AddExternalAlertmanagerToDatasourceMigration(mg)
 
 	// TODO: This migration will be enabled later in the nested folder feature
 	// implementation process. It is on hold so we can continue working on the

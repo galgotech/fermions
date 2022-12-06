@@ -33,9 +33,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/accesscontrol/acimpl"
 	"github.com/grafana/grafana/pkg/services/accesscontrol/ossaccesscontrol"
-	"github.com/grafana/grafana/pkg/services/alerting"
-	"github.com/grafana/grafana/pkg/services/annotations"
-	"github.com/grafana/grafana/pkg/services/annotations/annotationsimpl"
 	"github.com/grafana/grafana/pkg/services/apikey/apikeyimpl"
 	"github.com/grafana/grafana/pkg/services/auth/jwt"
 	"github.com/grafana/grafana/pkg/services/authn"
@@ -75,10 +72,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/loginattempt"
 	"github.com/grafana/grafana/pkg/services/loginattempt/loginattemptimpl"
 	"github.com/grafana/grafana/pkg/services/navtree/navtreeimpl"
-	"github.com/grafana/grafana/pkg/services/ngalert"
-	ngimage "github.com/grafana/grafana/pkg/services/ngalert/image"
-	ngmetrics "github.com/grafana/grafana/pkg/services/ngalert/metrics"
-	ngstore "github.com/grafana/grafana/pkg/services/ngalert/store"
 	"github.com/grafana/grafana/pkg/services/notifications"
 	"github.com/grafana/grafana/pkg/services/oauthtoken"
 	"github.com/grafana/grafana/pkg/services/oauthtoken/oauthtokentest"
@@ -133,35 +126,14 @@ import (
 	"github.com/grafana/grafana/pkg/services/updatechecker"
 	"github.com/grafana/grafana/pkg/services/user/userimpl"
 	"github.com/grafana/grafana/pkg/setting"
-	"github.com/grafana/grafana/pkg/tsdb/azuremonitor"
-	"github.com/grafana/grafana/pkg/tsdb/cloudmonitoring"
-	"github.com/grafana/grafana/pkg/tsdb/cloudwatch"
-	"github.com/grafana/grafana/pkg/tsdb/elasticsearch"
 	"github.com/grafana/grafana/pkg/tsdb/grafanads"
-	"github.com/grafana/grafana/pkg/tsdb/graphite"
-	"github.com/grafana/grafana/pkg/tsdb/influxdb"
 	"github.com/grafana/grafana/pkg/tsdb/legacydata"
 	legacydataservice "github.com/grafana/grafana/pkg/tsdb/legacydata/service"
-	"github.com/grafana/grafana/pkg/tsdb/loki"
-	"github.com/grafana/grafana/pkg/tsdb/mssql"
-	"github.com/grafana/grafana/pkg/tsdb/mysql"
-	"github.com/grafana/grafana/pkg/tsdb/opentsdb"
-	"github.com/grafana/grafana/pkg/tsdb/parca"
-	"github.com/grafana/grafana/pkg/tsdb/phlare"
-	"github.com/grafana/grafana/pkg/tsdb/postgres"
-	"github.com/grafana/grafana/pkg/tsdb/prometheus"
-	"github.com/grafana/grafana/pkg/tsdb/tempo"
-	"github.com/grafana/grafana/pkg/tsdb/testdatasource"
 )
 
 var wireBasicSet = wire.NewSet(
 	legacydataservice.ProvideService,
 	wire.Bind(new(legacydata.RequestHandler), new(*legacydataservice.Service)),
-	annotationsimpl.ProvideService,
-	wire.Bind(new(annotations.Repository), new(*annotationsimpl.RepositoryImpl)),
-	alerting.ProvideAlertStore,
-	alerting.ProvideAlertEngine,
-	wire.Bind(new(alerting.UsageStatsQuerier), new(*alerting.AlertEngine)),
 	setting.NewCfgFromArgs,
 	New,
 	api.ProvideHTTPServer,
@@ -184,18 +156,10 @@ var wireBasicSet = wire.NewSet(
 	pluginsintegration.WireSet,
 	pluginDashboards.ProvideFileStoreManager,
 	wire.Bind(new(pluginDashboards.FileStore), new(*pluginDashboards.FileStoreManager)),
-	cloudwatch.ProvideService,
-	cloudmonitoring.ProvideService,
-	azuremonitor.ProvideService,
-	postgres.ProvideService,
-	mysql.ProvideService,
-	mssql.ProvideService,
 	store.ProvideEntityEventsService,
 	httpclientprovider.New,
 	wire.Bind(new(httpclient.Provider), new(*sdkhttpclient.Provider)),
 	serverlock.ProvideService,
-	annotationsimpl.ProvideCleanupService,
-	wire.Bind(new(annotations.Cleaner), new(*annotationsimpl.CleanupServiceImpl)),
 	cleanup.ProvideService,
 	shorturls.ProvideService,
 	wire.Bind(new(shorturls.Service), new(*shorturls.ShortURLService)),
@@ -224,9 +188,6 @@ var wireBasicSet = wire.NewSet(
 	contexthandler.ProvideService,
 	jwt.ProvideService,
 	wire.Bind(new(models.JWTService), new(*jwt.AuthService)),
-	ngstore.ProvideDBStore,
-	ngimage.ProvideDeleteExpiredService,
-	ngalert.ProvideService,
 	librarypanels.ProvideService,
 	wire.Bind(new(librarypanels.Service), new(*librarypanels.LibraryPanelService)),
 	libraryelements.ProvideService,
@@ -235,18 +196,8 @@ var wireBasicSet = wire.NewSet(
 	notifications.ProvideSmtpService,
 	tracing.ProvideService,
 	metrics.ProvideService,
-	testdatasource.ProvideService,
-	opentsdb.ProvideService,
 	social.ProvideService,
-	influxdb.ProvideService,
 	wire.Bind(new(social.Service), new(*social.SocialService)),
-	tempo.ProvideService,
-	loki.ProvideService,
-	graphite.ProvideService,
-	prometheus.ProvideService,
-	elasticsearch.ProvideService,
-	phlare.ProvideService,
-	parca.ProvideService,
 	encryptionservice.ProvideEncryptionService,
 	wire.Bind(new(encryption.Internal), new(*encryptionservice.Service)),
 	secretsManager.ProvideSecretsService,
@@ -262,7 +213,6 @@ var wireBasicSet = wire.NewSet(
 	wire.Bind(new(datasources.DataSourceService), new(*datasourceservice.Service)),
 	pluginSettings.ProvideService,
 	wire.Bind(new(pluginsettings.Service), new(*pluginSettings.Service)),
-	alerting.ProvideService,
 	database.ProvideServiceAccountsStore,
 	wire.Bind(new(serviceaccounts.Store), new(*database.ServiceAccountsStoreImpl)),
 	ossaccesscontrol.ProvideServiceAccountPermissions,
@@ -287,8 +237,6 @@ var wireBasicSet = wire.NewSet(
 	plugindashboardsservice.ProvideService,
 	wire.Bind(new(plugindashboards.Service), new(*plugindashboardsservice.Service)),
 	plugindashboardsservice.ProvideDashboardUpdater,
-	alerting.ProvideDashAlertExtractorService,
-	wire.Bind(new(alerting.DashAlertExtractor), new(*alerting.DashAlertExtractorService)),
 	comments.ProvideService,
 	guardian.ProvideService,
 	sanitizer.ProvideService,
@@ -348,7 +296,6 @@ var wireBasicSet = wire.NewSet(
 var wireSet = wire.NewSet(
 	wireBasicSet,
 	sqlstore.ProvideService,
-	ngmetrics.ProvideService,
 	wire.Bind(new(notifications.Service), new(*notifications.NotificationService)),
 	wire.Bind(new(notifications.WebhookSender), new(*notifications.NotificationService)),
 	wire.Bind(new(notifications.EmailSender), new(*notifications.NotificationService)),
@@ -363,7 +310,6 @@ var wireTestSet = wire.NewSet(
 	wireBasicSet,
 	ProvideTestEnv,
 	sqlstore.ProvideServiceForTests,
-	ngmetrics.ProvideServiceForTest,
 
 	notifications.MockNotificationService,
 	wire.Bind(new(notifications.Service), new(*notifications.NotificationServiceMock)),

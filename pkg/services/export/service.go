@@ -59,12 +59,6 @@ var exporters = []Exporter{
 		},
 	},
 	{
-		Key:         "alerts",
-		Name:        "Alerts",
-		Description: "Archive alert rules and configuration",
-		process:     exportAlerts,
-	},
-	{
 		Key:         "ds",
 		Name:        "Data sources",
 		Description: "Data source configurations",
@@ -112,12 +106,6 @@ var exporters = []Exporter{
 		Name:        "Files",
 		Description: "Export internal file system",
 		process:     exportFiles,
-	},
-	{
-		Key:         "anno",
-		Name:        "Annotations",
-		Description: "Write an DataFrame for all annotations on a dashboard",
-		process:     exportAnnotations,
 	},
 	{
 		Key:         "plugins",

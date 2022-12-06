@@ -1,4 +1,4 @@
-import { AnnotationEvent, DataFrame } from '../types';
+import { DataFrame } from '../types';
 
 import { BusEventBase, BusEventWithPayload } from './types';
 
@@ -34,11 +34,6 @@ export class DataHoverClearEvent extends BusEventBase {
 /** @alpha */
 export class DataSelectEvent extends BusEventWithPayload<DataHoverPayload> {
   static type = 'data-select';
-}
-
-/** @alpha */
-export class AnnotationChangeEvent extends BusEventWithPayload<Partial<AnnotationEvent>> {
-  static type = 'annotation-event';
 }
 
 // Loaded the first time a dashboard is loaded (not on every render)

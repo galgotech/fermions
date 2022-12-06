@@ -8,7 +8,6 @@ import {
   CoreApp,
   CSVConfig,
   DataFrame,
-  MutableDataFrame,
   SelectableValue,
   TimeZone,
 } from '@grafana/data';
@@ -20,9 +19,6 @@ import { Trans } from 'app/core/internationalization';
 import { dataFrameToLogsModel } from 'app/core/logsModel';
 import { PanelModel } from 'app/features/dashboard/state';
 import { GetDataOptions } from 'app/features/query/state/PanelQueryRunner';
-import { transformToJaeger } from 'app/plugins/datasource/jaeger/responseTransform';
-import { transformToOTLP } from 'app/plugins/datasource/tempo/resultTransformer';
-import { transformToZipkin } from 'app/plugins/datasource/zipkin/utils/transforms';
 
 import { InspectDataOptions } from './InspectDataOptions';
 import { getPanelInspectorStyles } from './styles';
@@ -86,39 +82,6 @@ export class InspectDataTab extends PureComponent<Props, State> {
 
     const logsModel = dataFrameToLogsModel(data || [], undefined);
     downloadLogsModelAsTxt(logsModel, panel ? panel.getDisplayTitle() : 'Explore');
-  };
-
-  exportTracesAsJson = () => {
-    const { data, panel } = this.props;
-    if (!data) {
-      return;
-    }
-
-    for (const df of data) {
-      // Only export traces
-      if (df.meta?.preferredVisualisationType !== 'trace') {
-        continue;
-      }
-
-      switch (df.meta?.custom?.traceFormat) {
-        case 'jaeger': {
-          let res = transformToJaeger(new MutableDataFrame(df));
-          downloadAsJson(res, (panel ? panel.getDisplayTitle() : 'Explore') + '-traces');
-          break;
-        }
-        case 'zipkin': {
-          let res = transformToZipkin(new MutableDataFrame(df));
-          downloadAsJson(res, (panel ? panel.getDisplayTitle() : 'Explore') + '-traces');
-          break;
-        }
-        case 'otlp':
-        default: {
-          let res = transformToOTLP(new MutableDataFrame(df));
-          downloadAsJson(res, (panel ? panel.getDisplayTitle() : 'Explore') + '-traces');
-          break;
-        }
-      }
-    }
   };
 
   exportServiceGraph = () => {
@@ -187,7 +150,6 @@ export class InspectDataTab extends PureComponent<Props, State> {
     const index = !dataFrames[dataFrameIndex] ? 0 : dataFrameIndex;
     const dataFrame = dataFrames[index];
     const hasLogs = dataFrames.some((df) => df?.meta?.preferredVisualisationType === 'logs');
-    const hasTraces = dataFrames.some((df) => df?.meta?.preferredVisualisationType === 'trace');
     const hasServiceGraph = dataFrames.some((df) => df?.meta?.preferredVisualisationType === 'nodeGraph');
 
     return (
@@ -231,18 +193,6 @@ export class InspectDataTab extends PureComponent<Props, State> {
               `}
             >
               <Trans i18nKey="dashboard.inspect-data.download-logs">Download logs</Trans>
-            </Button>
-          )}
-          {hasTraces && (
-            <Button
-              variant="primary"
-              onClick={this.exportTracesAsJson}
-              className={css`
-                margin-bottom: 10px;
-                margin-left: 10px;
-              `}
-            >
-              <Trans i18nKey="dashboard.inspect-data.download-traces">Download traces</Trans>
             </Button>
           )}
           {hasServiceGraph && (

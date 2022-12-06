@@ -1,10 +1,8 @@
-import { each, find, findIndex, flattenDeep, isArray, isBoolean, isNumber, isString, map, max, some } from 'lodash';
+import { each, findIndex, flattenDeep, isArray, isBoolean, isNumber, isString, map, max, some } from 'lodash';
 
 import {
-  AnnotationQuery,
   DataLink,
   DataLinkBuiltInVars,
-  DataQuery,
   DataSourceRef,
   FieldConfigSource,
   FieldMatcherID,
@@ -39,16 +37,9 @@ import kbn from 'app/core/utils/kbn';
 import { DatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { isConstant, isMulti } from 'app/features/variables/guard';
 import { alignCurrentWithMulti } from 'app/features/variables/shared/multiOptions';
-import { CloudWatchMetricsQuery, LegacyAnnotationQuery } from 'app/plugins/datasource/cloudwatch/types';
-import { MIXED_DATASOURCE_NAME } from 'app/plugins/datasource/mixed/MixedDataSource';
 import { plugin as gaugePanelPlugin } from 'app/plugins/panel/gauge/module';
 import { plugin as statPanelPlugin } from 'app/plugins/panel/stat/module';
 
-import {
-  migrateCloudWatchQuery,
-  migrateMultipleStatsAnnotationQuery,
-  migrateMultipleStatsMetricsQuery,
-} from '../../../plugins/datasource/cloudwatch/migrations/dashboardMigrations';
 import { ConstantVariableModel, TextBoxVariableModel, VariableHide } from '../../variables/types';
 
 import { DashboardModel } from './DashboardModel';
@@ -168,15 +159,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 6) {
-      // move drop-downs to new schema
-      const annotations: any = find(old.pulldowns, { type: 'annotations' });
-
-      if (annotations) {
-        this.dashboard.annotations = {
-          list: annotations.annotations || [],
-        };
-      }
-
       // update template variables
       for (i = 0; i < this.dashboard.templating.list.length; i++) {
         const variable = this.dashboard.templating.list[i];
@@ -723,11 +705,8 @@ export class DashboardMigrator {
 
     if (oldVersion < 34) {
       panelUpgrades.push((panel: PanelModel) => {
-        this.migrateCloudWatchQueries(panel);
         return panel;
       });
-
-      this.migrateCloudWatchAnnotationQuery();
     }
 
     if (oldVersion < 35) {
@@ -735,11 +714,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 36) {
-      // Migrate datasource to refs in annotations
-      for (const query of this.dashboard.annotations.list) {
-        query.datasource = migrateDatasourceNameToRef(query.datasource, { returnDefaultAsNull: false });
-      }
-
       // Migrate datasource: null to current default
       const defaultDs = getDataSourceSrv().getInstanceSettings(null);
       if (defaultDs) {
@@ -759,11 +733,7 @@ export class DashboardMigrator {
 
             for (const target of panel.targets) {
               if (target.datasource == null || target.datasource.uid == null) {
-                if (panel.datasource?.uid !== MIXED_DATASOURCE_NAME) {
-                  target.datasource = { ...panel.datasource };
-                } else {
-                  target.datasource = migrateDatasourceNameToRef(target.datasource, { returnDefaultAsNull: false });
-                }
+                target.datasource = { ...panel.datasource };
               }
 
               if (panelDataSourceWasDefault && target.datasource?.uid !== '__expr__') {
@@ -806,35 +776,6 @@ export class DashboardMigrator {
           for (n = 0; n < rowPanels.length; n++) {
             rowPanels[n] = panelUpgrades[k].call(this, rowPanels[n]);
           }
-        }
-      }
-    }
-  }
-
-  // Migrates metric queries and/or annotation queries that use more than one statistic.
-  // E.g query.statistics = ['Max', 'Min'] will be migrated to two queries - query1.statistic = 'Max' and query2.statistic = 'Min'
-  // New queries, that were created during migration, are put at the end of the array.
-  migrateCloudWatchQueries(panel: PanelModel) {
-    for (const target of panel.targets || []) {
-      if (isCloudWatchQuery(target)) {
-        migrateCloudWatchQuery(target);
-        if (target.hasOwnProperty('statistics')) {
-          // New queries, that were created during migration, are put at the end of the array.
-          const newQueries = migrateMultipleStatsMetricsQuery(target, [...panel.targets]);
-          for (const newQuery of newQueries) {
-            panel.targets.push(newQuery);
-          }
-        }
-      }
-    }
-  }
-
-  migrateCloudWatchAnnotationQuery() {
-    for (const annotation of this.dashboard.annotations.list) {
-      if (isLegacyCloudWatchAnnotationQuery(annotation)) {
-        const newAnnotationQueries = migrateMultipleStatsAnnotationQuery(annotation);
-        for (const newAnnotationQuery of newAnnotationQueries) {
-          this.dashboard.annotations.list.push(newAnnotationQuery);
         }
       }
     }
@@ -1162,27 +1103,6 @@ function upgradeValueMappingsForPanel(panel: PanelModel) {
   }
 
   return panel;
-}
-
-function isCloudWatchQuery(target: DataQuery): target is CloudWatchMetricsQuery {
-  return (
-    target.hasOwnProperty('dimensions') &&
-    target.hasOwnProperty('namespace') &&
-    target.hasOwnProperty('region') &&
-    target.hasOwnProperty('metricName')
-  );
-}
-
-function isLegacyCloudWatchAnnotationQuery(
-  target: AnnotationQuery<DataQuery>
-): target is AnnotationQuery<LegacyAnnotationQuery> {
-  return (
-    target.hasOwnProperty('dimensions') &&
-    target.hasOwnProperty('namespace') &&
-    target.hasOwnProperty('region') &&
-    target.hasOwnProperty('prefixMatching') &&
-    target.hasOwnProperty('statistics')
-  );
 }
 
 function upgradeValueMappings(oldMappings: any, thresholds?: ThresholdsConfig): ValueMapping[] | undefined {

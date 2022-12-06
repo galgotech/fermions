@@ -4,17 +4,9 @@ import { e2e } from '../index';
 import { getDashboardUid } from '../support/url';
 
 import { DeleteDashboardConfig } from './deleteDashboard';
-import { selectOption } from './selectOption';
 import { setDashboardTimeRange, TimeRangeConfig } from './setDashboardTimeRange';
 
-export interface AddAnnotationConfig {
-  dataSource: string;
-  dataSourceForm?: () => void;
-  name: string;
-}
-
 export interface AddDashboardConfig {
-  annotations: AddAnnotationConfig[];
   timeRange: TimeRangeConfig;
   title: string;
   variables: PartialAddVariableConfig[];
@@ -61,26 +53,6 @@ export type AddVariableConfig = AddVariableDefault & AddVariableOptional & AddVa
  *
  * @example
  * ```
- * // Configuring a dashboard with annotations
- * addDashboard({
- *    title: 'Test Dashboard',
- *    annotations: [
- *      {
- *        // This should match the datasource name
- *        dataSource: 'azure-monitor',
- *        name: 'Test Annotation',
- *        dataSourceForm: () => {
- *          // Insert steps to create annotation using datasource form
- *        }
- *      }
- *    ]
- * })
- * ```
- *
- * @see{@link AddAnnotationConfig}
- *
- * @example
- * ```
  * // Configuring a dashboard with variables
  * addDashboard({
  *    title: 'Test Dashboard',
@@ -111,7 +83,6 @@ export type AddVariableConfig = AddVariableDefault & AddVariableOptional & AddVa
  */
 export const addDashboard = (config?: Partial<AddDashboardConfig>) => {
   const fullConfig: AddDashboardConfig = {
-    annotations: [],
     title: `e2e-${uuidv4()}`,
     variables: [],
     ...config,
@@ -123,20 +94,11 @@ export const addDashboard = (config?: Partial<AddDashboardConfig>) => {
     },
   };
 
-  const { annotations, timeRange, title, variables } = fullConfig;
+  const { timeRange, title, variables } = fullConfig;
 
   e2e().logToConsole('Adding dashboard with title:', title);
 
   e2e.pages.AddDashboard.visit();
-
-  if (annotations.length > 0 || variables.length > 0) {
-    e2e.components.PageToolbar.item('Dashboard settings').click();
-    addAnnotations(annotations);
-
-    fullConfig.variables = addVariables(variables);
-
-    e2e.components.BackButton.backArrow().should('be.visible').click({ force: true });
-  }
 
   setDashboardTimeRange(timeRange);
 
@@ -168,39 +130,6 @@ export const addDashboard = (config?: Partial<AddDashboardConfig>) => {
         { log: false }
       );
     });
-};
-
-const addAnnotation = (config: AddAnnotationConfig, isFirst: boolean) => {
-  if (isFirst) {
-    if (e2e.pages.Dashboard.Settings.Annotations.List.addAnnotationCTAV2) {
-      e2e.pages.Dashboard.Settings.Annotations.List.addAnnotationCTAV2().click();
-    } else {
-      e2e.pages.Dashboard.Settings.Annotations.List.addAnnotationCTA().click();
-    }
-  } else {
-    cy.contains('New query').click();
-  }
-
-  const { dataSource, dataSourceForm, name } = config;
-
-  selectOption({
-    container: e2e.components.DataSourcePicker.container(),
-    optionText: dataSource,
-  });
-
-  e2e.pages.Dashboard.Settings.Annotations.Settings.name().clear().type(name);
-
-  if (dataSourceForm) {
-    dataSourceForm();
-  }
-};
-
-const addAnnotations = (configs: AddAnnotationConfig[]) => {
-  if (configs.length > 0) {
-    e2e.pages.Dashboard.Settings.General.sectionItems('Annotations').click();
-  }
-
-  return configs.forEach((config, i) => addAnnotation(config, i === 0));
 };
 
 export const VARIABLE_HIDE_LABEL = 'Label';

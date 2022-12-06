@@ -148,9 +148,7 @@ type JSONData struct {
 	AutoEnabled bool `json:"autoEnabled"`
 
 	// Datasource settings
-	Annotations  bool            `json:"annotations"`
 	Metrics      bool            `json:"metrics"`
-	Alerting     bool            `json:"alerting"`
 	Explore      bool            `json:"explore"`
 	Table        bool            `json:"tables"`
 	Logs         bool            `json:"logs"`

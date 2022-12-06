@@ -46,8 +46,6 @@ import (
 	publicdashboardsapi "github.com/grafana/grafana/pkg/services/publicdashboards/api"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
 	"github.com/grafana/grafana/pkg/services/user"
-	"github.com/grafana/grafana/pkg/setting"
-	"github.com/grafana/grafana/pkg/web"
 )
 
 var plog = log.New("api")
@@ -58,7 +56,6 @@ func (hs *HTTPServer) registerRoutes() {
 	reqNotSignedIn := middleware.ReqNotSignedIn
 	reqSignedInNoAnonymous := middleware.ReqSignedInNoAnonymous
 	reqGrafanaAdmin := middleware.ReqGrafanaAdmin
-	reqEditorRole := middleware.ReqEditorRole
 	reqOrgAdmin := middleware.ReqOrgAdmin
 	reqOrgAdminDashOrFolderAdminOrTeamAdmin := middleware.OrgAdminDashOrFolderAdminOrTeamAdmin(hs.SQLStore, hs.DashboardService, hs.teamService)
 	reqCanAccessTeams := middleware.AdminOrEditorAndFeatureEnabled(hs.Cfg.EditorsCanAdmin)
@@ -165,13 +162,9 @@ func (hs *HTTPServer) registerRoutes() {
 		middleware.EnsureEditorOrViewerCanEdit(c)
 	}, ac.EvalPermission(ac.ActionDatasourcesExplore)), hs.Index)
 
-	r.Get("/alerting/", reqSignedIn, hs.Index)
-	r.Get("/alerting/*", reqSignedIn, hs.Index)
 	r.Get("/library-panels/", reqSignedIn, hs.Index)
 	r.Get("/monitoring/", reqSignedIn, hs.Index)
 	r.Get("/monitoring/*", reqSignedIn, hs.Index)
-	r.Get("/alerts-and-incidents", reqSignedIn, hs.Index)
-	r.Get("/alerts-and-incidents/*", reqSignedIn, hs.Index)
 
 	// sign up
 	r.Get("/verify", hs.Index)
@@ -501,55 +494,6 @@ func (hs *HTTPServer) registerRoutes() {
 		// DataSource w/ expressions
 		apiRoute.Post("/ds/query", authorize(reqSignedIn, ac.EvalPermission(datasources.ActionQuery)), routing.Wrap(hs.QueryMetricsV2))
 
-		apiRoute.Group("/alerts", func(alertsRoute routing.RouteRegister) {
-			alertsRoute.Post("/test", routing.Wrap(hs.AlertTest))
-			alertsRoute.Post("/:alertId/pause", reqEditorRole, routing.Wrap(hs.PauseAlert(setting.AlertingEnabled)))
-			alertsRoute.Get("/:alertId", hs.ValidateOrgAlert, routing.Wrap(hs.GetAlert))
-			alertsRoute.Get("/", routing.Wrap(hs.GetAlerts))
-			alertsRoute.Get("/states-for-dashboard", routing.Wrap(hs.GetAlertStatesForDashboard))
-		})
-
-		var notifiersAuthHandler web.Handler
-		if hs.Cfg.UnifiedAlerting.IsEnabled() {
-			notifiersAuthHandler = reqSignedIn
-		} else {
-			notifiersAuthHandler = reqEditorRole
-		}
-
-		apiRoute.Get("/alert-notifiers", notifiersAuthHandler, routing.Wrap(
-			hs.GetAlertNotifiers(hs.Cfg.UnifiedAlerting.IsEnabled())),
-		)
-
-		apiRoute.Group("/alert-notifications", func(alertNotifications routing.RouteRegister) {
-			alertNotifications.Get("/", routing.Wrap(hs.GetAlertNotifications))
-			alertNotifications.Post("/test", routing.Wrap(hs.NotificationTest))
-			alertNotifications.Post("/", routing.Wrap(hs.CreateAlertNotification))
-			alertNotifications.Put("/:notificationId", routing.Wrap(hs.UpdateAlertNotification))
-			alertNotifications.Get("/:notificationId", routing.Wrap(hs.GetAlertNotificationByID))
-			alertNotifications.Delete("/:notificationId", routing.Wrap(hs.DeleteAlertNotification))
-			alertNotifications.Get("/uid/:uid", routing.Wrap(hs.GetAlertNotificationByUID))
-			alertNotifications.Put("/uid/:uid", routing.Wrap(hs.UpdateAlertNotificationByUID))
-			alertNotifications.Delete("/uid/:uid", routing.Wrap(hs.DeleteAlertNotificationByUID))
-		}, reqEditorRole)
-
-		// alert notifications without requirement of user to be org editor
-		apiRoute.Group("/alert-notifications", func(orgRoute routing.RouteRegister) {
-			orgRoute.Get("/lookup", routing.Wrap(hs.GetAlertNotificationLookup))
-		})
-
-		apiRoute.Get("/annotations", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsRead)), routing.Wrap(hs.GetAnnotations))
-		apiRoute.Post("/annotations/mass-delete", authorize(reqOrgAdmin, ac.EvalPermission(ac.ActionAnnotationsDelete)), routing.Wrap(hs.MassDeleteAnnotations))
-
-		apiRoute.Group("/annotations", func(annotationsRoute routing.RouteRegister) {
-			annotationsRoute.Post("/", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsCreate)), routing.Wrap(hs.PostAnnotation))
-			annotationsRoute.Get("/:annotationId", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsRead, ac.ScopeAnnotationsID)), routing.Wrap(hs.GetAnnotationByID))
-			annotationsRoute.Delete("/:annotationId", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsDelete, ac.ScopeAnnotationsID)), routing.Wrap(hs.DeleteAnnotationByID))
-			annotationsRoute.Put("/:annotationId", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsWrite, ac.ScopeAnnotationsID)), routing.Wrap(hs.UpdateAnnotation))
-			annotationsRoute.Patch("/:annotationId", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsWrite, ac.ScopeAnnotationsID)), routing.Wrap(hs.PatchAnnotation))
-			annotationsRoute.Post("/graphite", authorize(reqEditorRole, ac.EvalPermission(ac.ActionAnnotationsCreate, ac.ScopeAnnotationsTypeOrganization)), routing.Wrap(hs.PostGraphiteAnnotation))
-			annotationsRoute.Get("/tags", authorize(reqSignedIn, ac.EvalPermission(ac.ActionAnnotationsRead)), routing.Wrap(hs.GetAnnotationTags))
-		})
-
 		apiRoute.Post("/frontend-metrics", routing.Wrap(hs.PostFrontendMetrics))
 
 		apiRoute.Group("/live", func(liveRoute routing.RouteRegister) {
@@ -597,7 +541,6 @@ func (hs *HTTPServer) registerRoutes() {
 			adminRoute.Get("/settings/features", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionSettingsRead)), hs.Features.HandleGetSettings)
 		}
 		adminRoute.Get("/stats", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionServerStatsRead)), routing.Wrap(hs.AdminGetStats))
-		adminRoute.Post("/pause-all-alerts", reqGrafanaAdmin, routing.Wrap(hs.PauseAllAlerts(setting.AlertingEnabled)))
 
 		if hs.ThumbService != nil && hs.Features.IsEnabled(featuremgmt.FlagDashboardPreviewsAdmin) {
 			adminRoute.Post("/crawler/start", reqGrafanaAdmin, routing.Wrap(hs.ThumbService.StartCrawler))
@@ -624,7 +567,6 @@ func (hs *HTTPServer) registerRoutes() {
 		adminRoute.Post("/provisioning/plugins/reload", authorize(reqGrafanaAdmin, ac.EvalPermission(ActionProvisioningReload, ScopeProvisionersPlugins)), routing.Wrap(hs.AdminProvisioningReloadPlugins))
 		adminRoute.Post("/provisioning/datasources/reload", authorize(reqGrafanaAdmin, ac.EvalPermission(ActionProvisioningReload, ScopeProvisionersDatasources)), routing.Wrap(hs.AdminProvisioningReloadDatasources))
 		adminRoute.Post("/provisioning/notifications/reload", authorize(reqGrafanaAdmin, ac.EvalPermission(ActionProvisioningReload, ScopeProvisionersNotifications)), routing.Wrap(hs.AdminProvisioningReloadNotifications))
-		adminRoute.Post("/provisioning/alerting/reload", authorize(reqGrafanaAdmin, ac.EvalPermission(ActionProvisioningReload, ScopeProvisionersAlertRules)), routing.Wrap(hs.AdminProvisioningReloadAlerting))
 
 		adminRoute.Post("/ldap/reload", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionLDAPConfigReload)), routing.Wrap(hs.ReloadLDAPCfg))
 		adminRoute.Post("/ldap/sync/:id", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionLDAPUsersSync)), routing.Wrap(hs.PostSyncUserWithLDAP))

@@ -1,6 +1,5 @@
 import { ReducerID } from '@grafana/data';
 
-import { EvalFunction } from '../../alerting/state/alertDef';
 import { ClassicCondition, ExpressionQuery, ExpressionQueryType } from '../types';
 
 export const getDefaults = (query: ExpressionQuery) => {
@@ -54,6 +53,6 @@ export const defaultCondition: ClassicCondition = {
   query: { params: [] },
   evaluator: {
     params: [0, 0],
-    type: EvalFunction.IsAbove,
+    type: 'gt',
   },
 };

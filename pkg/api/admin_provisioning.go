@@ -99,11 +99,3 @@ func (hs *HTTPServer) AdminProvisioningReloadNotifications(c *models.ReqContext)
 	}
 	return response.Success("Notifications config reloaded")
 }
-
-func (hs *HTTPServer) AdminProvisioningReloadAlerting(c *models.ReqContext) response.Response {
-	err := hs.ProvisioningService.ProvisionAlerting(c.Req.Context())
-	if err != nil {
-		return response.Error(500, "", err)
-	}
-	return response.Success("Alerting config reloaded")
-}

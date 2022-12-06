@@ -69,9 +69,6 @@ export function restore(version: any, restoredFrom?: any): any {
         version: version,
       },
       dashboard: {
-        annotations: {
-          list: [],
-        },
         description: 'A random dashboard for implementing the history list',
         editable: true,
         gnetId: null,

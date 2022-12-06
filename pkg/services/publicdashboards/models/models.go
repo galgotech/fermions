@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/grafana/grafana/pkg/kinds/dashboard"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/tsdb/legacydata"
 )
@@ -37,7 +36,6 @@ type PublicDashboard struct {
 	TimeSettings         *TimeSettings `json:"timeSettings" xorm:"time_settings"`
 	IsEnabled            bool          `json:"isEnabled" xorm:"is_enabled"`
 	AccessToken          string        `json:"accessToken" xorm:"access_token"`
-	AnnotationsEnabled   bool          `json:"annotationsEnabled" xorm:"annotations_enabled"`
 	TimeSelectionEnabled bool          `json:"timeSelectionEnabled" xorm:"time_selection_enabled"`
 
 	CreatedBy int64 `json:"createdBy" xorm:"created_by"`
@@ -45,28 +43,6 @@ type PublicDashboard struct {
 
 	CreatedAt time.Time `json:"createdAt" xorm:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" xorm:"updated_at"`
-}
-
-// Alias the generated type
-type DashAnnotation = dashboard.AnnotationQuery
-
-type AnnotationsDto struct {
-	Annotations struct {
-		List []DashAnnotation `json:"list"`
-	}
-}
-
-type AnnotationEvent struct {
-	Id          int64                     `json:"id"`
-	DashboardId int64                     `json:"dashboardId"`
-	PanelId     int64                     `json:"panelId"`
-	Tags        []string                  `json:"tags"`
-	IsRegion    bool                      `json:"isRegion"`
-	Text        string                    `json:"text"`
-	Color       string                    `json:"color"`
-	Time        int64                     `json:"time"`
-	TimeEnd     int64                     `json:"timeEnd"`
-	Source      dashboard.AnnotationQuery `json:"source"`
 }
 
 func (pd PublicDashboard) TableName() string {
@@ -125,11 +101,6 @@ type SavePublicDashboardDTO struct {
 type PublicDashboardQueryDTO struct {
 	IntervalMs    int64
 	MaxDataPoints int64
-}
-
-type AnnotationsQueryDTO struct {
-	From int64
-	To   int64
 }
 
 //

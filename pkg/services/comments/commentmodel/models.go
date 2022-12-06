@@ -12,14 +12,11 @@ const (
 	ObjectTypeOrg = "org"
 	// ObjectTypeDashboard used for dashboard-wide comments.
 	ObjectTypeDashboard = "dashboard"
-	// ObjectTypeAnnotation used for annotation comments.
-	ObjectTypeAnnotation = "annotation"
 )
 
 var RegisteredObjectTypes = map[string]struct{}{
-	ObjectTypeOrg:        {},
-	ObjectTypeDashboard:  {},
-	ObjectTypeAnnotation: {},
+	ObjectTypeOrg:       {},
+	ObjectTypeDashboard: {},
 }
 
 type CommentGroup struct {

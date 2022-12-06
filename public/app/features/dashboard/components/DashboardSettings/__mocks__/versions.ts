@@ -125,19 +125,6 @@ export const versions = [
 export const diffs = {
   lhs: {
     data: {
-      annotations: {
-        list: [
-          {
-            builtIn: 1,
-            datasource: '-- Grafana --',
-            enable: true,
-            hide: true,
-            iconColor: 'rgba(0, 211, 255, 1)',
-            name: 'Annotations & Alerts',
-            type: 'dashboard',
-          },
-        ],
-      },
       editable: true,
       gnetId: null,
       graphTooltip: 0,
@@ -168,19 +155,6 @@ export const diffs = {
   },
   rhs: {
     data: {
-      annotations: {
-        list: [
-          {
-            builtIn: 1,
-            datasource: '-- Grafana --',
-            enable: true,
-            hide: true,
-            iconColor: 'rgba(0, 211, 255, 1)',
-            name: 'Annotations & Alerts',
-            type: 'dashboard',
-          },
-        ],
-      },
       description: 'The dashboard description',
       editable: true,
       gnetId: null,

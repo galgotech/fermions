@@ -1,5 +1,4 @@
 export * from './teams';
-export * from './alerting';
 export * from './location';
 export * from './folders';
 export * from './dashboard';

@@ -10,7 +10,6 @@ import { getAppRoutes } from 'app/routes/routes';
 import { store } from 'app/store/store';
 
 import { AngularRoot } from './angular/AngularRoot';
-import { loadAndInitAngularIfEnabled } from './angular/loadAndInitAngularIfEnabled';
 import { GrafanaApp } from './app';
 import { AppChrome } from './core/components/AppChrome/AppChrome';
 import { AppNotificationList } from './core/components/AppNotifications/AppNotificationList';
@@ -50,7 +49,6 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
   }
 
   async componentDidMount() {
-    await loadAndInitAngularIfEnabled();
     this.setState({ ready: true });
     $('.preloader').remove();
   }

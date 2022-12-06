@@ -5,7 +5,6 @@ import { StoreState } from 'app/types/store';
 
 import { buildInitialState } from '../core/reducers/navModel';
 import { addReducer, createRootReducer } from '../core/reducers/root';
-import { alertingApi } from '../features/alerting/unified/api/alertingApi';
 
 import { setStore } from './store';
 
@@ -21,7 +20,6 @@ export function configureStore(initialState?: Partial<StoreState>) {
     reducer: createRootReducer(),
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ thunk: true, serializableCheck: false, immutableCheck: false }).concat(
-        alertingApi.middleware,
         publicDashboardApi.middleware
       ),
     devTools: process.env.NODE_ENV !== 'production',

@@ -1,17 +1,11 @@
 import { merge, Observable, ReplaySubject, Subject, Subscription, timer, Unsubscribable } from 'rxjs';
-import { finalize, map, mapTo, mergeAll, reduce, share, takeUntil } from 'rxjs/operators';
+import { finalize, map, mapTo, mergeAll, share, takeUntil } from 'rxjs/operators';
 
-import { AnnotationQuery } from '@grafana/data';
 import { RefreshEvent } from '@grafana/runtime';
-import { config } from 'app/core/config';
-import { dedupAnnotations } from 'app/features/annotations/events_processing';
 
 import { getTimeSrv, TimeSrv } from '../../../dashboard/services/TimeSrv';
 import { DashboardModel } from '../../../dashboard/state';
 
-import { AlertStatesWorker } from './AlertStatesWorker';
-import { AnnotationsWorker } from './AnnotationsWorker';
-import { UnifiedAlertStatesWorker } from './UnifiedAlertStatesWorker';
 import {
   DashboardQueryRunner,
   DashboardQueryRunnerOptions,
@@ -19,31 +13,24 @@ import {
   DashboardQueryRunnerWorker,
   DashboardQueryRunnerWorkerResult,
 } from './types';
-import { getAnnotationsByPanelId } from './utils';
 
 class DashboardQueryRunnerImpl implements DashboardQueryRunner {
   private readonly results: ReplaySubject<DashboardQueryRunnerWorkerResult>;
   private readonly runs: Subject<DashboardQueryRunnerOptions>;
-  private readonly cancellationStream: Subject<AnnotationQuery>;
   private readonly runsSubscription: Unsubscribable;
   private readonly eventsSubscription: Unsubscribable;
 
   constructor(
     private readonly dashboard: DashboardModel,
     private readonly timeSrv: TimeSrv = getTimeSrv(),
-    private readonly workers: DashboardQueryRunnerWorker[] = [
-      config.unifiedAlertingEnabled ? new UnifiedAlertStatesWorker() : new AlertStatesWorker(),
-      new AnnotationsWorker(),
-    ]
+    private readonly workers: DashboardQueryRunnerWorker[] = []
   ) {
     this.run = this.run.bind(this);
     this.getResult = this.getResult.bind(this);
-    this.cancel = this.cancel.bind(this);
     this.destroy = this.destroy.bind(this);
     this.executeRun = this.executeRun.bind(this);
     this.results = new ReplaySubject<DashboardQueryRunnerWorkerResult>(1);
     this.runs = new Subject<DashboardQueryRunnerOptions>();
-    this.cancellationStream = new Subject<any>();
     this.runsSubscription = this.runs.subscribe((options) => this.executeRun(options));
     this.eventsSubscription = dashboard.events.subscribe(RefreshEvent, (event) => {
       this.run({ dashboard: this.dashboard, range: this.timeSrv.timeRange() });
@@ -57,9 +44,7 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
   getResult(panelId?: number): Observable<DashboardQueryRunnerResult> {
     return this.results.asObservable().pipe(
       map((result) => {
-        const annotations = getAnnotationsByPanelId(result.annotations, panelId);
-        const alertState = result.alertStates.find((res) => Boolean(panelId) && res.panelId === panelId);
-        return { annotations: dedupAnnotations(annotations), alertState };
+        return {};
       })
     );
   }
@@ -72,16 +57,6 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
     const resultObservable = merge(workerObservables).pipe(
       takeUntil(this.runs.asObservable()),
       mergeAll(),
-      reduce((acc: DashboardQueryRunnerWorkerResult, value: DashboardQueryRunnerWorkerResult) => {
-        // console.log({ acc: acc.annotations.length, value: value.annotations.length });
-        // should we use scan or reduce here
-        // reduce will only emit when all observables are completed
-        // scan will emit when any observable is completed
-        // choosing reduce to minimize re-renders
-        acc.annotations = acc.annotations.concat(value.annotations);
-        acc.alertStates = acc.alertStates.concat(value.alertStates);
-        return acc;
-      }),
       finalize(() => {
         resultSubscription.unsubscribe(); // important to avoid memory leaks
       }),
@@ -90,7 +65,7 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
 
     const timerSubscription = new Subscription();
     const timerObservable = timer(200).pipe(
-      mapTo({ annotations: [], alertStates: [] }),
+      mapTo({ }),
       takeUntil(resultObservable),
       finalize(() => {
         timerSubscription.unsubscribe(); // important to avoid memory leaks
@@ -111,18 +86,9 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
     );
   }
 
-  cancel(annotation: AnnotationQuery): void {
-    this.cancellationStream.next(annotation);
-  }
-
-  cancellations(): Observable<AnnotationQuery> {
-    return this.cancellationStream.asObservable().pipe(share());
-  }
-
   destroy(): void {
     this.results.complete();
     this.runs.complete();
-    this.cancellationStream.complete();
     this.runsSubscription.unsubscribe();
     this.eventsSubscription.unsubscribe();
   }

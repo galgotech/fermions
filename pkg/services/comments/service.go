@@ -5,7 +5,6 @@ import (
 
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/comments/commentmodel"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
@@ -25,7 +24,7 @@ type Service struct {
 
 func ProvideService(cfg *setting.Cfg, store db.DB, live *live.GrafanaLive,
 	features featuremgmt.FeatureToggles, accessControl accesscontrol.AccessControl,
-	dashboardService dashboards.DashboardService, userService user.Service, annotationsRepo annotations.Repository) *Service {
+	dashboardService dashboards.DashboardService, userService user.Service) *Service {
 	s := &Service{
 		cfg:      cfg,
 		live:     live,
@@ -33,7 +32,7 @@ func ProvideService(cfg *setting.Cfg, store db.DB, live *live.GrafanaLive,
 		storage: &sqlStorage{
 			sql: store,
 		},
-		permissions: commentmodel.NewPermissionChecker(store, features, accessControl, dashboardService, annotationsRepo),
+		permissions: commentmodel.NewPermissionChecker(store, features, accessControl, dashboardService),
 		userService: userService,
 	}
 	return s

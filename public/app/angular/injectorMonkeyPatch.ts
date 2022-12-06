@@ -27,12 +27,6 @@ export function monkeyPatchInjectorWithPreAssignedBindings(injector: any) {
         self.current = parentScope.ctrl.current;
       }
 
-      // Data source AnnotationsQueryCtrl
-      if (parentScope.ctrl?.currentAnnotation) {
-        self.annotation = parentScope.ctrl.currentAnnotation;
-        self.datasource = parentScope.ctrl.currentDatasource;
-      }
-
       // App config ctrl
       if (parentScope.isAppConfigCtrl) {
         self.appEditCtrl = parentScope.ctrl;

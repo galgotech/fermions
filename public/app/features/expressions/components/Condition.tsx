@@ -3,10 +3,9 @@ import React, { FormEvent } from 'react';
 
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Stack } from '@grafana/experimental';
-import { Button, ButtonSelect, Icon, InlineFieldRow, Input, Select, useStyles2 } from '@grafana/ui';
+import { Button, Icon, InlineFieldRow, Input, Select, useStyles2 } from '@grafana/ui';
 
-import alertDef, { EvalFunction } from '../../alerting/state/alertDef';
-import { ClassicCondition, ReducerType } from '../types';
+import { ClassicCondition } from '../types';
 
 interface Props {
   condition: ClassicCondition;
@@ -16,38 +15,14 @@ interface Props {
   refIds: Array<SelectableValue<string>>;
 }
 
-const reducerFunctions = alertDef.reducerTypes.map((rt) => ({ label: rt.text, value: rt.value }));
-const evalOperators = alertDef.evalOperators.map((eo) => ({ label: eo.text, value: eo.value }));
-const evalFunctions = alertDef.evalFunctions.map((ef) => ({ label: ef.text, value: ef.value }));
 
 export const Condition = ({ condition, index, onChange, onRemoveCondition, refIds }: Props) => {
   const styles = useStyles2(getStyles);
-
-  const onEvalOperatorChange = (evalOperator: SelectableValue<string>) => {
-    onChange({
-      ...condition,
-      operator: { type: evalOperator.value! },
-    });
-  };
-
-  const onReducerFunctionChange = (conditionFunction: SelectableValue<string>) => {
-    onChange({
-      ...condition,
-      reducer: { type: conditionFunction.value! as ReducerType, params: [] },
-    });
-  };
 
   const onRefIdChange = (refId: SelectableValue<string>) => {
     onChange({
       ...condition,
       query: { params: [refId.value!] },
-    });
-  };
-
-  const onEvalFunctionChange = (evalFunction: SelectableValue<EvalFunction>) => {
-    onChange({
-      ...condition,
-      evaluator: { params: condition.evaluator.params, type: evalFunction.value! },
     });
   };
 
@@ -67,28 +42,15 @@ export const Condition = ({ condition, index, onChange, onRemoveCondition, refId
   `;
 
   const isRange =
-    condition.evaluator.type === EvalFunction.IsWithinRange || condition.evaluator.type === EvalFunction.IsOutsideRange;
+    condition.evaluator.type === 'gt' || condition.evaluator.type === 'gt';
 
   return (
     <Stack direction="row">
       <div style={{ flex: 1 }}>
         <InlineFieldRow>
-          {index === 0 ? (
+          {(
             <div className={cx(styles.button, buttonWidth)}>WHEN</div>
-          ) : (
-            <ButtonSelect
-              className={cx(styles.buttonSelectText, buttonWidth)}
-              options={evalOperators}
-              onChange={onEvalOperatorChange}
-              value={evalOperators.find((ea) => ea.value === condition.operator!.type)}
-            />
           )}
-          <Select
-            options={reducerFunctions}
-            onChange={onReducerFunctionChange}
-            width={20}
-            value={reducerFunctions.find((rf) => rf.value === condition.reducer.type)}
-          />
           <div className={styles.button}>OF</div>
           <Select
             onChange={onRefIdChange}
@@ -98,12 +60,6 @@ export const Condition = ({ condition, index, onChange, onRemoveCondition, refId
           />
         </InlineFieldRow>
         <InlineFieldRow>
-          <ButtonSelect
-            className={styles.buttonSelectText}
-            options={evalFunctions}
-            onChange={onEvalFunctionChange}
-            value={evalFunctions.find((ef) => ef.value === condition.evaluator.type)}
-          />
           {isRange ? (
             <>
               <Input
@@ -120,7 +76,7 @@ export const Condition = ({ condition, index, onChange, onRemoveCondition, refId
                 value={condition.evaluator.params[1]}
               />
             </>
-          ) : condition.evaluator.type !== EvalFunction.HasNoValue ? (
+          ) : condition.evaluator.type !== 'gt' ? (
             <Input
               type="number"
               width={10}

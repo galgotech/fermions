@@ -214,12 +214,6 @@ export class DatasourceSrv implements DataSourceService {
       if (filters.logs && x.meta.category !== 'logging' && !x.meta.logs) {
         return false;
       }
-      if (filters.annotations && !x.meta.annotations) {
-        return false;
-      }
-      if (filters.alerting && !x.meta.alerting) {
-        return false;
-      }
       if (filters.pluginId && x.meta.id !== filters.pluginId) {
         return false;
       }
@@ -232,10 +226,8 @@ export class DatasourceSrv implements DataSourceService {
       if (
         !filters.all &&
         x.meta.metrics !== true &&
-        x.meta.annotations !== true &&
         x.meta.tracing !== true &&
-        x.meta.logs !== true &&
-        x.meta.alerting !== true
+        x.meta.logs !== true
       ) {
         return false;
       }
@@ -275,7 +267,7 @@ export class DatasourceSrv implements DataSourceService {
       return 0;
     });
 
-    if (!filters.pluginId && !filters.alerting) {
+    if (!filters.pluginId) {
       if (filters.mixed) {
         const mixedInstanceSettings = this.getInstanceSettings('-- Mixed --');
         if (mixedInstanceSettings) {
@@ -306,19 +298,6 @@ export class DatasourceSrv implements DataSourceService {
    * */
   getExternal(): DataSourceInstanceSettings[] {
     return this.getList();
-  }
-
-  /**
-   * @deprecated use getList
-   * */
-  getAnnotationSources() {
-    return this.getList({ annotations: true, variables: true }).map((x) => {
-      return {
-        name: x.name,
-        value: x.name,
-        meta: x.meta,
-      };
-    });
   }
 
   /**

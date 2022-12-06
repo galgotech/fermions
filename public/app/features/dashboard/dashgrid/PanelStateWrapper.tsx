@@ -4,8 +4,6 @@ import { Subscription } from 'rxjs';
 
 import {
   AbsoluteTimeRange,
-  AnnotationChangeEvent,
-  AnnotationEventUIModel,
   CoreApp,
   DashboardCursorSync,
   EventFilterOptions,
@@ -35,8 +33,6 @@ import { applyPanelTimeOverrides } from 'app/features/dashboard/utils/panel';
 import { RenderEvent } from 'app/types/events';
 
 import { isSoloRoute } from '../../../routes/utils';
-import { deleteAnnotation, saveAnnotation, updateAnnotation } from '../../annotations/api';
-import { getDashboardQueryRunner } from '../../query/state/DashboardQueryRunner/DashboardQueryRunner';
 import { getTimeSrv, TimeSrv } from '../services/TimeSrv';
 import { DashboardModel, PanelModel } from '../state';
 
@@ -88,14 +84,8 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         eventBus,
         app: this.getPanelContextApp(),
         sync: this.getSync,
-        onAnnotationCreate: this.onAnnotationCreate,
-        onAnnotationUpdate: this.onAnnotationUpdate,
-        onAnnotationDelete: this.onAnnotationDelete,
         onInstanceStateChange: this.onInstanceStateChange,
         onToggleLegendSort: this.onToggleLegendSort,
-        canAddAnnotations: props.dashboard.canAddAnnotations.bind(props.dashboard),
-        canEditAnnotations: props.dashboard.canEditAnnotations.bind(props.dashboard),
-        canDeleteAnnotations: props.dashboard.canDeleteAnnotations.bind(props.dashboard),
       },
       data: this.getInitialPanelDataState(),
     };
@@ -340,46 +330,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     this.setState({ errorMessage: undefined });
   };
 
-  onAnnotationCreate = async (event: AnnotationEventUIModel) => {
-    const isRegion = event.from !== event.to;
-    const anno = {
-      dashboardUID: this.props.dashboard.uid,
-      panelId: this.props.panel.id,
-      isRegion,
-      time: event.from,
-      timeEnd: isRegion ? event.to : 0,
-      tags: event.tags,
-      text: event.description,
-    };
-    await saveAnnotation(anno);
-    getDashboardQueryRunner().run({ dashboard: this.props.dashboard, range: this.timeSrv.timeRange() });
-    this.state.context.eventBus.publish(new AnnotationChangeEvent(anno));
-  };
-
-  onAnnotationDelete = async (id: string) => {
-    await deleteAnnotation({ id });
-    getDashboardQueryRunner().run({ dashboard: this.props.dashboard, range: this.timeSrv.timeRange() });
-    this.state.context.eventBus.publish(new AnnotationChangeEvent({ id }));
-  };
-
-  onAnnotationUpdate = async (event: AnnotationEventUIModel) => {
-    const isRegion = event.from !== event.to;
-    const anno = {
-      id: event.id,
-      dashboardUID: this.props.dashboard.uid,
-      panelId: this.props.panel.id,
-      isRegion,
-      time: event.from,
-      timeEnd: isRegion ? event.to : 0,
-      tags: event.tags,
-      text: event.description,
-    };
-    await updateAnnotation(anno);
-
-    getDashboardQueryRunner().run({ dashboard: this.props.dashboard, range: this.timeSrv.timeRange() });
-    this.state.context.eventBus.publish(new AnnotationChangeEvent(anno));
-  };
-
   get wantsQueryExecution() {
     return !this.props.plugin.meta.skipDataQuery;
   }
@@ -536,14 +486,11 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     const { errorMessage, data } = this.state;
     const { transparent } = panel;
 
-    const alertState = data.alertState?.state;
-
     const containerClassNames = classNames({
       'panel-container': true,
       'panel-container--absolute': isSoloRoute(locationService.getLocation().pathname),
       'panel-container--transparent': transparent,
       'panel-container--no-title': this.hasOverlayHeader(),
-      [`panel-alert-state--${alertState}`]: alertState !== undefined,
     });
 
     // for new panel header design
@@ -590,7 +537,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             error={errorMessage}
             isEditing={isEditing}
             isViewing={isViewing}
-            alertState={alertState}
             data={data}
           />
           <ErrorBoundary

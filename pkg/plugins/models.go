@@ -225,16 +225,6 @@ type DataSourceDTO struct {
 
 	BasicAuth       string `json:"basicAuth,omitempty"`
 	WithCredentials bool   `json:"withCredentials,omitempty"`
-
-	// InfluxDB
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
-
-	// InfluxDB + Elasticsearch
-	Database string `json:"database,omitempty"`
-
-	// Prometheus
-	DirectURL string `json:"directUrl,omitempty"`
 }
 
 type PanelDTO struct {

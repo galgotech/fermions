@@ -29,10 +29,7 @@ import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { isSharedDashboardQuery, runSharedRequest } from '../../../plugins/datasource/dashboard';
 import { PublicDashboardDataSource } from '../../dashboard/services/PublicDashboardDataSource';
-import { PanelModel } from '../../dashboard/state';
 
-import { getDashboardQueryRunner } from './DashboardQueryRunner/DashboardQueryRunner';
-import { mergePanelAndDashData } from './mergePanelAndDashData';
 import { preProcessPanelData, runRequest } from './runRequest';
 
 export interface QueryRunnerOptions<
@@ -242,12 +239,6 @@ export class PanelQueryRunner {
     }
 
     let panelData = observable;
-    const dataSupport = this.dataConfigSource.getDataSupport();
-
-    if (dataSupport.alertStates || dataSupport.annotations) {
-      const panel = this.dataConfigSource as unknown as PanelModel;
-      panelData = mergePanelAndDashData(observable, getDashboardQueryRunner().getResult(panel.id));
-    }
 
     this.subscription = panelData.subscribe({
       next: (data) => {

@@ -242,7 +242,7 @@ func (s *Service) Create(ctx context.Context, cmd *folder.CreateFolderCommand) (
 		User:      user,
 	}
 
-	saveDashboardCmd, err := s.dashboardService.BuildSaveDashboardCommand(ctx, dto, false, false)
+	saveDashboardCmd, err := s.dashboardService.BuildSaveDashboardCommand(ctx, dto, false)
 	if err != nil {
 		return nil, toFolderError(err)
 	}
@@ -377,7 +377,7 @@ func (s *Service) legacyUpdate(ctx context.Context, user *user.SignedInUser, org
 		Overwrite: cmd.Overwrite,
 	}
 
-	saveDashboardCmd, err := s.dashboardService.BuildSaveDashboardCommand(ctx, dto, false, false)
+	saveDashboardCmd, err := s.dashboardService.BuildSaveDashboardCommand(ctx, dto, false)
 	if err != nil {
 		return nil, toFolderError(err)
 	}

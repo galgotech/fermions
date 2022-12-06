@@ -8,29 +8,12 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/tsdb/mssql"
 )
 
 var logger = log.New("datasource")
 
 // requiredURL contains the set of data sources that require a URL.
-var requiredURL = map[string]bool{
-	datasources.DS_GRAPHITE:     true,
-	datasources.DS_INFLUXDB:     true,
-	datasources.DS_INFLUXDB_08:  true,
-	datasources.DS_ES:           true,
-	datasources.DS_PROMETHEUS:   true,
-	datasources.DS_ALERTMANAGER: true,
-	datasources.DS_JAEGER:       true,
-	datasources.DS_LOKI:         true,
-	datasources.DS_OPENTSDB:     true,
-	datasources.DS_TEMPO:        true,
-	datasources.DS_ZIPKIN:       true,
-	datasources.DS_MYSQL:        true,
-	datasources.DS_POSTGRES:     true,
-	datasources.DS_MSSQL:        true,
-}
+var requiredURL = map[string]bool{}
 
 // URLValidationError represents an error from validating a data source URL.
 type URLValidationError struct {
@@ -68,8 +51,6 @@ func ValidateURL(typeName, urlStr string) (*url.URL, error) {
 	var u *url.URL
 	var err error
 	switch strings.ToLower(typeName) {
-	case "mssql":
-		u, err = mssql.ParseURL(urlStr)
 	default:
 		logger.Debug("Applying default URL parsing for this data source type", "type", typeName, "url", urlStr)
 

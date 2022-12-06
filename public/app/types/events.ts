@@ -1,4 +1,4 @@
-import { AnnotationQuery, BusEventBase, BusEventWithPayload, eventFactory } from '@grafana/data';
+import { BusEventBase, BusEventWithPayload, eventFactory } from '@grafana/data';
 import { IconName, ButtonVariant } from '@grafana/ui';
 
 /**
@@ -181,14 +181,6 @@ export class HideModalEvent extends BusEventBase {
 
 export class DashboardSavedEvent extends BusEventBase {
   static type = 'dashboard-saved';
-}
-
-export class AnnotationQueryStarted extends BusEventWithPayload<AnnotationQuery> {
-  static type = 'annotation-query-started';
-}
-
-export class AnnotationQueryFinished extends BusEventWithPayload<AnnotationQuery> {
-  static type = 'annotation-query-finished';
 }
 
 export class PanelEditEnteredEvent extends BusEventWithPayload<number> {

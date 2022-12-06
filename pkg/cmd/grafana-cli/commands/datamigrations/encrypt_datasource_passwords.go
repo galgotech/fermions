@@ -17,11 +17,6 @@ import (
 var (
 	datasourceTypes = []string{
 		"mysql",
-		"influxdb",
-		"elasticsearch",
-		"graphite",
-		"prometheus",
-		"opentsdb",
 	}
 )
 

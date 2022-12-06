@@ -110,32 +110,7 @@ func (hs *HTTPServer) AddOrgInvite(c *models.ReqContext) response.Response {
 
 	// send invite email
 	if inviteDto.SendEmail && util.IsEmail(inviteDto.LoginOrEmail) {
-		emailCmd := models.SendEmailCommand{
-			To:       []string{inviteDto.LoginOrEmail},
-			Template: "new_user_invite",
-			Data: map[string]interface{}{
-				"Name":      util.StringsFallback2(cmd.Name, cmd.Email),
-				"OrgName":   c.OrgName,
-				"Email":     c.Email,
-				"LinkUrl":   setting.ToAbsUrl("invite/" + cmd.Code),
-				"InvitedBy": util.StringsFallback3(c.Name, c.Email, c.Login),
-			},
-		}
-
-		if err := hs.AlertNG.NotificationService.SendEmailCommandHandler(c.Req.Context(), &emailCmd); err != nil {
-			if errors.Is(err, models.ErrSmtpNotEnabled) {
-				return response.Error(412, err.Error(), err)
-			}
-
-			return response.Error(500, "Failed to send email invite", err)
-		}
-
-		emailSentCmd := models.UpdateTempUserWithEmailSentCommand{Code: cmd.Result.Code}
-		if err := hs.tempUserService.UpdateTempUserWithEmailSent(c.Req.Context(), &emailSentCmd); err != nil {
-			return response.Error(500, "Failed to update invite with email sent info", err)
-		}
-
-		return response.Success(fmt.Sprintf("Sent invite to %s", inviteDto.LoginOrEmail))
+		return response.Error(500, "Send email invite not implemented", err)
 	}
 
 	return response.Success(fmt.Sprintf("Created invite for %s", inviteDto.LoginOrEmail))
@@ -152,19 +127,7 @@ func (hs *HTTPServer) inviteExistingUserToOrg(c *models.ReqContext, user *user.U
 	}
 
 	if inviteDto.SendEmail && util.IsEmail(user.Email) {
-		emailCmd := models.SendEmailCommand{
-			To:       []string{user.Email},
-			Template: "invited_to_org",
-			Data: map[string]interface{}{
-				"Name":      user.NameOrFallback(),
-				"OrgName":   c.OrgName,
-				"InvitedBy": util.StringsFallback3(c.Name, c.Email, c.Login),
-			},
-		}
-
-		if err := hs.AlertNG.NotificationService.SendEmailCommandHandler(c.Req.Context(), &emailCmd); err != nil {
-			return response.Error(500, "Failed to send email invited_to_org", err)
-		}
+		return response.Error(500, "Failed to send email invited_to_org", nil)
 	}
 
 	return response.JSON(http.StatusOK, util.DynMap{

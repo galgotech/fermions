@@ -3,7 +3,6 @@ import React, { FC, FormEvent } from 'react';
 
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { ButtonSelect, InlineField, InlineFieldRow, Input, Select, useStyles2 } from '@grafana/ui';
-import { EvalFunction } from 'app/features/alerting/state/alertDef';
 
 import { ClassicCondition, ExpressionQuery, thresholdFunctions } from '../types';
 
@@ -14,7 +13,7 @@ interface Props {
   onChange: (query: ExpressionQuery) => void;
 }
 
-const defaultThresholdFunction = EvalFunction.IsAbove;
+const defaultThresholdFunction = 'gt';
 
 export const Threshold: FC<Props> = ({ labelWidth, onChange, refIds, query }) => {
   const styles = useStyles2(getStyles);
@@ -43,7 +42,7 @@ export const Threshold: FC<Props> = ({ labelWidth, onChange, refIds, query }) =>
     onChange({ ...query, expression: value.value });
   };
 
-  const onEvalFunctionChange = (value: SelectableValue<EvalFunction>) => {
+  const onEvalFunctionChange = (value: SelectableValue<string>) => {
     const type = value.value ?? defaultThresholdFunction;
 
     onChange({
@@ -64,7 +63,7 @@ export const Threshold: FC<Props> = ({ labelWidth, onChange, refIds, query }) =>
   };
 
   const isRange =
-    condition.evaluator.type === EvalFunction.IsWithinRange || condition.evaluator.type === EvalFunction.IsOutsideRange;
+    condition.evaluator.type === 'gt' || condition.evaluator.type === 'gt';
 
   return (
     <InlineFieldRow>
@@ -109,7 +108,7 @@ function updateConditions(
   conditions: ClassicCondition[],
   update: Partial<{
     params: number[];
-    type: EvalFunction;
+    type: string;
   }>
 ): ClassicCondition[] {
   return [

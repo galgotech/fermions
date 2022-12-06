@@ -1,67 +1,30 @@
-import { isString } from 'lodash';
-import { from, merge, Observable, of } from 'rxjs';
+import { merge, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import {
-  AnnotationQuery,
-  AnnotationQueryRequest,
   DataFrameView,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceInstanceSettings,
-  DataSourceRef,
   isValidLiveChannelAddress,
   MutableDataFrame,
   parseLiveChannelAddress,
-  toDataFrame,
 } from '@grafana/data';
 import {
   DataSourceWithBackend,
-  getBackendSrv,
   getDataSourceSrv,
   getGrafanaLiveSrv,
   getTemplateSrv,
   StreamingFrameOptions,
 } from '@grafana/runtime';
-import { migrateDatasourceNameToRef } from 'app/features/dashboard/state/DashboardMigrator';
 
-import { getDashboardSrv } from '../../../features/dashboard/services/DashboardSrv';
-
-import AnnotationQueryEditor from './components/AnnotationQueryEditor';
-import { GrafanaAnnotationQuery, GrafanaAnnotationType, GrafanaQuery, GrafanaQueryType } from './types';
+import { GrafanaQuery, GrafanaQueryType } from './types';
 
 let counter = 100;
 
 export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
   constructor(instanceSettings: DataSourceInstanceSettings) {
     super(instanceSettings);
-    this.annotations = {
-      QueryEditor: AnnotationQueryEditor,
-      prepareAnnotation(json: any): AnnotationQuery<GrafanaAnnotationQuery> {
-        // Previously, these properties lived outside of target
-        // This should handle migrating them
-        json.target = json.target ?? {
-          type: json.type ?? GrafanaAnnotationType.Dashboard,
-          limit: json.limit ?? 100,
-          tags: json.tags ?? [],
-          matchAny: json.matchAny ?? false,
-        }; // using spread syntax caused an infinite loop in StandardAnnotationQueryEditor
-        return json;
-      },
-      prepareQuery(anno: AnnotationQuery<GrafanaAnnotationQuery>): GrafanaQuery {
-        let datasource: DataSourceRef | undefined | null = undefined;
-        if (isString(anno.datasource)) {
-          const ref = migrateDatasourceNameToRef(anno.datasource, { returnDefaultAsNull: false });
-          if (ref) {
-            datasource = ref;
-          }
-        } else {
-          datasource = anno.datasource as DataSourceRef;
-        }
-
-        return { ...anno, refId: anno.name, queryType: GrafanaQueryType.Annotations, datasource };
-      },
-    };
   }
 
   query(request: DataQueryRequest<GrafanaQuery>): Observable<DataQueryResponse> {
@@ -69,16 +32,6 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
     const targets: GrafanaQuery[] = [];
     const templateSrv = getTemplateSrv();
     for (const target of request.targets) {
-      if (target.queryType === GrafanaQueryType.Annotations) {
-        return from(
-          this.getAnnotations({
-            range: request.range,
-            rangeRaw: request.range.raw,
-            annotation: target as unknown as AnnotationQuery<GrafanaAnnotationQuery>,
-            dashboard: getDashboardSrv().getCurrent(),
-          })
-        );
-      }
       if (target.hide) {
         continue;
       }
@@ -154,57 +107,6 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
 
   metricFindQuery(options: any) {
     return Promise.resolve([]);
-  }
-
-  async getAnnotations(options: AnnotationQueryRequest<GrafanaQuery>): Promise<DataQueryResponse> {
-    const templateSrv = getTemplateSrv();
-    const annotation = options.annotation as unknown as AnnotationQuery<GrafanaAnnotationQuery>;
-    const target = annotation.target!;
-    const params: any = {
-      from: options.range.from.valueOf(),
-      to: options.range.to.valueOf(),
-      limit: target.limit,
-      tags: target.tags,
-      matchAny: target.matchAny,
-    };
-
-    if (target.type === GrafanaAnnotationType.Dashboard) {
-      // if no dashboard id yet return
-      if (!options.dashboard.uid) {
-        return Promise.resolve({ data: [] });
-      }
-      // filter by dashboard id
-      params.dashboardUID = options.dashboard.uid;
-      // remove tags filter if any
-      delete params.tags;
-    } else {
-      // require at least one tag
-      if (!Array.isArray(target.tags) || target.tags.length === 0) {
-        return Promise.resolve({ data: [] });
-      }
-      const delimiter = '__delimiter__';
-      const tags = [];
-      for (const t of params.tags) {
-        const renderedValues = templateSrv.replace(t, {}, (value: any) => {
-          if (typeof value === 'string') {
-            return value;
-          }
-
-          return value.join(delimiter);
-        });
-        for (const tt of renderedValues.split(delimiter)) {
-          tags.push(tt);
-        }
-      }
-      params.tags = tags;
-    }
-
-    const annotations = await getBackendSrv().get(
-      '/api/annotations',
-      params,
-      `grafana-data-source-annotations-${annotation.name}-${options.dashboard?.uid}`
-    );
-    return { data: [toDataFrame(annotations)] };
   }
 
   testDatasource() {

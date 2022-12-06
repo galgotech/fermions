@@ -8,7 +8,6 @@ type SystemStats struct {
 	DailyActiveUsers          int64
 	MonthlyActiveUsers        int64
 	Orgs                      int64
-	Alerts                    int64
 	Stars                     int64
 	Teams                     int64
 	DashboardPermissions      int64
@@ -18,8 +17,6 @@ type SystemStats struct {
 	AuthTokens                int64
 	APIKeys                   int64 `xorm:"api_keys"`
 	DashboardVersions         int64
-	Annotations               int64
-	AlertRules                int64
 	LibraryPanels             int64
 	LibraryVariables          int64
 	DashboardsViewersCanEdit  int64

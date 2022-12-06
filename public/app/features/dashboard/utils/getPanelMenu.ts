@@ -1,10 +1,7 @@
 import { PanelMenuItem } from '@grafana/data';
-import { AngularComponent, getDataSourceSrv, locationService, reportInteraction } from '@grafana/runtime';
+import { AngularComponent, locationService, reportInteraction } from '@grafana/runtime';
 import { PanelCtrl } from 'app/angular/panel/panel_ctrl';
-import config from 'app/core/config';
 import { t } from 'app/core/internationalization';
-import { contextSrv } from 'app/core/services/context_srv';
-import { getExploreUrl } from 'app/core/utils/explore';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
 import {
@@ -18,10 +15,6 @@ import {
 } from 'app/features/dashboard/utils/panel';
 import { InspectTab } from 'app/features/inspector/types';
 import { isPanelModelLibraryPanel } from 'app/features/library-panels/guard';
-import { store } from 'app/store/store';
-
-import { navigateToExplore } from '../../explore/state/main';
-import { getTimeSrv } from '../services/TimeSrv';
 
 export function getPanelMenu(
   dashboard: DashboardModel,
@@ -87,13 +80,6 @@ export function getPanelMenu(
     removePanel(dashboard, panel, true);
   };
 
-  const onNavigateToExplore = (event: React.MouseEvent<any>) => {
-    event.preventDefault();
-    const openInNewWindow =
-      event.ctrlKey || event.metaKey ? (url: string) => window.open(`${config.appSubUrl}${url}`) : undefined;
-    store.dispatch(navigateToExplore(panel, { getDataSourceSrv, getTimeSrv, getExploreUrl, openInNewWindow }) as any);
-  };
-
   const onToggleLegend = (event: React.MouseEvent) => {
     event.preventDefault();
     toggleLegend(panel);
@@ -127,15 +113,6 @@ export function getPanelMenu(
     onClick: onSharePanel,
     shortcut: 'p s',
   });
-
-  if (contextSrv.hasAccessToExplore() && !(panel.plugin && panel.plugin.meta.skipDataQuery)) {
-    menu.push({
-      text: 'Explore',
-      iconClassName: 'compass',
-      onClick: onNavigateToExplore,
-      shortcut: 'x',
-    });
-  }
 
   const inspectMenu: PanelMenuItem[] = [];
 

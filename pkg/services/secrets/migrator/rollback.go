@@ -2,13 +2,10 @@ package migrator
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/services/encryption"
-	"github.com/grafana/grafana/pkg/services/ngalert/notifier"
 	"github.com/grafana/grafana/pkg/services/secrets/manager"
 )
 
@@ -205,91 +202,6 @@ func (s jsonSecret) rollback(
 		logger.Warn(fmt.Sprintf("Secure json data secrets from %s have been rolled back with errors", s.tableName))
 	} else {
 		logger.Info(fmt.Sprintf("Secure json data secrets from %s have been rolled back successfully", s.tableName))
-	}
-
-	return anyFailure
-}
-
-func (s alertingSecret) rollback(
-	ctx context.Context,
-	secretsSrv *manager.SecretsService,
-	encryptionSrv encryption.Internal,
-	sqlStore db.DB,
-	secretKey string,
-) (anyFailure bool) {
-	var results []struct {
-		Id                        int
-		AlertmanagerConfiguration string
-	}
-
-	selectSQL := "SELECT id, alertmanager_configuration FROM alert_configuration"
-	if err := sqlStore.WithDbSession(ctx, func(sess *db.Session) error {
-		return sess.SQL(selectSQL).Find(&results)
-	}); err != nil {
-		logger.Warn("Could not find any alert_configuration secret to roll back")
-		return true
-	}
-
-	for _, result := range results {
-		result := result
-
-		err := sqlStore.WithTransactionalDbSession(ctx, func(sess *db.Session) error {
-			postableUserConfig, err := notifier.Load([]byte(result.AlertmanagerConfiguration))
-			if err != nil {
-				logger.Warn("Could not load configuration (alert_configuration with id: %d) while rolling it back", result.Id, err)
-				return err
-			}
-
-			for _, receiver := range postableUserConfig.AlertmanagerConfig.Receivers {
-				for _, gmr := range receiver.GrafanaManagedReceivers {
-					for k, v := range gmr.SecureSettings {
-						decoded, err := base64.StdEncoding.DecodeString(v)
-						if err != nil {
-							logger.Warn("Could not decode base64-encoded secret (alert_configuration with id: %d, key)", k, result.Id, err)
-							return err
-						}
-
-						decrypted, err := secretsSrv.Decrypt(ctx, decoded)
-						if err != nil {
-							logger.Warn("Could not decrypt secret (alert_configuration with id: %d, key)", k, result.Id, err)
-							return err
-						}
-
-						reencrypted, err := encryptionSrv.Encrypt(ctx, decrypted, secretKey)
-						if err != nil {
-							logger.Warn("Could not re-encrypt secret (alert_configuration with id: %d, key)", k, result.Id, err)
-							return err
-						}
-
-						gmr.SecureSettings[k] = base64.StdEncoding.EncodeToString(reencrypted)
-					}
-				}
-			}
-
-			marshalled, err := json.Marshal(postableUserConfig)
-			if err != nil {
-				logger.Warn("Could not marshal configuration (alert_configuration with id: %d) while rolling it back", result.Id, err)
-				return err
-			}
-
-			result.AlertmanagerConfiguration = string(marshalled)
-			if _, err := sess.Table("alert_configuration").Where("id = ?", result.Id).Update(&result); err != nil {
-				logger.Warn("Could not update secret (alert_configuration with id: %d) while rolling it back", result.Id, err)
-				return err
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			anyFailure = true
-		}
-	}
-
-	if anyFailure {
-		logger.Warn("Alerting configuration secrets have been rolled back with errors")
-	} else {
-		logger.Info("Alerting configuration secrets have been rolled back successfully")
 	}
 
 	return anyFailure

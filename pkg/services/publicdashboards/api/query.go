@@ -75,24 +75,3 @@ func (api *Api) QueryPublicDashboard(c *models.ReqContext) response.Response {
 
 	return toJsonStreamingResponse(api.Features, resp)
 }
-
-// GetAnnotations returns annotations for a public dashboard
-// GET /api/public/dashboards/:accessToken/annotations
-func (api *Api) GetAnnotations(c *models.ReqContext) response.Response {
-	accessToken := web.Params(c.Req)[":accessToken"]
-	if !tokens.IsValidAccessToken(accessToken) {
-		return response.Err(ErrInvalidAccessToken.Errorf("GetAnnotations: invalid access token"))
-	}
-
-	reqDTO := AnnotationsQueryDTO{
-		From: c.QueryInt64("from"),
-		To:   c.QueryInt64("to"),
-	}
-
-	annotations, err := api.PublicDashboardService.FindAnnotations(c.Req.Context(), reqDTO, accessToken)
-	if err != nil {
-		return response.Err(err)
-	}
-
-	return response.JSON(http.StatusOK, annotations)
-}

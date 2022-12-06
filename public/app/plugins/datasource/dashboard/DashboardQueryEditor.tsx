@@ -4,8 +4,8 @@ import pluralize from 'pluralize';
 import React, { useCallback, useMemo } from 'react';
 import { useAsync } from 'react-use';
 
-import { DataQuery, GrafanaTheme2, PanelData, SelectableValue, DataTopic } from '@grafana/data';
-import { Field, Select, useStyles2, VerticalGroup, Spinner, RadioButtonGroup, Icon } from '@grafana/ui';
+import { DataQuery, GrafanaTheme2, PanelData, SelectableValue } from '@grafana/data';
+import { Field, Select, useStyles2, VerticalGroup, Spinner, Icon } from '@grafana/ui';
 import config from 'app/core/config';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { PanelModel } from 'app/features/dashboard/state';
@@ -24,11 +24,6 @@ interface Props {
   onChange: (queries: DataQuery[]) => void;
   onRunQueries: () => void;
 }
-
-const topics = [
-  { label: 'All data', value: false },
-  { label: 'Annotations', value: true, description: 'Include annotations as regular data' },
-];
 
 export function DashboardQueryEditor({ panelData, queries, onChange, onRunQueries }: Props) {
   const { value: defaultDatasource } = useAsync(() => getDatasourceSrv().get());
@@ -73,16 +68,6 @@ export function DashboardQueryEditor({ panelData, queries, onChange, onRunQuerie
       onUpdateQuery({
         ...query,
         panelId: id,
-      });
-    },
-    [query, onUpdateQuery]
-  );
-
-  const onTopicChanged = useCallback(
-    (t: boolean) => {
-      onUpdateQuery({
-        ...query,
-        topic: t ? DataTopic.Annotations : undefined,
       });
     },
     [query, onUpdateQuery]
@@ -177,10 +162,6 @@ export function DashboardQueryEditor({ panelData, queries, onChange, onRunQuerie
           )}
         </>
       )}
-
-      <Field label="Data">
-        <RadioButtonGroup options={topics} value={query.topic === DataTopic.Annotations} onChange={onTopicChanged} />
-      </Field>
     </>
   );
 }

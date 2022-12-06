@@ -39,23 +39,11 @@ export interface DashboardMeta {
   fromScript?: boolean;
   fromFile?: boolean;
   hasUnsavedFolderChange?: boolean;
-  annotationsPermissions?: AnnotationsPermissions;
   publicDashboardAccessToken?: string;
   publicDashboardUid?: string;
   publicDashboardEnabled?: boolean;
   hasPublicDashboard?: boolean;
   dashboardNotFound?: boolean;
-}
-
-export interface AnnotationActions {
-  canAdd: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
-
-export interface AnnotationsPermissions {
-  dashboard: AnnotationActions;
-  organization: AnnotationActions;
 }
 
 export interface DashboardDataDTO {

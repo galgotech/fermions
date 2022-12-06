@@ -199,18 +199,6 @@ func readDashboard(stream io.Reader, lookup DatasourceLookup) (*dashboardInfo, e
 				logf("[DASHBOARD.ROW???] id=%s // %v\n", dash.ID, v)
 			}
 
-		case "annotations":
-			for sub := iter.ReadObject(); sub != ""; sub = iter.ReadObject() {
-				if sub == "list" {
-					for iter.ReadArray() {
-						v := iter.Read()
-						logf("[dash.anno] %v\n", v)
-					}
-				} else {
-					iter.Skip()
-				}
-			}
-
 		case "templating":
 			for sub := iter.ReadObject(); sub != ""; sub = iter.ReadObject() {
 				if sub == "list" {

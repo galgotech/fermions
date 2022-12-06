@@ -57,7 +57,6 @@ interface Props<TQuery extends DataQuery> {
   app?: CoreApp;
   history?: Array<HistoryItem<TQuery>>;
   eventBus?: EventBusExtended;
-  alerting?: boolean;
   onQueryCopied?: () => void;
   onQueryRemoved?: () => void;
   onQueryToggled?: (queryStatus?: boolean | undefined) => void;
@@ -225,13 +224,6 @@ export class QueryEditorRow<TQuery extends DataQuery> extends PureComponent<Prop
     }
 
     switch (this.props.app) {
-      case CoreApp.Explore:
-        return (
-          ds.components?.ExploreMetricsQueryField ||
-          ds.components?.ExploreLogsQueryField ||
-          ds.components?.ExploreQueryField ||
-          ds.components?.QueryEditor
-        );
       case CoreApp.PanelEditor:
       case CoreApp.Dashboard:
       default:
@@ -443,7 +435,7 @@ export class QueryEditorRow<TQuery extends DataQuery> extends PureComponent<Prop
   };
 
   renderHeader = (props: QueryOperationRowRenderProps) => {
-    const { alerting, query, dataSource, onChangeDataSource, onChange, queries, renderHeaderExtras } = this.props;
+    const { query, dataSource, onChangeDataSource, onChange, queries, renderHeaderExtras } = this.props;
 
     return (
       <QueryEditorRowHeader
@@ -456,7 +448,6 @@ export class QueryEditorRow<TQuery extends DataQuery> extends PureComponent<Prop
         onChange={onChange}
         collapsedText={!props.isOpen ? this.renderCollapsedText() : null}
         renderExtras={renderHeaderExtras}
-        alerting={alerting}
       />
     );
   };

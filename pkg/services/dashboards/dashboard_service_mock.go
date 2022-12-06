@@ -15,12 +15,12 @@ type FakeDashboardService struct {
 }
 
 // BuildSaveDashboardCommand provides a mock function with given fields: ctx, dto, shouldValidateAlerts, validateProvisionedDashboard
-func (_m *FakeDashboardService) BuildSaveDashboardCommand(ctx context.Context, dto *SaveDashboardDTO, shouldValidateAlerts bool, validateProvisionedDashboard bool) (*models.SaveDashboardCommand, error) {
-	ret := _m.Called(ctx, dto, shouldValidateAlerts, validateProvisionedDashboard)
+func (_m *FakeDashboardService) BuildSaveDashboardCommand(ctx context.Context, dto *SaveDashboardDTO, validateProvisionedDashboard bool) (*models.SaveDashboardCommand, error) {
+	ret := _m.Called(ctx, dto, validateProvisionedDashboard)
 
 	var r0 *models.SaveDashboardCommand
-	if rf, ok := ret.Get(0).(func(context.Context, *SaveDashboardDTO, bool, bool) *models.SaveDashboardCommand); ok {
-		r0 = rf(ctx, dto, shouldValidateAlerts, validateProvisionedDashboard)
+	if rf, ok := ret.Get(0).(func(context.Context, *SaveDashboardDTO, bool) *models.SaveDashboardCommand); ok {
+		r0 = rf(ctx, dto, validateProvisionedDashboard)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SaveDashboardCommand)
@@ -28,8 +28,8 @@ func (_m *FakeDashboardService) BuildSaveDashboardCommand(ctx context.Context, d
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *SaveDashboardDTO, bool, bool) error); ok {
-		r1 = rf(ctx, dto, shouldValidateAlerts, validateProvisionedDashboard)
+	if rf, ok := ret.Get(1).(func(context.Context, *SaveDashboardDTO, bool) error); ok {
+		r1 = rf(ctx, dto, validateProvisionedDashboard)
 	} else {
 		r1 = ret.Error(1)
 	}

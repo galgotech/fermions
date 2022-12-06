@@ -115,7 +115,7 @@ export const QueryEditor = ({ savedQuery, onSavedQueryChange }: Props) => {
             Query
           </Button>
         }
-        {(dsSettings?.meta.alerting || dsSettings?.meta.mixed) && (
+        {(dsSettings?.meta.mixed) && (
           <Button icon="plus" onClick={onAddExpressionClick} variant="secondary" className={styles.expressionButton}>
             <span>Expression&nbsp;</span>
           </Button>

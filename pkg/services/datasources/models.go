@@ -9,24 +9,8 @@ import (
 )
 
 const (
-	DS_GRAPHITE       = "graphite"
-	DS_INFLUXDB       = "influxdb"
-	DS_INFLUXDB_08    = "influxdb_08"
-	DS_ES             = "elasticsearch"
-	DS_PROMETHEUS     = "prometheus"
-	DS_ALERTMANAGER   = "alertmanager"
-	DS_JAEGER         = "jaeger"
-	DS_LOKI           = "loki"
-	DS_OPENTSDB       = "opentsdb"
-	DS_TEMPO          = "tempo"
-	DS_ZIPKIN         = "zipkin"
-	DS_MYSQL          = "mysql"
-	DS_POSTGRES       = "postgres"
-	DS_MSSQL          = "mssql"
-	DS_ACCESS_DIRECT  = "direct"
-	DS_ACCESS_PROXY   = "proxy"
-	DS_ES_OPEN_DISTRO = "grafana-es-open-distro-datasource"
-	DS_ES_OPENSEARCH  = "grafana-opensearch-datasource"
+	DS_ACCESS_DIRECT = "direct"
+	DS_ACCESS_PROXY  = "proxy"
 )
 
 type DsAccess string

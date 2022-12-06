@@ -55,18 +55,6 @@ const (
 	// Search for dashboards using panel title
 	FlagPanelTitleSearch = "panelTitleSearch"
 
-	// FlagTempoApmTable
-	// Show APM table
-	FlagTempoApmTable = "tempoApmTable"
-
-	// FlagPrometheusAzureOverrideAudience
-	// Experimental. Allow override default AAD audience for Azure Prometheus endpoint
-	FlagPrometheusAzureOverrideAudience = "prometheusAzureOverrideAudience"
-
-	// FlagInfluxdbBackendMigration
-	// Query InfluxDB InfluxQL without the proxy
-	FlagInfluxdbBackendMigration = "influxdbBackendMigration"
-
 	// FlagShowFeatureFlagsInUI
 	// Show feature flags in the settings UI
 	FlagShowFeatureFlagsInUI = "showFeatureFlagsInUI"
@@ -74,18 +62,6 @@ const (
 	// FlagPublicDashboards
 	// Enables public access to dashboards
 	FlagPublicDashboards = "publicDashboards"
-
-	// FlagLokiLive
-	// Support WebSocket streaming for loki (early prototype)
-	FlagLokiLive = "lokiLive"
-
-	// FlagLokiDataframeApi
-	// Use experimental loki api for WebSocket streaming (early prototype)
-	FlagLokiDataframeApi = "lokiDataframeApi"
-
-	// FlagLokiMonacoEditor
-	// Access to Monaco query editor for Loki
-	FlagLokiMonacoEditor = "lokiMonacoEditor"
 
 	// FlagSwaggerUi
 	// Serves swagger UI
@@ -119,10 +95,6 @@ const (
 	// Export grafana instance (to git, etc)
 	FlagExport = "export"
 
-	// FlagAzureMonitorResourcePickerForMetrics
-	// New UI for Azure Monitor Metrics Query
-	FlagAzureMonitorResourcePickerForMetrics = "azureMonitorResourcePickerForMetrics"
-
 	// FlagExploreMixedDatasource
 	// Enable mixed datasource in Explore
 	FlagExploreMixedDatasource = "exploreMixedDatasource"
@@ -138,10 +110,6 @@ const (
 	// FlagCorrelations
 	// Correlations page
 	FlagCorrelations = "correlations"
-
-	// FlagCloudWatchDynamicLabels
-	// Use dynamic labels instead of alias patterns in CloudWatch datasource
-	FlagCloudWatchDynamicLabels = "cloudWatchDynamicLabels"
 
 	// FlagDatasourceQueryMultiStatus
 	// Introduce HTTP 207 Multi Status for api/ds/query
@@ -214,10 +182,6 @@ const (
 	// FlagFlameGraph
 	// Show the flame graph
 	FlagFlameGraph = "flameGraph"
-
-	// FlagCloudWatchCrossAccountQuerying
-	// Use cross-account querying in CloudWatch datasource
-	FlagCloudWatchCrossAccountQuerying = "cloudWatchCrossAccountQuerying"
 
 	// FlagRedshiftAsyncQueryDataSupport
 	// Enable async query data support for Redshift

@@ -12,7 +12,6 @@ import {
   DataQueryResponse,
   DataQueryResponseData,
   DataSourceApi,
-  DataTopic,
   dateMath,
   guessFieldTypes,
   LoadingState,
@@ -53,7 +52,6 @@ export function processResponsePacket(packet: DataQueryResponse, state: RunningQ
   let error: DataQueryError | undefined = undefined;
 
   const series: DataQueryResponseData[] = [];
-  const annotations: DataQueryResponseData[] = [];
 
   for (const key in packets) {
     const packet = packets[key];
@@ -65,11 +63,6 @@ export function processResponsePacket(packet: DataQueryResponse, state: RunningQ
 
     if (packet.data && packet.data.length) {
       for (const dataItem of packet.data) {
-        if (dataItem.meta?.dataTopic === DataTopic.Annotations) {
-          annotations.push(dataItem);
-          continue;
-        }
-
         series.push(dataItem);
       }
     }
@@ -80,7 +73,6 @@ export function processResponsePacket(packet: DataQueryResponse, state: RunningQ
   const panelData = {
     state: loadingState,
     series,
-    annotations,
     error,
     request,
     timeRange,
@@ -217,7 +209,7 @@ export function getProcessedDataFrames(results?: DataQueryResponseData[]): DataF
 }
 
 export function preProcessPanelData(data: PanelData, lastResult?: PanelData): PanelData {
-  const { series, annotations } = data;
+  const { series } = data;
 
   //  for loading states with no data, use last result
   if (data.state === LoadingState.Loading && series.length === 0) {
@@ -235,13 +227,11 @@ export function preProcessPanelData(data: PanelData, lastResult?: PanelData): Pa
   // Make sure the data frames are properly formatted
   const STARTTIME = performance.now();
   const processedDataFrames = series.map((data) => getProcessedDataFrame(data));
-  const annotationsProcessed = getProcessedDataFrames(annotations);
   const STOPTIME = performance.now();
 
   return {
     ...data,
     series: processedDataFrames,
-    annotations: annotationsProcessed,
     timings: { dataProcessingTime: STOPTIME - STARTTIME },
   };
 }

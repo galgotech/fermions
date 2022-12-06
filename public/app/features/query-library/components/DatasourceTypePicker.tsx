@@ -21,9 +21,7 @@ export type DatasourceTypePickerProps = {
   dashboard?: boolean;
   metrics?: boolean;
   type?: string | string[];
-  annotations?: boolean;
   variables?: boolean;
-  alerting?: boolean;
   pluginId?: string;
   /** If true,we show only DSs with logs; and if true, pluginId shouldnt be passed in */
   logs?: boolean;
@@ -34,19 +32,17 @@ export type DatasourceTypePickerProps = {
 };
 
 const getDataSourceTypeOptions = (props: DatasourceTypePickerProps) => {
-  const { alerting, tracing, metrics, mixed, dashboard, variables, annotations, pluginId, type, filter, logs } = props;
+  const { tracing, metrics, mixed, dashboard, variables, pluginId, type, filter, logs } = props;
 
   return uniqBy(
     getDataSourceSrv()
       .getList({
-        alerting,
         tracing,
         metrics,
         logs,
         dashboard,
         mixed,
         variables,
-        annotations,
         pluginId,
         filter,
         type,

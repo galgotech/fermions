@@ -16,6 +16,5 @@
     }
   },
   "backend": true,
-  "annotations": true,
   "metrics": true
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrator"
-	"github.com/grafana/grafana/pkg/services/sqlstore/searchstore"
 	"github.com/grafana/grafana/pkg/services/user"
 )
 
@@ -90,18 +89,13 @@ func NewAccessControlDashboardPermissionFilter(user *user.SignedInUser, permissi
 	needEdit := permissionLevel > models.PERMISSION_VIEW
 	folderActions := []string{dashboards.ActionFoldersRead}
 	var dashboardActions []string
-	if queryType == searchstore.TypeAlertFolder {
-		folderActions = append(folderActions, accesscontrol.ActionAlertingRuleRead)
-		if needEdit {
-			folderActions = append(folderActions, accesscontrol.ActionAlertingRuleCreate)
-		}
-	} else {
-		dashboardActions = append(dashboardActions, dashboards.ActionDashboardsRead)
-		if needEdit {
-			folderActions = append(folderActions, dashboards.ActionDashboardsCreate)
-			dashboardActions = append(dashboardActions, dashboards.ActionDashboardsWrite)
-		}
+
+	dashboardActions = append(dashboardActions, dashboards.ActionDashboardsRead)
+	if needEdit {
+		folderActions = append(folderActions, dashboards.ActionDashboardsCreate)
+		dashboardActions = append(dashboardActions, dashboards.ActionDashboardsWrite)
 	}
+
 	return AccessControlDashboardPermissionFilter{user: user, folderActions: folderActions, dashboardActions: dashboardActions}
 }
 

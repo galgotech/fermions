@@ -235,16 +235,14 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
     switch (this.type) {
       case 'graph':
-        if (config.featureToggles?.autoMigrateGraphPanels || !config.angularSupportEnabled) {
+        if (config.featureToggles?.autoMigrateGraphPanels) {
           this.autoMigrateFrom = this.type;
           this.type = 'timeseries';
         }
         break;
       case 'table-old':
-        if (!config.angularSupportEnabled) {
-          this.autoMigrateFrom = this.type;
-          this.type = 'table';
-        }
+        this.autoMigrateFrom = this.type;
+        this.type = 'table';
         break;
       case 'heatmap-new':
         this.autoMigrateFrom = this.type;
@@ -585,7 +583,7 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   }
 
   getDataSupport(): PanelPluginDataSupport {
-    return this.plugin?.dataSupport ?? { annotations: false, alertStates: false };
+    return this.plugin?.dataSupport ?? { };
   }
 
   getQueryRunner(): PanelQueryRunner {

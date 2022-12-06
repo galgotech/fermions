@@ -164,36 +164,9 @@ func (proxy *DataSourceProxy) director(req *http.Request) {
 	req.URL.Host = proxy.targetUrl.Host
 	req.Host = proxy.targetUrl.Host
 
-	reqQueryVals := req.URL.Query()
-
 	ctxLogger := logger.FromContext(req.Context())
 
 	switch proxy.ds.Type {
-	case datasources.DS_INFLUXDB_08:
-		password, err := proxy.dataSourcesService.DecryptedPassword(req.Context(), proxy.ds)
-		if err != nil {
-			ctxLogger.Error("Error interpolating proxy url", "error", err)
-			return
-		}
-
-		req.URL.RawPath = util.JoinURLFragments(proxy.targetUrl.Path, "db/"+proxy.ds.Database+"/"+proxy.proxyPath)
-		reqQueryVals.Add("u", proxy.ds.User)
-		reqQueryVals.Add("p", password)
-		req.URL.RawQuery = reqQueryVals.Encode()
-	case datasources.DS_INFLUXDB:
-		password, err := proxy.dataSourcesService.DecryptedPassword(req.Context(), proxy.ds)
-		if err != nil {
-			ctxLogger.Error("Error interpolating proxy url", "error", err)
-			return
-		}
-		req.URL.RawPath = util.JoinURLFragments(proxy.targetUrl.Path, proxy.proxyPath)
-		req.URL.RawQuery = reqQueryVals.Encode()
-		if !proxy.ds.BasicAuth {
-			req.Header.Set(
-				"Authorization",
-				util.GetBasicAuthHeader(proxy.ds.User, password),
-			)
-		}
 	default:
 		req.URL.RawPath = util.JoinURLFragments(proxy.targetUrl.Path, proxy.proxyPath)
 	}
@@ -268,18 +241,6 @@ func (proxy *DataSourceProxy) validateRequest() error {
 		return errors.New("target URL is not a valid target")
 	}
 
-	if proxy.ds.Type == datasources.DS_ES {
-		if proxy.ctx.Req.Method == "DELETE" {
-			return errors.New("deletes not allowed on proxied Elasticsearch datasource")
-		}
-		if proxy.ctx.Req.Method == "PUT" {
-			return errors.New("puts not allowed on proxied Elasticsearch datasource")
-		}
-		if proxy.ctx.Req.Method == "POST" && proxy.proxyPath != "_msearch" {
-			return errors.New("posts not allowed on proxied Elasticsearch datasource except on /_msearch")
-		}
-	}
-
 	// found route if there are any
 	for _, route := range proxy.pluginRoutes {
 		// method match
@@ -300,19 +261,6 @@ func (proxy *DataSourceProxy) validateRequest() error {
 
 		proxy.matchedRoute = route
 		return nil
-	}
-
-	// Trailing validation below this point for routes that were not matched
-	if proxy.ds.Type == datasources.DS_PROMETHEUS {
-		if proxy.ctx.Req.Method == "DELETE" {
-			return errors.New("non allow-listed DELETEs not allowed on proxied Prometheus datasource")
-		}
-		if proxy.ctx.Req.Method == "PUT" {
-			return errors.New("non allow-listed PUTs not allowed on proxied Prometheus datasource")
-		}
-		if proxy.ctx.Req.Method == "POST" {
-			return errors.New("non allow-listed POSTs not allowed on proxied Prometheus datasource")
-		}
 	}
 
 	return nil

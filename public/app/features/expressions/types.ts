@@ -1,7 +1,5 @@
 import { DataQuery, ReducerID, SelectableValue } from '@grafana/data';
 
-import { EvalFunction } from '../alerting/state/alertDef';
-
 export enum ExpressionQueryType {
   math = 'math',
   reduce = 'reduce',
@@ -88,11 +86,11 @@ export const upsamplingTypes: Array<SelectableValue<string>> = [
   { value: 'fillna', label: 'fillna', description: 'Fill with NaNs' },
 ];
 
-export const thresholdFunctions: Array<SelectableValue<EvalFunction>> = [
-  { value: EvalFunction.IsAbove, label: 'Is above' },
-  { value: EvalFunction.IsBelow, label: 'Is below' },
-  { value: EvalFunction.IsWithinRange, label: 'Is within range' },
-  { value: EvalFunction.IsOutsideRange, label: 'Is outside range' },
+export const thresholdFunctions: Array<SelectableValue<string>> = [
+  { value: 'gt', label: 'Is above' },
+  { value: 'gt', label: 'Is below' },
+  { value: 'gt', label: 'Is within range' },
+  { value: 'gt', label: 'Is outside range' },
 ];
 
 /**
@@ -118,7 +116,7 @@ export interface ExpressionQuerySettings {
 export interface ClassicCondition {
   evaluator: {
     params: number[];
-    type: EvalFunction;
+    type: string;
   };
   operator?: {
     type: string;

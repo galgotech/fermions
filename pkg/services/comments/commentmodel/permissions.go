@@ -2,12 +2,10 @@ package commentmodel
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/annotations"
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/guardian"
@@ -19,14 +17,12 @@ type PermissionChecker struct {
 	features         featuremgmt.FeatureToggles
 	accessControl    accesscontrol.AccessControl
 	dashboardService dashboards.DashboardService
-	annotationsRepo  annotations.Repository
 }
 
 func NewPermissionChecker(sqlStore db.DB, features featuremgmt.FeatureToggles,
 	accessControl accesscontrol.AccessControl, dashboardService dashboards.DashboardService,
-	annotationsRepo annotations.Repository,
 ) *PermissionChecker {
-	return &PermissionChecker{sqlStore: sqlStore, features: features, accessControl: accessControl, annotationsRepo: annotationsRepo}
+	return &PermissionChecker{sqlStore: sqlStore, features: features, accessControl: accessControl}
 }
 
 func (c *PermissionChecker) getDashboardByUid(ctx context.Context, orgID int64, uid string) (*models.Dashboard, error) {
@@ -61,30 +57,6 @@ func (c *PermissionChecker) CheckReadPermissions(ctx context.Context, orgId int6
 		if ok, err := guard.CanView(); err != nil || !ok {
 			return false, nil
 		}
-	case ObjectTypeAnnotation:
-		if !c.features.IsEnabled(featuremgmt.FlagAnnotationComments) {
-			return false, nil
-		}
-		annotationID, err := strconv.ParseInt(objectID, 10, 64)
-		if err != nil {
-			return false, nil
-		}
-		items, err := c.annotationsRepo.Find(ctx, &annotations.ItemQuery{AnnotationId: annotationID, OrgId: orgId, SignedInUser: signedInUser})
-		if err != nil || len(items) != 1 {
-			return false, nil
-		}
-		dashboardID := items[0].DashboardId
-		if dashboardID == 0 {
-			return false, nil
-		}
-		dash, err := c.getDashboardById(ctx, orgId, dashboardID)
-		if err != nil {
-			return false, err
-		}
-		guard := guardian.New(ctx, dash.Id, orgId, signedInUser)
-		if ok, err := guard.CanView(); err != nil || !ok {
-			return false, nil
-		}
 	default:
 		return false, nil
 	}
@@ -102,36 +74,6 @@ func (c *PermissionChecker) CheckWritePermissions(ctx context.Context, orgId int
 		dash, err := c.getDashboardByUid(ctx, orgId, objectID)
 		if err != nil {
 			return false, err
-		}
-		guard := guardian.New(ctx, dash.Id, orgId, signedInUser)
-		if ok, err := guard.CanEdit(); err != nil || !ok {
-			return false, nil
-		}
-	case ObjectTypeAnnotation:
-		if !c.features.IsEnabled(featuremgmt.FlagAnnotationComments) {
-			return false, nil
-		}
-		if !c.accessControl.IsDisabled() {
-			evaluator := accesscontrol.EvalPermission(accesscontrol.ActionAnnotationsWrite, accesscontrol.ScopeAnnotationsTypeDashboard)
-			if canEdit, err := c.accessControl.Evaluate(ctx, signedInUser, evaluator); err != nil || !canEdit {
-				return canEdit, err
-			}
-		}
-		annotationID, err := strconv.ParseInt(objectID, 10, 64)
-		if err != nil {
-			return false, nil
-		}
-		items, err := c.annotationsRepo.Find(ctx, &annotations.ItemQuery{AnnotationId: annotationID, OrgId: orgId, SignedInUser: signedInUser})
-		if err != nil || len(items) != 1 {
-			return false, nil
-		}
-		dashboardID := items[0].DashboardId
-		if dashboardID == 0 {
-			return false, nil
-		}
-		dash, err := c.getDashboardById(ctx, orgId, dashboardID)
-		if err != nil {
-			return false, nil
 		}
 		guard := guardian.New(ctx, dash.Id, orgId, signedInUser)
 		if ok, err := guard.CanEdit(); err != nil || !ok {

@@ -8,7 +8,6 @@ import { supportedDatasources } from './SupportedPubdashDatasources';
 
 export interface PublicDashboard {
   accessToken?: string;
-  annotationsEnabled: boolean;
   isEnabled: boolean;
   uid: string;
   dashboardUid: string;

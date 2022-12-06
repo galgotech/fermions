@@ -6,7 +6,6 @@ import { Registry } from '../utils';
 
 import { OptionsEditorItem } from './OptionsUIRegistryBuilder';
 import { ScopedVars } from './ScopedVars';
-import { AlertStateInfo } from './alerts';
 import { PanelModel } from './dashboard';
 import { LoadingState, PreferredVisualisationType } from './data';
 import { DataFrame, FieldType } from './dataFrame';
@@ -39,14 +38,6 @@ export interface PanelData {
    * The revision is a useful way to know if only data has changed or data+structure
    */
   structureRev?: number;
-
-  /** A list of annotation items */
-  annotations?: DataFrame[];
-
-  /**
-   * @internal
-   */
-  alertState?: AlertStateInfo;
 
   /** Request contains the queries and properties sent to the datasource */
   request?: DataQueryRequest;
@@ -181,10 +172,7 @@ export enum VizOrientation {
   Horizontal = 'horizontal',
 }
 
-export interface PanelPluginDataSupport {
-  annotations: boolean;
-  alertStates: boolean;
-}
+export interface PanelPluginDataSupport {}
 
 /**
  * @alpha

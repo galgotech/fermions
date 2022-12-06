@@ -72,10 +72,6 @@ export interface GrafanaJavascriptAgentConfig {
   apiKey: string;
 }
 
-export interface UnifiedAlertingConfig {
-  minInterval: string;
-}
-
 /**
  * Describes the plugins that should be preloaded prior to start Grafana.
  *
@@ -167,12 +163,7 @@ export interface GrafanaConfig {
   allowOrgCreate: boolean;
   disableLoginForm: boolean;
   defaultDatasource: string;
-  alertingEnabled: boolean;
-  alertingErrorOrTimeout: string;
-  alertingNoDataOrNullValues: string;
-  alertingMinInterval: number;
   authProxyEnabled: boolean;
-  exploreEnabled: boolean;
   queryHistoryEnabled: boolean;
   helpEnabled: boolean;
   profileEnabled: boolean;
@@ -205,9 +196,6 @@ export interface GrafanaConfig {
   customTheme?: any;
   geomapDefaultBaseLayer?: MapLayerOptions;
   geomapDisableCustomBaseLayer?: boolean;
-  unifiedAlertingEnabled: boolean;
-  unifiedAlerting: UnifiedAlertingConfig;
-  angularSupportEnabled: boolean;
   feedbackLinksEnabled: boolean;
   secretsManagerPluginEnabled: boolean;
   googleAnalyticsId: string | undefined;

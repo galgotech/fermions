@@ -21,13 +21,12 @@ export interface Props {
   description?: string;
   links?: DataLink[];
   error?: string;
-  alertState?: string;
   isViewing: boolean;
   isEditing: boolean;
   data: PanelData;
 }
 
-export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, data, alertState, dashboard }) => {
+export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, data, dashboard }) => {
   const onCancelQuery = () => panel.getQueryRunner().cancelQuery();
   const title = panel.getDisplayTitle();
   const className = cx('panel-header', !(isViewing || isEditing) ? 'grid-drag-handle' : '');
@@ -51,14 +50,6 @@ export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, dat
               <ClickOutsideWrapper onClick={closeMenu} parent={document}>
                 <div className="panel-title">
                   <PanelHeaderNotices frames={data.series} panelId={panel.id} />
-                  {alertState ? (
-                    <Icon
-                      name={alertState === 'alerting' ? 'heart-break' : 'heart'}
-                      className="icon-gf panel-alert-icon"
-                      style={{ marginRight: '4px' }}
-                      size="sm"
-                    />
-                  ) : null}
                   <h2 className={styles.titleText}>{title}</h2>
                   {!dashboard.meta.publicDashboardAccessToken && (
                     <div data-testid="panel-dropdown">

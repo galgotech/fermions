@@ -108,17 +108,12 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		"ldapEnabled":                         hs.Cfg.LDAPEnabled,
 		"jwtHeaderName":                       hs.Cfg.JWTAuthHeaderName,
 		"jwtUrlLogin":                         hs.Cfg.JWTAuthURLLogin,
-		"alertingEnabled":                     setting.AlertingEnabled,
-		"alertingErrorOrTimeout":              setting.AlertingErrorOrTimeout,
-		"alertingNoDataOrNullValues":          setting.AlertingNoDataOrNullValues,
-		"alertingMinInterval":                 setting.AlertingMinInterval,
 		"liveEnabled":                         hs.Cfg.LiveMaxConnections != 0,
 		"autoAssignOrg":                       setting.AutoAssignOrg,
 		"verifyEmailEnabled":                  setting.VerifyEmailEnabled,
 		"sigV4AuthEnabled":                    setting.SigV4AuthEnabled,
 		"azureAuthEnabled":                    setting.AzureAuthEnabled,
 		"rbacEnabled":                         hs.Cfg.RBACEnabled,
-		"exploreEnabled":                      setting.ExploreEnabled,
 		"helpEnabled":                         setting.HelpEnabled,
 		"profileEnabled":                      setting.ProfileEnabled,
 		"queryHistoryEnabled":                 hs.Cfg.QueryHistoryEnabled,
@@ -193,10 +188,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		},
 		"reporting": map[string]bool{
 			"enabled": hs.Cfg.SectionWithEnvOverrides("reporting").Key("enabled").MustBool(true),
-		},
-		"unifiedAlertingEnabled": hs.Cfg.UnifiedAlerting.Enabled,
-		"unifiedAlerting": map[string]interface{}{
-			"minInterval": hs.Cfg.UnifiedAlerting.MinInterval.String(),
 		},
 		"oauth":                   hs.getEnabledOAuthProviders(),
 		"samlEnabled":             hs.samlEnabled(),
@@ -294,37 +285,6 @@ func (hs *HTTPServer) getFSDataSources(c *models.ReqContext, enabledPlugins Enab
 			if ds.WithCredentials {
 				dsDTO.WithCredentials = ds.WithCredentials
 			}
-
-			if ds.Type == datasources.DS_INFLUXDB_08 {
-				password, err := hs.DataSourcesService.DecryptedPassword(c.Req.Context(), ds)
-				if err != nil {
-					return nil, err
-				}
-
-				dsDTO.Username = ds.User
-				dsDTO.Password = password
-				dsDTO.URL = url + "/db/" + ds.Database
-			}
-
-			if ds.Type == datasources.DS_INFLUXDB {
-				password, err := hs.DataSourcesService.DecryptedPassword(c.Req.Context(), ds)
-				if err != nil {
-					return nil, err
-				}
-
-				dsDTO.Username = ds.User
-				dsDTO.Password = password
-				dsDTO.URL = url
-			}
-		}
-
-		if (ds.Type == datasources.DS_INFLUXDB) || (ds.Type == datasources.DS_ES) {
-			dsDTO.Database = ds.Database
-		}
-
-		if ds.Type == datasources.DS_PROMETHEUS {
-			// add unproxied server URL for link to Prometheus web UI
-			ds.JsonData.Set("directUrl", ds.Url)
 		}
 
 		dataSources[ds.Name] = dsDTO

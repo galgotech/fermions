@@ -25,7 +25,6 @@ var (
 	ScopeProvisionersPlugins       = ac.Scope("provisioners", "plugins")
 	ScopeProvisionersDatasources   = ac.Scope("provisioners", "datasources")
 	ScopeProvisionersNotifications = ac.Scope("provisioners", "notifications")
-	ScopeProvisionersAlertRules    = ac.Scope("provisioners", "alerting")
 )
 
 // declareFixedRoles declares to the AccessControl service fixed roles and their
@@ -273,49 +272,6 @@ func (hs *HTTPServer) declareFixedRoles() error {
 		Grants: []string{string(org.RoleAdmin)},
 	}
 
-	annotationsReaderRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:annotations:reader",
-			DisplayName: "Annotation reader",
-			Description: "Read annotations and tags",
-			Group:       "Annotations",
-			Permissions: []ac.Permission{
-				{Action: ac.ActionAnnotationsRead, Scope: ac.ScopeAnnotationsAll},
-			},
-		},
-		Grants: []string{string(org.RoleViewer)},
-	}
-
-	dashboardAnnotationsWriterRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:annotations.dashboard:writer",
-			DisplayName: "Dashboard annotation writer",
-			Description: "Update annotations associated with dashboards.",
-			Group:       "Annotations",
-			Permissions: []ac.Permission{
-				{Action: ac.ActionAnnotationsCreate, Scope: ac.ScopeAnnotationsTypeDashboard},
-				{Action: ac.ActionAnnotationsDelete, Scope: ac.ScopeAnnotationsTypeDashboard},
-				{Action: ac.ActionAnnotationsWrite, Scope: ac.ScopeAnnotationsTypeDashboard},
-			},
-		},
-		Grants: []string{string(org.RoleViewer)},
-	}
-
-	annotationsWriterRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:annotations:writer",
-			DisplayName: "Annotation writer",
-			Description: "Update all annotations.",
-			Group:       "Annotations",
-			Permissions: []ac.Permission{
-				{Action: ac.ActionAnnotationsCreate, Scope: ac.ScopeAnnotationsAll},
-				{Action: ac.ActionAnnotationsDelete, Scope: ac.ScopeAnnotationsAll},
-				{Action: ac.ActionAnnotationsWrite, Scope: ac.ScopeAnnotationsAll},
-			},
-		},
-		Grants: []string{string(org.RoleEditor)},
-	}
-
 	dashboardsCreatorRole := ac.RoleRegistration{
 		Role: ac.RoleDTO{
 			Name:        "fixed:dashboards:creator",
@@ -426,7 +382,6 @@ func (hs *HTTPServer) declareFixedRoles() error {
 		provisioningWriterRole, datasourcesReaderRole, builtInDatasourceReader, datasourcesWriterRole,
 		datasourcesIdReaderRole, orgReaderRole, orgWriterRole,
 		orgMaintainerRole, teamsCreatorRole, teamsWriterRole, datasourcesExplorerRole,
-		annotationsReaderRole, dashboardAnnotationsWriterRole, annotationsWriterRole,
 		dashboardsCreatorRole, dashboardsReaderRole, dashboardsWriterRole,
 		foldersCreatorRole, foldersReaderRole, foldersWriterRole, apikeyReaderRole, apikeyWriterRole,
 		publicDashboardsWriterRole,

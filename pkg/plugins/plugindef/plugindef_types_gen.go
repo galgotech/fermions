@@ -111,13 +111,6 @@ const (
 
 // PluginDef defines model for plugindef.
 type PluginDef struct {
-	// For data source plugins, if the plugin supports alerting.
-	Alerting *bool `json:"alerting,omitempty"`
-
-	// For data source plugins, if the plugin supports annotation
-	// queries.
-	Annotations *bool `json:"annotations,omitempty"`
-
 	// Set to true for app plugins that should be enabled by default
 	// in all orgs
 	AutoEnabled *bool `json:"autoEnabled,omitempty"`

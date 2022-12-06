@@ -361,19 +361,7 @@ func (_m *FakeDashboardStore) HasEditPermissionInFolders(ctx context.Context, qu
 	return r0
 }
 
-// SaveAlerts provides a mock function with given fields: ctx, dashID, alerts
-func (_m *FakeDashboardStore) SaveAlerts(ctx context.Context, dashID int64, alerts []*models.Alert) error {
-	ret := _m.Called(ctx, dashID, alerts)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, []*models.Alert) error); ok {
-		r0 = rf(ctx, dashID, alerts)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
 
 // SaveDashboard provides a mock function with given fields: ctx, cmd
 func (_m *FakeDashboardStore) SaveDashboard(ctx context.Context, cmd models.SaveDashboardCommand) (*models.Dashboard, error) {

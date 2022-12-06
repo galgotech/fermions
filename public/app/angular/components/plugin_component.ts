@@ -116,24 +116,6 @@ function pluginDirectiveLoader($compile: any, $http: any, $templateCache: any, $
           Component: ds.components!.QueryCtrl,
         });
       }
-      // Annotations
-      case 'annotations-query-ctrl': {
-        const baseUrl = scope.ctrl.currentDatasource.meta.baseUrl;
-        const pluginId = scope.ctrl.currentDatasource.meta.id;
-
-        return importDataSourcePlugin(scope.ctrl.currentDatasource.meta).then((dsPlugin) => {
-          return {
-            baseUrl,
-            name: 'annotations-query-ctrl-' + pluginId,
-            bindings: { annotation: '=', datasource: '=' },
-            attrs: {
-              annotation: 'ctrl.currentAnnotation',
-              datasource: 'ctrl.currentDatasource',
-            },
-            Component: dsPlugin.components.AnnotationsQueryCtrl,
-          };
-        });
-      }
       // Datasource ConfigCtrl
       case 'datasource-config-ctrl': {
         const dsMeta = scope.ctrl.datasourceMeta;

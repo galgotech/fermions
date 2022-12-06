@@ -113,10 +113,6 @@ export function EditDataSourceView({
 
   const dsi = getDataSourceSrv()?.getInstanceSettings(dataSource.uid);
 
-  const hasAlertingEnabled = Boolean(dsi?.meta?.alerting ?? false);
-  const isAlertManagerDatasource = dsi?.type === 'alertmanager';
-  const alertingSupported = hasAlertingEnabled || isAlertManagerDatasource;
-
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await onUpdate({ ...dataSource });
@@ -158,7 +154,6 @@ export function EditDataSourceView({
         isDefault={dataSource.isDefault}
         onDefaultChange={onDefaultChange}
         onNameChange={onNameChange}
-        alertingSupported={alertingSupported}
       />
 
       {plugin && (

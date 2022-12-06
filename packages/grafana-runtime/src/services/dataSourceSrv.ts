@@ -49,12 +49,6 @@ export interface GetDataSourceListFilters {
   /** Only return data sources that support logging response */
   logs?: boolean;
 
-  /** Only return data sources that support annotations */
-  annotations?: boolean;
-
-  /** Only filter data sources that support alerting */
-  alerting?: boolean;
-
   /**
    * By default only data sources that can be queried will be returned. Meaning they have tracing,
    * metrics, logs or annotations flag set in plugin.json file

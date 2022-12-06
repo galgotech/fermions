@@ -1,11 +1,9 @@
 import { css } from '@emotion/css';
-import { sumBy } from 'lodash';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import useAsyncFn from 'react-use/lib/useAsyncFn';
 
 import { Modal, ConfirmModal, Button } from '@grafana/ui';
-import { config } from 'app/core/config';
 import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
 import { cleanUpDashboardAndVariables } from 'app/features/dashboard/state/actions';
 
@@ -53,16 +51,7 @@ const DeleteDashboardModalUnconnected = ({ hideModal, cleanUpDashboardAndVariabl
 };
 
 const getModalBody = (panels: PanelModel[], title: string) => {
-  const totalAlerts = sumBy(panels, (panel) => (panel.alert ? 1 : 0));
-  return totalAlerts > 0 && !config.unifiedAlertingEnabled ? (
-    <>
-      <p>Do you want to delete this dashboard?</p>
-      <p>
-        This dashboard contains {totalAlerts} alert{totalAlerts > 1 ? 's' : ''}. Deleting this dashboard also deletes
-        those alerts.
-      </p>
-    </>
-  ) : (
+  return (
     <>
       <p>Do you want to delete this dashboard?</p>
       <p>{title}</p>

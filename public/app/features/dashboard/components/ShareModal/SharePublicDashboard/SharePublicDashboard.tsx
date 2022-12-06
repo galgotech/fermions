@@ -77,7 +77,6 @@ export const SharePublicDashboard = (props: Props) => {
     isEnabled: false,
     wasTouched: false,
   });
-  const [annotationsEnabled, setAnnotationsEnabled] = useState(false);
 
   useEffect(() => {
     const eventSubs = new Subscription();
@@ -94,7 +93,6 @@ export const SharePublicDashboard = (props: Props) => {
         datasources: true,
         usage: true,
       });
-      setAnnotationsEnabled(!!publicDashboard?.annotationsEnabled);
     }
 
     setEnabledSwitch((prevState) => ({ ...prevState, isEnabled: !!publicDashboard?.isEnabled }));
@@ -130,7 +128,7 @@ export const SharePublicDashboard = (props: Props) => {
 
     const req = {
       dashboard: props.dashboard,
-      payload: { ...publicDashboard!, isEnabled: enabledSwitch.isEnabled, annotationsEnabled },
+      payload: { ...publicDashboard!, isEnabled: enabledSwitch.isEnabled },
     };
 
     // create or update based on whether we have existing uid
@@ -200,14 +198,12 @@ export const SharePublicDashboard = (props: Props) => {
             </div>
             <hr />
             <Configuration
-              isAnnotationsEnabled={annotationsEnabled}
               dashboard={props.dashboard}
               disabled={!hasWritePermissions || isLoading || isGetError}
               isPubDashEnabled={enabledSwitch.isEnabled}
               onToggleEnabled={() =>
                 setEnabledSwitch((prevState) => ({ isEnabled: !prevState.isEnabled, wasTouched: true }))
               }
-              onToggleAnnotations={() => setAnnotationsEnabled((prevState) => !prevState)}
             />
             {publicDashboardPersisted(publicDashboard) && enabledSwitch.isEnabled && (
               <Field label="Link URL" className={styles.publicUrl}>
