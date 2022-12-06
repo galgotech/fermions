@@ -6,7 +6,6 @@ import { CustomScrollbar, FilterInput, RadioButtonGroup, useStyles2 } from '@gra
 
 import { isPanelModelLibraryPanel } from '../../../library-panels/guard';
 
-import { AngularPanelOptions } from './AngularPanelOptions';
 import { OptionsPaneCategory } from './OptionsPaneCategory';
 import { OptionsPaneCategoryDescriptor } from './OptionsPaneCategoryDescriptor';
 import { getFieldOverrideCategories } from './getFieldOverrideElements';
@@ -18,7 +17,7 @@ import { getRecentOptions } from './state/getRecentOptions';
 import { OptionPaneRenderProps } from './types';
 
 export const OptionsPaneOptions: React.FC<OptionPaneRenderProps> = (props) => {
-  const { plugin, dashboard, panel } = props;
+  const { plugin, panel } = props;
   const [searchQuery, setSearchQuery] = useState('');
   const [listMode, setListMode] = useState(OptionFilter.All);
   const styles = useStyles2(getStyles);
@@ -46,15 +45,6 @@ export const OptionsPaneOptions: React.FC<OptionPaneRenderProps> = (props) => {
 
   if (isSearching) {
     mainBoxElements.push(renderSearchHits(allOptions, justOverrides, searchQuery));
-
-    // If searching for angular panel, then we need to add notice that results are limited
-    if (props.plugin.angularPanelCtrl) {
-      mainBoxElements.push(
-        <div className={styles.searchNotice} key="Search notice">
-          This is an old visualization type that does not support searching all options.
-        </div>
-      );
-    }
   } else {
     switch (listMode) {
       case OptionFilter.All:
@@ -64,12 +54,6 @@ export const OptionsPaneOptions: React.FC<OptionPaneRenderProps> = (props) => {
         }
         // Panel frame options second
         mainBoxElements.push(panelFrameOptions.render());
-        // If angular add those options next
-        if (props.plugin.angularPanelCtrl) {
-          mainBoxElements.push(
-            <AngularPanelOptions plugin={plugin} dashboard={dashboard} panel={panel} key="AngularOptions" />
-          );
-        }
         // Then add all panel and field defaults
         for (const item of vizOptions) {
           mainBoxElements.push(item.render());

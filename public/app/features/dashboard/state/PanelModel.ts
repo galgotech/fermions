@@ -417,12 +417,10 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     const version = getPluginVersion(plugin);
 
     if (this.autoMigrateFrom) {
-      const wasAngular = this.autoMigrateFrom === 'graph' || this.autoMigrateFrom === 'table-old';
       this.callPanelTypeChangeHandler(
         plugin,
         this.autoMigrateFrom,
         this.getOptionsToRemember(), // old options
-        wasAngular
       );
 
       delete this.autoMigrateFrom;
@@ -466,10 +464,9 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     newPlugin: PanelPlugin,
     oldPluginId: string,
     oldOptions: any,
-    wasAngular: boolean
   ) {
     if (newPlugin.onPanelTypeChanged) {
-      const prevOptions = wasAngular ? { angular: oldOptions } : oldOptions.options;
+      const prevOptions = oldOptions.options;
       Object.assign(this.options, newPlugin.onPanelTypeChanged(this, oldPluginId, prevOptions, this.fieldConfig));
     }
   }
@@ -479,7 +476,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     const oldOptions: any = this.getOptionsToRemember();
     const prevFieldConfig = this.fieldConfig;
     const oldPluginId = this.type;
-    const wasAngular = this.isAngularPlugin();
     this.cachedPluginOptions[oldPluginId] = {
       properties: oldOptions,
       fieldConfig: prevFieldConfig,
@@ -489,7 +485,7 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     this.restorePanelOptions(pluginId);
 
     // Potentially modify current options
-    this.callPanelTypeChangeHandler(newPlugin, oldPluginId, oldOptions, wasAngular);
+    this.callPanelTypeChangeHandler(newPlugin, oldPluginId, oldOptions);
 
     // switch
     this.type = pluginId;
@@ -595,10 +591,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
   hasTitle() {
     return this.title && this.title.length > 0;
-  }
-
-  isAngularPlugin(): boolean {
-    return (this.plugin && this.plugin.angularPanelCtrl) !== undefined;
   }
 
   destroy() {

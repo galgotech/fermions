@@ -11,7 +11,6 @@ import {
   getDataSourceRef,
   isDataSourceRef,
   MappingType,
-  PanelPlugin,
   SpecialValueMatch,
   standardEditorsRegistry,
   standardFieldConfigEditorRegistry,
@@ -566,23 +565,6 @@ export class DashboardMigrator {
       }
     }
 
-    if (oldVersion < 24) {
-      // 7.0
-      // - migrate existing tables to 'table-old'
-      panelUpgrades.push((panel: any) => {
-        const wasAngularTable = panel.type === 'table';
-        if (wasAngularTable && !panel.styles) {
-          return panel; // styles are missing so assumes default settings
-        }
-        const wasReactTable = panel.table === 'table2';
-        if (!wasAngularTable || wasReactTable) {
-          return panel;
-        }
-        panel.type = wasAngularTable ? 'table-old' : 'table';
-        return panel;
-      });
-    }
-
     if (oldVersion < 25) {
       // tags are removed in version 28
     }
@@ -1033,10 +1015,6 @@ function migrateSinglestat(panel: PanelModel) {
     returnSaveModel = true;
     panel = new PanelModel(panel);
   }
-
-  // To make sure PanelModel.isAngularPlugin logic thinks the current panel is angular
-  // And since this plugin no longer exist we just fake it here
-  panel.plugin = { angularPanelCtrl: {} } as PanelPlugin;
 
   // Otheriwse use gauge or stat panel
   if ((panel as any).gauge?.show) {

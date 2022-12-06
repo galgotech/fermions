@@ -39,11 +39,9 @@ function getPanelPlugin(meta: PanelPluginMeta): Promise<PanelPlugin> {
       if (pluginExports.plugin) {
         return pluginExports.plugin as PanelPlugin;
       } else if (pluginExports.PanelCtrl) {
-        const plugin = new PanelPlugin(null);
-        plugin.angularPanelCtrl = pluginExports.PanelCtrl;
-        return plugin;
+        return new PanelPlugin(null);
       }
-      throw new Error('missing export: plugin or PanelCtrl');
+      throw new Error('missing export: plugin');
     })
     .then((plugin) => {
       plugin.meta = meta;

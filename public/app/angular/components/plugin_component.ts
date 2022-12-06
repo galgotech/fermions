@@ -10,19 +10,6 @@ import { importDataSourcePlugin, importAppPlugin } from '../../features/plugins/
 
 /** @ngInject */
 function pluginDirectiveLoader($compile: any, $http: any, $templateCache: any, $location: ILocationService) {
-  function getTemplate(component: { template: any; templateUrl: any }) {
-    if (component.template) {
-      return Promise.resolve(component.template);
-    }
-    const cached = $templateCache.get(component.templateUrl);
-    if (cached) {
-      return Promise.resolve(cached);
-    }
-    return $http.get(component.templateUrl).then((res: any) => {
-      return res.data;
-    });
-  }
-
   function relativeTemplateUrlToAbs(templateUrl: string, baseUrl: string) {
     if (!templateUrl) {
       return undefined;
@@ -71,30 +58,7 @@ function pluginDirectiveLoader($compile: any, $http: any, $templateCache: any, $
 
     const panelInfo = config.panels[scope.panel.type];
     return importPanelPlugin(panelInfo.id).then((panelPlugin) => {
-      const PanelCtrl = panelPlugin.angularPanelCtrl;
-      componentInfo.Component = PanelCtrl;
-
-      if (!PanelCtrl || PanelCtrl.registered) {
-        return componentInfo;
-      }
-
-      if (PanelCtrl.templatePromise) {
-        return PanelCtrl.templatePromise.then((res: any) => {
-          return componentInfo;
-        });
-      }
-
-      if (panelInfo) {
-        PanelCtrl.templateUrl = relativeTemplateUrlToAbs(PanelCtrl.templateUrl, panelInfo.baseUrl);
-      }
-
-      PanelCtrl.templatePromise = getTemplate(PanelCtrl).then((template: any) => {
-        PanelCtrl.templateUrl = null;
-        PanelCtrl.template = `<grafana-panel ctrl="ctrl" class="panel-height-helper">${template}</grafana-panel>`;
-        return componentInfo;
-      });
-
-      return PanelCtrl.templatePromise;
+      return componentInfo;  
     });
   }
 
