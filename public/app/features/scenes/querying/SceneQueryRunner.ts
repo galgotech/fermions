@@ -5,17 +5,13 @@ import {
   CoreApp,
   DataQuery,
   DataQueryRequest,
-  DataSourceApi,
   DataSourceRef,
   PanelData,
-  TimeRange,
 } from '@grafana/data';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { getNextRequestId } from 'app/features/query/state/PanelQueryRunner';
 import { runRequest } from 'app/features/query/state/runRequest';
 
 import { SceneObjectBase } from '../core/SceneObjectBase';
-import { sceneGraph } from '../core/sceneGraph';
 import { SceneObjectStatePlain } from '../core/types';
 
 export interface QueryRunnerState extends SceneObjectStatePlain {
@@ -38,16 +34,7 @@ export class SceneQueryRunner extends SceneObjectBase<QueryRunnerState> {
 
   public activate() {
     super.activate();
-
-    const timeRange = sceneGraph.getTimeRange(this);
-
-    this._subs.add(
-      timeRange.subscribeToState({
-        next: (timeRange) => {
-          this.runWithTimeRange(timeRange.value);
-        },
-      })
-    );
+    this.runWithTimeRange();
 
     if (this.shouldRunQueriesOnActivate()) {
       this.runQueries();
@@ -99,12 +86,11 @@ export class SceneQueryRunner extends SceneObjectBase<QueryRunnerState> {
   }
 
   public runQueries() {
-    const timeRange = sceneGraph.getTimeRange(this);
-    this.runWithTimeRange(timeRange.state.value);
+    this.runWithTimeRange();
   }
 
-  private async runWithTimeRange(timeRange: TimeRange) {
-    const { datasource, queries } = this.state;
+  private async runWithTimeRange() {
+    const { queries } = this.state;
 
     const request: DataQueryRequest = {
       app: CoreApp.Dashboard,
@@ -116,17 +102,7 @@ export class SceneQueryRunner extends SceneObjectBase<QueryRunnerState> {
     };
 
     try {
-      const ds = await getDataSource(datasource);
-
-      // Attach the data source name to each query
-      request.targets = request.targets.map((query) => {
-        if (!query.datasource) {
-          query.datasource = ds.getRef();
-        }
-        return query;
-      });
-
-      this._querySub = runRequest(ds, request).subscribe({
+      this._querySub = runRequest(request).subscribe({
         next: this.onDataReceived,
       });
     } catch (err) {
@@ -137,11 +113,4 @@ export class SceneQueryRunner extends SceneObjectBase<QueryRunnerState> {
   private onDataReceived = (data: PanelData) => {
     this.setState({ data });
   };
-}
-
-async function getDataSource(datasource: DataSourceRef | undefined): Promise<DataSourceApi> {
-  if (datasource && (datasource as any).query) {
-    return datasource as DataSourceApi;
-  }
-  return await getDatasourceSrv().get(datasource as string);
 }

@@ -6,22 +6,15 @@ import { catchError, map, mapTo, share, takeUntil, tap } from 'rxjs/operators';
 // Utils & Services
 // Types
 import {
-  DataFrame,
   DataQueryError,
   DataQueryRequest,
   DataQueryResponse,
   DataQueryResponseData,
-  DataSourceApi,
-  guessFieldTypes,
   LoadingState,
   PanelData,
-  toDataFrame,
 } from '@grafana/data';
 import { toDataQueryError } from '@grafana/runtime';
-import { isExpressionReference } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 import { backendSrv } from 'app/core/services/backend_srv';
-import { dataSource as expressionDatasource } from 'app/features/expressions/ExpressionDatasource';
-import { ExpressionQuery } from 'app/features/expressions/types';
 
 import { cancelNetworkRequestsOnUnsubscribe } from './processing/canceler';
 import { emitDataRequestEvent } from './queryAnalytics';
@@ -83,11 +76,7 @@ export function processResponsePacket(packet: DataQueryResponse, state: RunningQ
  *  Will emit a loading state if no response after 50ms
  *  Cancel any still running network requests on unsubscribe (using request.requestId)
  */
-export function runRequest(
-  datasource: DataSourceApi,
-  request: DataQueryRequest,
-  queryFunction?: typeof datasource.query
-): Observable<PanelData> {
+export function runRequest(request: DataQueryRequest): Observable<PanelData> {
   let state: RunningQueryState = {
     panelData: {
       state: LoadingState.Loading,
@@ -104,7 +93,7 @@ export function runRequest(
     return of(state.panelData);
   }
 
-  const dataObservable = callQueryMethod(datasource, request, queryFunction).pipe(
+  const dataObservable = callQueryMethod(request).pipe(
     // Transform response packets into PanelData with merged results
     map((packet: DataQueryResponse) => {
       if (!isArray(packet.data)) {
@@ -127,7 +116,7 @@ export function runRequest(
         error: toDataQueryError(err),
       });
     }),
-    tap(emitDataRequestEvent(datasource)),
+    tap(emitDataRequestEvent()),
     // finalize is triggered when subscriber unsubscribes
     // This makes sure any still running network requests are cancelled
     cancelNetworkRequestsOnUnsubscribe(backendSrv, request.requestId),
@@ -141,77 +130,8 @@ export function runRequest(
   return merge(timer(200).pipe(mapTo(state.panelData), takeUntil(dataObservable)), dataObservable);
 }
 
-export function callQueryMethod(
-  datasource: DataSourceApi,
-  request: DataQueryRequest,
-  queryFunction?: typeof datasource.query
-) {
-  // If its a public datasource, just return the result. Expressions will be handled on the backend.
-  if (datasource.type === 'public-ds') {
-    return from(datasource.query(request));
-  }
-
-  for (const target of request.targets) {
-    if (isExpressionReference(target.datasource)) {
-      return expressionDatasource.query(request as DataQueryRequest<ExpressionQuery>);
-    }
-  }
-
-  // Otherwise it is a standard datasource request
-  const returnVal = queryFunction ? queryFunction(request) : datasource.query(request);
+export function callQueryMethod(request: DataQueryRequest) {
+  console.log("------------------------- call grafana proxy ", request);
+  const returnVal = of();
   return from(returnVal);
-}
-
-function getProcessedDataFrame(data: DataQueryResponseData): DataFrame {
-  const dataFrame = guessFieldTypes(toDataFrame(data));
-
-  if (dataFrame.fields && dataFrame.fields.length) {
-    // clear out the cached info
-    for (const field of dataFrame.fields) {
-      field.state = null;
-    }
-  }
-
-  return dataFrame;
-}
-
-/**
- * All panels will be passed tables that have our best guess at column type set
- *
- * This is also used by PanelChrome for snapshot support
- */
-export function getProcessedDataFrames(results?: DataQueryResponseData[]): DataFrame[] {
-  if (!results || !isArray(results)) {
-    return [];
-  }
-
-  return results.map((data) => getProcessedDataFrame(data));
-}
-
-export function preProcessPanelData(data: PanelData, lastResult?: PanelData): PanelData {
-  const { series } = data;
-
-  //  for loading states with no data, use last result
-  if (data.state === LoadingState.Loading && series.length === 0) {
-    if (!lastResult) {
-      lastResult = data;
-    }
-
-    return {
-      ...lastResult,
-      state: LoadingState.Loading,
-      request: data.request,
-    };
-  }
-
-  // Make sure the data frames are properly formatted
-  const STARTTIME = performance.now();
-  const processedDataFrames = series.map((data) => getProcessedDataFrame(data));
-  const STOPTIME = performance.now();
-
-  return {
-    ...data,
-    series: processedDataFrames,
-    timings: { dataProcessingTime: STOPTIME - STARTTIME },
-  };
 }

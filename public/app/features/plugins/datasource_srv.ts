@@ -9,7 +9,6 @@ import {
   GetDataSourceListFilters,
   DataSourceSrv as DataSourceService,
   getDataSourceSrv as getDataSourceService,
-  getLegacyAngularInjector,
   getBackendSrv,
 } from '@grafana/runtime';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
@@ -153,17 +152,8 @@ export class DatasourceSrv implements DataSourceService {
       }
 
       // If there is only one constructor argument it is instanceSettings
-      const useAngular = dsPlugin.DataSourceClass.length !== 1;
       let instance: DataSourceApi<any, any>;
-
-      if (useAngular) {
-        instance = getLegacyAngularInjector().instantiate(dsPlugin.DataSourceClass, {
-          instanceSettings,
-        });
-      } else {
-        instance = new dsPlugin.DataSourceClass(instanceSettings);
-      }
-
+      instance = new dsPlugin.DataSourceClass(instanceSettings);
       instance.components = dsPlugin.components;
 
       // Some old plugins does not extend DataSourceApi so we need to manually patch them
@@ -261,13 +251,6 @@ export class DatasourceSrv implements DataSourceService {
     }
 
     return sorted;
-  }
-
-  /**
-   * @deprecated use getList
-   * */
-  getExternal(): DataSourceInstanceSettings[] {
-    return this.getList();
   }
 
   /**

@@ -151,7 +151,6 @@ class MetricsPanelCtrl extends PanelCtrl {
     const queryRunner = panel.getQueryRunner();
 
     return queryRunner.run({
-      datasource: panel.datasource,
       queries: panel.targets,
       panelId: panel.id,
       dashboardId: this.dashboard.id,

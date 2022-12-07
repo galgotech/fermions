@@ -29,7 +29,6 @@ import {
   setDataSourceSrv,
   setEchoSrv,
   setLocationSrv,
-  setQueryRunnerFactory,
 } from '@grafana/runtime';
 import { setPanelDataErrorView } from '@grafana/runtime/src/components/PanelDataErrorView';
 import { setPanelRenderer } from '@grafana/runtime/src/components/PanelRenderer';
@@ -65,7 +64,6 @@ import { PanelDataErrorView } from './features/panel/components/PanelDataErrorVi
 import { PanelRenderer } from './features/panel/components/PanelRenderer';
 import { DatasourceSrv } from './features/plugins/datasource_srv';
 import { preloadPlugins } from './features/plugins/pluginPreloader';
-import { QueryRunner } from './features/query/state/QueryRunner';
 import { initWindowRuntime } from './features/runtime/init';
 import { configureStore } from './store/configureStore';
 
@@ -111,8 +109,6 @@ export class GrafanaApp {
       standardEditorsRegistry.setInit(getAllOptionEditors);
       standardFieldConfigEditorRegistry.setInit(getAllStandardFieldConfigs);
       monacoLanguageRegistry.setInit(getDefaultMonacoLanguages);
-
-      setQueryRunnerFactory(() => new QueryRunner());
 
       locationUtil.initialize({
         config,

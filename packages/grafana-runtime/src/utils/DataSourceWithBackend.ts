@@ -132,15 +132,6 @@ class DataSourceWithBackend<
     const queries = targets.map((q) => {
       let datasource = this.getRef();
       let datasourceId = this.id;
-
-      if (isExpressionReference(q.datasource)) {
-        hasExpr = true;
-        return {
-          ...q,
-          datasource: ExpressionDatasourceRef,
-        };
-      }
-
       if (q.datasource) {
         const ds = getDataSourceSrv().getInstanceSettings(q.datasource);
 

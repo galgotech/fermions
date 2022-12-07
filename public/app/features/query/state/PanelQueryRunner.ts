@@ -9,24 +9,13 @@ import {
   DataFrame,
   DataQuery,
   DataQueryRequest,
-  DataSourceApi,
-  DataSourceJsonData,
-  DataSourceRef,
   LoadingState,
   PanelData,
 } from '@grafana/data';
-import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
-import { PublicDashboardDataSource } from '../../dashboard/services/PublicDashboardDataSource';
+import { runRequest } from './runRequest';
 
-import { preProcessPanelData, runRequest } from './runRequest';
-
-export interface QueryRunnerOptions<
-  TQuery extends DataQuery = DataQuery,
-  TOptions extends DataSourceJsonData = DataSourceJsonData
-> {
-  datasource: DataSourceRef | DataSourceApi<TQuery, TOptions> | null;
+export interface QueryRunnerOptions<TQuery extends DataQuery = DataQuery> {
   queries: TQuery[];
   panelId?: number;
   /** @deprecate */
@@ -75,11 +64,9 @@ export class PanelQueryRunner {
   async run(options: QueryRunnerOptions) {
     const {
       queries,
-      datasource,
       panelId,
       dashboardId,
       dashboardUID,
-      publicDashboardAccessToken,
       timeInfo,
       cacheTimeout,
     } = options;
@@ -90,7 +77,6 @@ export class PanelQueryRunner {
       panelId,
       dashboardId,
       dashboardUID,
-      publicDashboardAccessToken,
       timeInfo,
       targets: cloneDeep(queries),
       cacheTimeout,
@@ -98,23 +84,8 @@ export class PanelQueryRunner {
     };
 
     try {
-      const ds = await getDataSource(datasource, publicDashboardAccessToken);
-      const isMixedDS = ds.meta?.mixed;
-
-      // Attach the data source to each query
-      request.targets = request.targets.map((query) => {
-        const isExpressionQuery = query.datasource?.type === ExpressionDatasourceRef.type;
-        // When using a data source variable, the panel might have the incorrect datasource
-        // stored, so when running the query make sure it is done with the correct one
-        if (!query.datasource || (query.datasource.uid !== ds.uid && !isMixedDS && !isExpressionQuery)) {
-          query.datasource = ds.getRef();
-        }
-        return query;
-      });
-
       this.lastRequest = request;
-
-      this.pipeToSubject(runRequest(ds, request), panelId);
+      this.pipeToSubject(runRequest(request), panelId);
     } catch (err) {
       console.error('PanelQueryRunner Error', err);
     }
@@ -129,7 +100,7 @@ export class PanelQueryRunner {
 
     this.subscription = panelData.subscribe({
       next: (data) => {
-        this.lastResult = preProcessPanelData(data, this.lastResult);
+        this.lastResult = data;
         // Store preprocessed query results for applying overrides later on in the pipeline
         this.subject.next(this.lastResult);
       },
@@ -199,20 +170,4 @@ export class PanelQueryRunner {
   getLastRequest(): DataQueryRequest | undefined {
     return this.lastRequest;
   }
-}
-
-async function getDataSource(
-  datasource: DataSourceRef | string | DataSourceApi | null,
-  publicDashboardAccessToken?: string
-): Promise<DataSourceApi> {
-  if (!publicDashboardAccessToken && datasource && typeof datasource === 'object' && 'query' in datasource) {
-    return datasource;
-  }
-
-  const ds = await getDatasourceSrv().get(datasource);
-  if (publicDashboardAccessToken) {
-    return new PublicDashboardDataSource(ds);
-  }
-
-  return ds;
 }

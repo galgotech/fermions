@@ -1,5 +1,4 @@
 import { DataQuery, DataSourceApi, hasQueryExportSupport, hasQueryImportSupport } from '@grafana/data';
-import { isExpressionReference } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 
 export async function updateQueries(
   nextDS: DataSourceApi,
@@ -36,10 +35,5 @@ export async function updateQueries(
   }
 
   // Set data source on all queries except expression queries
-  return nextQueries.map((query) => {
-    if (!isExpressionReference(query.datasource) && !nextDS.meta.mixed) {
-      query.datasource = datasource;
-    }
-    return query;
-  });
+  return nextQueries;
 }

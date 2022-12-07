@@ -1,10 +1,10 @@
-import { PanelData, LoadingState, DataSourceApi, urlUtil } from '@grafana/data';
+import { PanelData, LoadingState, urlUtil } from '@grafana/data';
 import { reportMetaAnalytics, MetaAnalyticsEventName, DataRequestEventPayload } from '@grafana/runtime';
 import { getConfig } from 'app/core/config';
 
 import { getDashboardSrv } from '../../dashboard/services/DashboardSrv';
 
-export function emitDataRequestEvent(datasource: DataSourceApi) {
+export function emitDataRequestEvent() {
   let done = false;
 
   return (data: PanelData) => {
@@ -33,10 +33,6 @@ export function emitDataRequestEvent(datasource: DataSourceApi) {
 
     const eventData: DataRequestEventPayload = {
       eventName: MetaAnalyticsEventName.DataRequest,
-      datasourceName: datasource.name,
-      datasourceId: datasource.id,
-      datasourceUid: datasource.uid,
-      datasourceType: datasource.type,
       panelId: data.request.panelId,
       dashboardId: data.request.dashboardId,
       dataSize: 0,
