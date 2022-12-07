@@ -50,7 +50,6 @@ export const QueryCreateDrawer = ({ onDismiss, updateComponent }: Props) => {
                     onClick={() => {
                       const savedQuery: SavedQuery = {
                         title: 'New Query',
-                        variables: [],
                         queries: [
                           {
                             refId: 'A',

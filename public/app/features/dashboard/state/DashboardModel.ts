@@ -27,8 +27,6 @@ import { GridPos, PanelModel } from './PanelModel';
 import { TimeModel } from './TimeModel';
 
 export interface CloneOptions {
-  saveVariables?: boolean;
-  saveTimerange?: boolean;
   message?: string;
 }
 
@@ -163,12 +161,7 @@ export class DashboardModel implements TimeModel {
   }
 
   // cleans meta data and other non persistent state
-  getSaveModelClone(options?: CloneOptions): DashboardModel {
-    const defaults = _defaults(options || {}, {
-      saveVariables: true,
-      saveTimerange: true,
-    });
-
+  getSaveModelClone(): DashboardModel {
     // make clone
     let copy: any = {};
     for (const property in this) {
@@ -179,16 +172,11 @@ export class DashboardModel implements TimeModel {
       copy[property] = cloneDeep(this[property]);
     }
 
-    if (!defaults.saveTimerange) {
-      copy.time = this.originalTime;
-    }
-
     // get panel save models
     copy.panels = this.getPanelSaveModels();
 
     //  sort by keys
     copy = sortedDeepCloneWithoutNulls(copy);
-    copy.getVariables = () => copy.templating.list;
 
     return copy;
   }

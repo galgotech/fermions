@@ -37,33 +37,6 @@ export function metricSegment($compile: any, $sce: any) {
       $input.appendTo(elem);
       $button.appendTo(elem);
 
-      $scope.updateVariableValue = (value: string) => {
-        if (value === '' || segment.value === value) {
-          return;
-        }
-
-        $scope.$apply(() => {
-          const selected: any = find($scope.altSegments, { value: value });
-          if (selected) {
-            segment.value = selected.value;
-            segment.html = selected.html || $sce.trustAsHtml(selected.value);
-            segment.fake = false;
-            segment.expandable = selected.expandable;
-
-            if (selected.type) {
-              segment.type = selected.type;
-            }
-          } else if (segment.custom !== 'false') {
-            segment.value = value;
-            segment.html = $sce.trustAsHtml(value);
-            segment.expandable = true;
-            segment.fake = false;
-          }
-
-          $scope.onChange();
-        });
-      };
-
       $scope.switchToLink = (fromClick: boolean) => {
         if (linkMode && !fromClick) {
           return;
@@ -74,7 +47,6 @@ export function metricSegment($compile: any, $sce: any) {
         linkMode = true;
         $input.hide();
         $button.show();
-        $scope.updateVariableValue($input.val());
       };
 
       $scope.inputBlur = () => {

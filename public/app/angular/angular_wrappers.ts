@@ -74,7 +74,6 @@ export function registerAngularDirectives() {
     'isSearchable',
     'className',
     'placeholder',
-    ['variables', { watchDepth: 'reference' }],
   ]);
   react2AngularDirective('secretFormField', SecretFormField, [
     'value',

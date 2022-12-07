@@ -11,7 +11,6 @@ import { HistoryTab } from './HistoryTab';
 import { QueryEditor } from './QueryEditor';
 import { QueryEditorDrawerHeader } from './QueryEditorDrawerHeader';
 import { UsagesTab } from './UsagesTab';
-import { VariablesTab } from './VariablesTab';
 
 export type SavedQueryUpdateOpts = { message?: string } & (
   | {
@@ -39,11 +38,6 @@ const initialTabs: tab[] = [
     label: 'Usages',
     active: true,
     icon: 'link',
-  },
-  {
-    label: 'Variables',
-    active: false,
-    icon: 'info-circle',
   },
   {
     label: 'History',
@@ -84,8 +78,7 @@ export const QueryEditorDrawer = (props: Props) => {
         <TabContent>
           <div className={styles.tabWrapper}>
             {tabs[0].active && <UsagesTab savedQuery={query} />}
-            {tabs[1].active && <VariablesTab savedQuery={query} options={options} />}
-            {tabs[2].active && <HistoryTab />}
+            {tabs[1].active && <HistoryTab />}
           </div>
         </TabContent>
       </div>

@@ -40,7 +40,7 @@ export class FormDropdownCtrl {
   debounce: boolean;
 
   /** @ngInject */
-  constructor(private $scope: any, $element: JQLite, private $sce: ISCEService, private templateSrv: any) {
+  constructor(private $scope: any, $element: JQLite, private $sce: ISCEService) {
     this.inputElement = $element.find('input').first();
     this.linkElement = $element.find('a').first();
     this.linkMode = true;
@@ -220,7 +220,7 @@ export class FormDropdownCtrl {
 
   updateDisplay(text: string) {
     this.text = text;
-    this.display = this.$sce.trustAsHtml(this.templateSrv.highlightVariablesAsHtml(text));
+    this.display = this.$sce.trustAsHtml(text);
   }
 
   open() {

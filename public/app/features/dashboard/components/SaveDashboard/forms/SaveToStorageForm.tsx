@@ -6,7 +6,6 @@ import { Stack } from '@grafana/experimental';
 import { locationService } from '@grafana/runtime';
 import {
   Button,
-  Checkbox,
   Field,
   Form,
   HorizontalGroup,
@@ -31,8 +30,7 @@ interface Props extends SaveProps {
 }
 
 export function SaveToStorageForm(props: Props) {
-  const { dashboard, saveModel, onSubmit, onCancel, onSuccess, onOptionsChange, isNew, isCopy } = props;
-  const hasTimeChanged = useMemo(() => dashboard.hasTimeChanged(), [dashboard]);
+  const { dashboard, saveModel, onSubmit, onCancel, onSuccess, isNew, isCopy } = props;
   const [saving, setSaving] = useState(false);
   const [response, setResponse] = useState<WriteValueResponse>();
   const [path, setPath] = useState(dashboard.uid);
@@ -83,7 +81,6 @@ export function SaveToStorageForm(props: Props) {
     );
   }
 
-  let options = props.options;
   const workflows = item.value?.workflows ?? [];
   const canSave = saveModel.hasChanges || isNew || isCopy;
 
@@ -112,10 +109,6 @@ export function SaveToStorageForm(props: Props) {
 
         console.log('GOT', rsp);
         if (rsp.code === 200) {
-          if (options.saveTimerange) {
-            dashboard.resetOriginalTime();
-          }
-
           if (!rsp.pending) {
             // should close
             onSuccess();
@@ -133,22 +126,6 @@ export function SaveToStorageForm(props: Props) {
     >
       {({ register, errors }) => (
         <Stack direction="column" gap={1}>
-          <Stack direction="column" gap={1}>
-            {hasTimeChanged && (
-              <Checkbox
-                checked={!!options.saveTimerange}
-                onChange={() =>
-                  onOptionsChange({
-                    ...options,
-                    saveTimerange: !options.saveTimerange,
-                  })
-                }
-                label="Save current time range as dashboard default"
-                aria-label={selectors.pages.SaveDashboardModal.saveTimerange}
-              />
-            )}
-          </Stack>
-
           {(isNew || isCopy) && (
             <Field label="Path">
               <Input

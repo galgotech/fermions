@@ -273,7 +273,6 @@ export class QueryGroup extends PureComponent<Props, State> {
               metrics={true}
               mixed={true}
               dashboard={true}
-              variables={true}
             />
           </div>
           {dataSource && (
@@ -339,7 +338,6 @@ export class QueryGroup extends PureComponent<Props, State> {
         onChange={this.onAddMixedQuery}
         current={null}
         autoFocus={true}
-        variables={true}
         onBlur={this.onMixedPickerBlur}
         openMenuOnFocus={true}
       />

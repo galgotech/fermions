@@ -5,7 +5,6 @@ import {
   EventBus,
   PanelData,
   StandardEditorContext,
-  VariableSuggestionsScope,
 } from '@grafana/data';
 import { PanelOptionsSupplier } from '@grafana/data/src/panel/PanelPlugin';
 import {
@@ -41,7 +40,6 @@ export function getStandardEditorContext({
     data: dataSeries,
     options,
     eventBus,
-    getSuggestions: (scope?: VariableSuggestionsScope) => [],
     instanceState,
   };
 

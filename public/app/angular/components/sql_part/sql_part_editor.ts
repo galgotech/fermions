@@ -65,7 +65,7 @@ export function sqlPartEditorDirective(templateSrv: any) {
         const newValue = $input.val();
 
         if (newValue !== '' || part.def.params[paramIndex].optional) {
-          $link.html(templateSrv.highlightVariablesAsHtml(newValue));
+          $link.html(newValue);
 
           part.updateParam($input.val(), paramIndex);
           $scope.$apply(() => {
@@ -168,7 +168,7 @@ export function sqlPartEditorDirective(templateSrv: any) {
             $('<span>' + partDef.separator + '</span>').appendTo($paramsContainer);
           }
 
-          const paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
+          const paramValue = part.params[index];
           const $paramLink = $('<a class="query-part__link">' + paramValue + '</a>');
           const $input = $(paramTemplate);
 

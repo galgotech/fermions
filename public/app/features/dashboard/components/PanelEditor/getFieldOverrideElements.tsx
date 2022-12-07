@@ -6,7 +6,6 @@ import {
   FieldConfigOptionsRegistry,
   SelectableValue,
   isSystemOverride as isSystemOverrideGuard,
-  VariableSuggestionsScope,
   DynamicConfigValue,
   ConfigOverrideRule,
   GrafanaTheme2,
@@ -61,7 +60,6 @@ export function getFieldOverrideCategories(
 
   const context = {
     data,
-    getSuggestions: (scope?: VariableSuggestionsScope) => [],
     isOverride: true,
   };
 

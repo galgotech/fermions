@@ -28,7 +28,7 @@ export function uiSegmentSrv(this: any, $sce: any, templateSrv: any) {
 
       if (isString(options)) {
         this.value = options;
-        this.html = $sce.trustAsHtml(templateSrv.highlightVariablesAsHtml(this.value));
+        this.html = $sce.trustAsHtml(this.value);
         return;
       }
 
@@ -42,7 +42,7 @@ export function uiSegmentSrv(this: any, $sce: any, templateSrv: any) {
       this.value = options.value;
       this.selectMode = options.selectMode;
       this.expandable = options.expandable;
-      this.html = options.html || $sce.trustAsHtml(templateSrv.highlightVariablesAsHtml(this.value));
+      this.html = options.html || $sce.trustAsHtml(this.value);
     }
   }
 

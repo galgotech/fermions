@@ -1,98 +1,12 @@
 import {
-  DataFrame,
   DataLink,
   deprecationWarning,
-  Field,
-  FieldType,
-  getFieldDisplayName,
-  KeyValue,
   LinkModel,
   locationUtil,
   textUtil,
   urlUtil,
-  VariableOrigin,
-  VariableSuggestion,
 } from '@grafana/data';
 import { getConfig } from 'app/core/config';
-
-const buildLabelPath = (label: string) => {
-  return label.includes('.') || label.trim().includes(' ') ? `["${label}"]` : `.${label}`;
-};
-
-export const getDataFrameVars = (dataFrames: DataFrame[]) => {
-  let numeric: Field | undefined = undefined;
-  let title: Field | undefined = undefined;
-  const suggestions: VariableSuggestion[] = [];
-  const keys: KeyValue<true> = {};
-
-  if (dataFrames.length !== 1) {
-    // It's not possible to access fields of other dataframes. So if there are multiple dataframes we need to skip these suggestions.
-    // Also return early if there are no dataFrames.
-    return [];
-  }
-
-  const frame = dataFrames[0];
-
-  for (const field of frame.fields) {
-    const displayName = getFieldDisplayName(field, frame, dataFrames);
-
-    if (keys[displayName]) {
-      continue;
-    }
-
-    suggestions.push({
-      value: `__data.fields${buildLabelPath(displayName)}`,
-      label: `${displayName}`,
-      documentation: `Formatted value for ${displayName} on the same row`,
-      origin: VariableOrigin.Fields,
-    });
-
-    keys[displayName] = true;
-
-    if (!numeric && field.type === FieldType.number) {
-      numeric = { ...field, name: displayName };
-    }
-
-    if (!title && field.config.displayName && field.config.displayName !== field.name) {
-      title = { ...field, name: displayName };
-    }
-  }
-
-  if (suggestions.length) {
-    suggestions.push({
-      value: `__data.fields[0]`,
-      label: `Select by index`,
-      documentation: `Enter the field order`,
-      origin: VariableOrigin.Fields,
-    });
-  }
-
-  if (numeric) {
-    suggestions.push({
-      value: `__data.fields${buildLabelPath(numeric.name)}.numeric`,
-      label: `Show numeric value`,
-      documentation: `the numeric field value`,
-      origin: VariableOrigin.Fields,
-    });
-    suggestions.push({
-      value: `__data.fields${buildLabelPath(numeric.name)}.text`,
-      label: `Show text value`,
-      documentation: `the text value`,
-      origin: VariableOrigin.Fields,
-    });
-  }
-
-  if (title) {
-    suggestions.push({
-      value: `__data.fields${buildLabelPath(title.name)}`,
-      label: `Select by title`,
-      documentation: `Use the title to pick the field`,
-      origin: VariableOrigin.Fields,
-    });
-  }
-
-  return suggestions;
-};
 
 export interface LinkService {
   getDataLinkUIModel: <T>(link: DataLink, origin: T) => LinkModel<T>;

@@ -34,10 +34,7 @@ export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCop
   }, [dashboard, isNew]);
 
   const data = useMemo<SaveDashboardData>(() => {
-    const clone = dashboard.getSaveModelClone({
-      saveTimerange: Boolean(options.saveTimerange),
-      saveVariables: Boolean(options.saveVariables),
-    });
+    const clone = dashboard.getSaveModelClone();
 
     if (!previous.value) {
       return { clone, diff: {}, diffCount: 0, hasChanges: false };
@@ -58,7 +55,7 @@ export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCop
       diffCount,
       hasChanges: diffCount > 0 && !isNew,
     };
-  }, [dashboard, previous.value, options, isNew]);
+  }, [dashboard, previous.value, isNew]);
 
   const [showDiff, setShowDiff] = useState(false);
   const { state, onDashboardSave } = useDashboardSave(dashboard);

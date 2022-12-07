@@ -24,7 +24,6 @@ export type SavedQueryPickerProps = {
   dashboard?: boolean;
   metrics?: boolean;
   type?: string | string[];
-  variables?: boolean;
   pluginId?: string;
   /** If true,we show only DSs with logs; and if true, pluginId shouldnt be passed in */
   logs?: boolean;

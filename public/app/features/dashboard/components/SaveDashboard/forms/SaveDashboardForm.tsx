@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import { selectors } from '@grafana/e2e-selectors';
 import { Stack } from '@grafana/experimental';
-import { Button, Checkbox, Form, TextArea } from '@grafana/ui';
+import { Button, Form, TextArea } from '@grafana/ui';
 import { DashboardModel } from 'app/features/dashboard/state';
 
 import { SaveDashboardData, SaveDashboardOptions } from '../types';
@@ -30,7 +30,6 @@ export const SaveDashboardForm = ({
   onSuccess,
   onOptionsChange,
 }: SaveProps) => {
-  const hasTimeChanged = useMemo(() => dashboard.hasTimeChanged(), [dashboard]);
   const [saving, setSaving] = useState(false);
 
   return (
@@ -43,9 +42,6 @@ export const SaveDashboardForm = ({
         options = { ...options, message: data.message };
         const result = await onSubmit(saveModel.clone, options, dashboard);
         if (result.status === 'success') {
-          if (options.saveTimerange) {
-            dashboard.resetOriginalTime();
-          }
           onSuccess();
         } else {
           setSaving(false);
@@ -56,19 +52,6 @@ export const SaveDashboardForm = ({
         const messageProps = register('message');
         return (
           <Stack direction="column" gap={2}>
-            {hasTimeChanged && (
-              <Checkbox
-                checked={!!options.saveTimerange}
-                onChange={() =>
-                  onOptionsChange({
-                    ...options,
-                    saveTimerange: !options.saveTimerange,
-                  })
-                }
-                label="Save current time range as dashboard default"
-                aria-label={selectors.pages.SaveDashboardModal.saveTimerange}
-              />
-            )}
             <TextArea
               {...messageProps}
               aria-label="message"

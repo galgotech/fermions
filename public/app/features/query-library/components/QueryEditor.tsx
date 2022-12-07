@@ -89,7 +89,6 @@ export const QueryEditor = ({ savedQuery, onSavedQueryChange }: Props) => {
             metrics={true}
             mixed={true}
             dashboard={true}
-            variables={true}
           />
         </div>
       </HorizontalGroup>

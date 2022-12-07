@@ -24,19 +24,6 @@ const initialForm: QueryForm = {
     tags: [],
     description: 'example description',
     schemaVersion: 1,
-    time: {
-      from: 'now-6h',
-      to: 'now',
-    },
-    variables: [
-      {
-        name: 'var1',
-        type: 'text',
-        current: {
-          value: 'hello world',
-        },
-      },
-    ],
     queries: [
       {
         // @ts-ignore

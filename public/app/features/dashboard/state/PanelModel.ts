@@ -482,7 +482,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
         ref: {
           uid: options.savedQueryUid,
         },
-        variables: [],
       };
     } else {
       this.savedQueryLink = null;
