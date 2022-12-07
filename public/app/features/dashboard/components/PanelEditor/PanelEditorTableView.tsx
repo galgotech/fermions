@@ -20,7 +20,7 @@ export interface Props {
 }
 
 export function PanelEditorTableView({ width, height, panel, dashboard }: Props) {
-  const { data } = usePanelLatestData(panel, { withFieldConfig: false }, false);
+  const { data } = usePanelLatestData(panel, false);
   const [options, setOptions] = useState<PanelOptions>({
     frameIndex: 0,
     showHeader: true,

@@ -7,10 +7,8 @@ import {
   DataQuery,
   DataQueryRequest,
   DataSourceApi,
-  getDefaultTimeRange,
   LoadingState,
   PanelData,
-  ScopedVars,
 } from '@grafana/data';
 
 import { dispatch, getState } from '../../../store/store';
@@ -19,7 +17,7 @@ import { getTimeSrv } from '../../dashboard/services/TimeSrv';
 import { runRequest } from '../../query/state/runRequest';
 import { getLastKey, getVariable } from '../state/selectors';
 import { KeyedVariableIdentifier } from '../state/types';
-import { QueryVariableModel, VariableRefresh } from '../types';
+import { QueryVariableModel } from '../types';
 import { getTemplatedRegex } from '../utils';
 
 import { toMetricFindValues, updateOptionsState, validateVariableSelection } from './operators';
@@ -170,25 +168,10 @@ export class VariableQueryRunner {
   }
 
   private getRequest(variable: QueryVariableModel, args: UpdateOptionsArgs, target: DataQuery) {
-    const { searchFilter } = args;
-    const variableAsVars = { variable: { text: variable.current.text, value: variable.current.value } };
-    const searchFilterScope = { searchFilter: { text: searchFilter, value: searchFilter } };
-    const searchFilterAsVars = searchFilter ? searchFilterScope : {};
-    const scopedVars = { ...searchFilterAsVars, ...variableAsVars } as ScopedVars;
-    const range =
-      variable.refresh === VariableRefresh.onTimeRangeChanged
-        ? this.dependencies.getTimeSrv().timeRange()
-        : getDefaultTimeRange();
-
     const request: DataQueryRequest = {
       app: CoreApp.Dashboard,
       requestId: uuidv4(),
-      timezone: '',
-      range,
-      interval: '',
-      intervalMs: 0,
       targets: [target],
-      scopedVars,
       startTime: Date.now(),
     };
 

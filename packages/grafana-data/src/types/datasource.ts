@@ -3,14 +3,13 @@ import { Observable } from 'rxjs';
 
 import { makeClassES5Compatible } from '../utils/makeClassES5Compatible';
 
-import { ScopedVars } from './ScopedVars';
 import { CoreApp } from './app';
 import { KeyValue, LoadingState, TableData, TimeSeries } from './data';
 import { DataFrame, DataFrameDTO } from './dataFrame';
 import { PanelData } from './panel';
 import { GrafanaPlugin, PluginMeta } from './plugin';
 import { DataQuery } from './query';
-import { RawTimeRange, TimeRange } from './time';
+import { TimeRange } from './time';
 import { CustomVariableSupport, DataSourceVariableSupport, StandardVariableSupport } from './variables';
 
 import { DataSourceRef, WithAccessControlMetadata } from '.';
@@ -286,8 +285,6 @@ abstract class DataSourceApi<
 
   getVersion?(optionalOptions?: any): Promise<string>;
 
-  interpolateVariablesInQueries?(queries: TQuery[], scopedVars: ScopedVars | {}): TQuery[];
-
   /**
    * Defines new variable support
    * @alpha -- experimental
@@ -418,17 +415,10 @@ export interface DataQueryError {
 export interface DataQueryRequest<TQuery extends DataQuery = DataQuery> {
   requestId: string; // Used to identify results and optionally cancel the request in backendSrv
 
-  interval: string;
-  intervalMs: number;
-  maxDataPoints?: number;
-  range: TimeRange;
-  scopedVars: ScopedVars;
   targets: TQuery[];
-  timezone: string;
   app: CoreApp | string;
-
   cacheTimeout?: string | null;
-  rangeRaw?: RawTimeRange;
+
   timeInfo?: string; // The query time description (blue text in the upper right)
   panelId?: number;
   /** @deprecate */

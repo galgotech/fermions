@@ -5,7 +5,6 @@ import {
   formattedValueToString,
   getFieldDisplayValuesProxy,
   getTimeField,
-  InterpolateFunction,
   Labels,
   LinkModelSupplier,
   ScopedVar,
@@ -56,7 +55,7 @@ export const getFieldLinksSupplier = (value: FieldDisplay): LinkModelSupplier<Fi
   }
 
   return {
-    getLinks: (replaceVariables: InterpolateFunction) => {
+    getLinks: () => {
       const scopedVars: Partial<DataLinkScopedVars> = {};
 
       if (value.view) {
@@ -124,16 +123,8 @@ export const getFieldLinksSupplier = (value: FieldDisplay): LinkModelSupplier<Fi
         console.log('VALUE', value);
       }
 
-      const replace: InterpolateFunction = (value: string, vars: ScopedVars | undefined, fmt?: string | Function) => {
-        const finalVars: ScopedVars = {
-          ...(scopedVars as ScopedVars),
-          ...vars,
-        };
-        return replaceVariables(value, finalVars, fmt);
-      };
-
       return links.map((link: DataLink) => {
-        return getLinkSrv().getDataLinkUIModel(link, replace, value);
+        return getLinkSrv().getDataLinkUIModel(link, value);
       });
     },
   };
@@ -149,7 +140,7 @@ export const getPanelLinksSupplier = (panel: PanelModel): LinkModelSupplier<Pane
   return {
     getLinks: () => {
       return links.map((link) => {
-        return getLinkSrv().getDataLinkUIModel(link, panel.replaceVariables, panel);
+        return getLinkSrv().getDataLinkUIModel(link, panel);
       });
     },
   };

@@ -86,9 +86,6 @@ export interface PanelProps<T = any, TPanelData extends object = any> {
 
   /** Field config change handler */
   onFieldConfigChange: (config: FieldConfigSource) => void;
-
-  /** Template variables interpolation function */
-  replaceVariables: InterpolateFunction;
 }
 
 export interface PanelEditorProps<T = any> {

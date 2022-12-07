@@ -164,7 +164,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     this.subs.add(
       panel
         .getQueryRunner()
-        .getData({ withFieldConfig: true })
+        .getData()
         .subscribe({
           next: (data) => this.onDataUpdate(data),
         })
@@ -356,7 +356,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             width={innerWidth}
             height={innerHeight}
             renderCounter={renderCounter}
-            replaceVariables={panel.replaceVariables}
             onOptionsChange={this.onOptionsChange}
             onFieldConfigChange={this.onFieldConfigChange}
             eventBus={dashboard.events}
@@ -413,7 +412,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
                 width={panelWidth}
                 height={innerPanelHeight}
                 renderCounter={renderCounter}
-                replaceVariables={panel.replaceVariables}
                 onOptionsChange={this.onOptionsChange}
                 onFieldConfigChange={this.onFieldConfigChange}
                 eventBus={dashboard.events}
@@ -451,7 +449,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
 
     // for new panel header design
     const onCancelQuery = () => panel.getQueryRunner().cancelQuery();
-    const title = panel.getDisplayTitle();
     const noPadding: PanelPadding = plugin.noPadding ? 'none' : 'md';
     const leftItems = [
       <PanelHeaderLoadingIndicator state={data.state} onClick={onCancelQuery} key="loading-indicator" />,
@@ -459,7 +456,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
 
     if (config.featureToggles.newPanelChromeUI) {
       return (
-        <PanelChrome width={width} height={height} title={title} leftItems={leftItems} padding={noPadding}>
+        <PanelChrome width={width} height={height} title={panel.title} leftItems={leftItems} padding={noPadding}>
           {(innerWidth, innerHeight) => (
             <>
               <ErrorBoundary

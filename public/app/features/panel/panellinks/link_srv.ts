@@ -8,7 +8,6 @@ import {
   Field,
   FieldType,
   getFieldDisplayName,
-  InterpolateFunction,
   KeyValue,
   LinkModel,
   locationUtil,
@@ -243,14 +242,14 @@ export const getCalculationValueDataLinksVariableSuggestions = (dataFrames: Data
 };
 
 export interface LinkService {
-  getDataLinkUIModel: <T>(link: DataLink, replaceVariables: InterpolateFunction | undefined, origin: T) => LinkModel<T>;
+  getDataLinkUIModel: <T>(link: DataLink, origin: T) => LinkModel<T>;
   getAnchorInfo: (link: any) => any;
   getLinkUrl: (link: any) => string;
 }
 
 export class LinkSrv implements LinkService {
   getLinkUrl(link: any) {
-    let url = locationUtil.assureBaseUrl(getTemplateSrv().replace(link.url || ''));
+    let url = locationUtil.assureBaseUrl(link.url);
     let params: { [key: string]: any } = {};
 
     if (link.keepTime) {
@@ -271,11 +270,10 @@ export class LinkSrv implements LinkService {
   }
 
   getAnchorInfo(link: any) {
-    const templateSrv = getTemplateSrv();
     const info: any = {};
     info.href = this.getLinkUrl(link);
-    info.title = templateSrv.replace(link.title || '');
-    info.tooltip = templateSrv.replace(link.tooltip || '');
+    info.title = link.title;
+    info.tooltip = link.tooltip;
     return info;
   }
 
@@ -284,7 +282,6 @@ export class LinkSrv implements LinkService {
    */
   getDataLinkUIModel = <T>(
     link: DataLink,
-    replaceVariables: InterpolateFunction | undefined,
     origin: T
   ): LinkModel<T> => {
     let href = link.url;
@@ -292,7 +289,6 @@ export class LinkSrv implements LinkService {
     if (link.onBuildUrl) {
       href = link.onBuildUrl({
         origin,
-        replaceVariables,
       });
     }
 
@@ -303,16 +299,12 @@ export class LinkSrv implements LinkService {
       origin,
     };
 
-    if (replaceVariables) {
-      info.href = replaceVariables(info.href);
-      info.title = replaceVariables(link.title);
-    }
+
 
     if (link.onClick) {
       info.onClick = (e) => {
         link.onClick!({
           origin,
-          replaceVariables,
           e,
         });
       };
@@ -330,10 +322,7 @@ export class LinkSrv implements LinkService {
    */
   getPanelLinkAnchorInfo(link: DataLink, scopedVars: ScopedVars) {
     deprecationWarning('link_srv.ts', 'getPanelLinkAnchorInfo', 'getDataLinkUIModel');
-    const replace: InterpolateFunction = (value, vars, fmt) =>
-      getTemplateSrv().replace(value, { ...scopedVars, ...vars }, fmt);
-
-    return this.getDataLinkUIModel(link, replace, {});
+    return this.getDataLinkUIModel(link, {});
   }
 }
 

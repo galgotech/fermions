@@ -3,7 +3,6 @@ import React from 'react';
 
 import {
   EventBus,
-  InterpolateFunction,
   PanelData,
   StandardEditorContext,
   VariableSuggestionsScope,
@@ -26,7 +25,6 @@ type categoryGetter = (categoryNames?: string[]) => OptionsPaneCategoryDescripto
 
 interface GetStandardEditorContextProps {
   data: PanelData | undefined;
-  replaceVariables: InterpolateFunction;
   options: Record<string, unknown>;
   eventBus: EventBus;
   instanceState: OptionPaneRenderProps['instanceState'];
@@ -34,7 +32,6 @@ interface GetStandardEditorContextProps {
 
 export function getStandardEditorContext({
   data,
-  replaceVariables,
   options,
   eventBus,
   instanceState,
@@ -43,7 +40,6 @@ export function getStandardEditorContext({
 
   const context: StandardEditorContext<unknown, unknown> = {
     data: dataSeries,
-    replaceVariables,
     options,
     eventBus,
     getSuggestions: (scope?: VariableSuggestionsScope) => getDataLinksVariableSuggestions(dataSeries, scope),
@@ -61,7 +57,6 @@ export function getVisualizationOptions(props: OptionPaneRenderProps): OptionsPa
 
   const context = getStandardEditorContext({
     data,
-    replaceVariables: panel.replaceVariables,
     options: currentOptions,
     eventBus: dashboard.events,
     instanceState,

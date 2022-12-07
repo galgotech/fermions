@@ -14,7 +14,6 @@ import {
   DataSourceWithBackend,
   getDataSourceSrv,
   getGrafanaLiveSrv,
-  getTemplateSrv,
   StreamingFrameOptions,
 } from '@grafana/runtime';
 
@@ -30,13 +29,12 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
   query(request: DataQueryRequest<GrafanaQuery>): Observable<DataQueryResponse> {
     const results: Array<Observable<DataQueryResponse>> = [];
     const targets: GrafanaQuery[] = [];
-    const templateSrv = getTemplateSrv();
     for (const target of request.targets) {
       if (target.hide) {
         continue;
       }
       if (target.queryType === GrafanaQueryType.LiveMeasurements) {
-        let channel = templateSrv.replace(target.channel, request.scopedVars);
+        let channel = target.channel;
         const { filter } = target;
 
         const addr = parseLiveChannelAddress(channel);
@@ -44,13 +42,13 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
           continue;
         }
         const buffer: Partial<StreamingFrameOptions> = {
-          maxLength: request.maxDataPoints ?? 500,
+          maxLength: 500,
         };
         if (target.buffer) {
           buffer.maxDelta = target.buffer;
           buffer.maxLength = buffer.maxLength! * 2; //??
-        } else if (request.rangeRaw?.to === 'now') {
-          buffer.maxDelta = request.range.to.valueOf() - request.range.from.valueOf();
+        } else {
+          buffer.maxDelta = 1000;
         }
 
         results.push(

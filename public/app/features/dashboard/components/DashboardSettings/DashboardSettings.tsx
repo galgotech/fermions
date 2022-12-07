@@ -10,7 +10,6 @@ import config from 'app/core/config';
 import { contextSrv } from 'app/core/services/context_srv';
 import { AccessControlAction } from 'app/types';
 
-import { VariableEditorContainer } from '../../../variables/editor/VariableEditorContainer';
 import { DashboardModel } from '../../state/DashboardModel';
 import { AccessControlDashboardPermissions } from '../DashboardPermissions/AccessControlDashboardPermissions';
 import { DashboardPermissions } from '../DashboardPermissions/DashboardPermissions';
@@ -83,14 +82,6 @@ function getSettingsPages(dashboard: DashboardModel) {
       id: 'settings',
       icon: 'sliders-v-alt',
       component: GeneralSettings,
-    });
-
-    pages.push({
-      title: 'Variables',
-      id: 'templating',
-      icon: 'calculator-alt',
-      component: VariableEditorContainer,
-      subTitle: 'Variables can make your dashboard more dynamic and act as global filters.',
     });
 
     pages.push({

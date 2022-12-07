@@ -84,7 +84,6 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
           width={width}
           height={height}
           renderCounter={0}
-          replaceVariables={(str: string) => str}
           onOptionsChange={onOptionsChange}
           onFieldConfigChange={onFieldConfigChange}
           eventBus={appEvents}
@@ -147,7 +146,6 @@ export function useFieldOverrides(
         data: series,
         fieldConfig,
         fieldConfigRegistry,
-        replaceVariables: (str: string) => str,
         theme,
         timeZone,
       }),

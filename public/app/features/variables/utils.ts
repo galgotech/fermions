@@ -1,7 +1,6 @@
 import { isArray, isEqual } from 'lodash';
 
 import { ScopedVars, UrlQueryMap, UrlQueryValue, VariableType } from '@grafana/data';
-import { getTemplateSrv } from '@grafana/runtime';
 import { safeStringifyValue } from 'app/core/utils/explore';
 
 import { getState } from '../../store/store';
@@ -150,7 +149,7 @@ export const getCurrentValue = (variable: VariableWithOptions): string | null =>
   return variable.current.value;
 };
 
-export function getTemplatedRegex(variable: QueryVariableModel, templateSrv = getTemplateSrv()): string {
+export function getTemplatedRegex(variable: QueryVariableModel): string {
   if (!variable) {
     return '';
   }
@@ -159,7 +158,7 @@ export function getTemplatedRegex(variable: QueryVariableModel, templateSrv = ge
     return '';
   }
 
-  return templateSrv.replace(variable.regex, {}, 'regex');
+  return variable.regex;
 }
 
 export function getLegacyQueryOptions(variable: QueryVariableModel, searchFilter?: string, timeSrv = getTimeSrv()) {

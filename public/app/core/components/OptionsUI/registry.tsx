@@ -218,7 +218,6 @@ export const getAllStandardFieldConfigs = () => {
     process: displayNameOverrideProcessor,
     settings: {
       placeholder: 'none',
-      expandTemplateVars: true,
     },
     shouldApply: () => true,
     category,

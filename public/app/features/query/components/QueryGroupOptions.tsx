@@ -169,11 +169,6 @@ export class QueryGroupOptionsEditor extends PureComponent<Props, State> {
   }
 
   renderMaxDataPointsOption() {
-    const { data, options } = this.props;
-    const realMd = data.request?.maxDataPoints;
-    const value = options.maxDataPoints ?? '';
-    const isAuto = value === '';
-
     return (
       <div className="gf-form-inline">
         <div className="gf-form">
@@ -188,15 +183,7 @@ export class QueryGroupOptionsEditor extends PureComponent<Props, State> {
           >
             Max data points
           </InlineFormLabel>
-          <Input
-            type="number"
-            className="width-6"
-            placeholder={`${realMd}`}
-            spellCheck={false}
-            onBlur={this.onMaxDataPointsBlur}
-            defaultValue={value}
-          />
-          {isAuto && (
+          {(
             <>
               <div className="gf-form-label query-segment-operator">=</div>
               <div className="gf-form-label">Width of panel</div>
@@ -208,8 +195,7 @@ export class QueryGroupOptionsEditor extends PureComponent<Props, State> {
   }
 
   renderIntervalOption() {
-    const { data, dataSource, options } = this.props;
-    const realInterval = data.request?.interval;
+    const { dataSource, options } = this.props;
     const minIntervalOnDs = dataSource.interval ?? 'No limit';
 
     return (
@@ -251,7 +237,7 @@ export class QueryGroupOptionsEditor extends PureComponent<Props, State> {
             >
               Interval
             </InlineFormLabel>
-            <InlineFormLabel width={6}>{realInterval}</InlineFormLabel>
+            <InlineFormLabel width={6}>realInterval</InlineFormLabel>
             <div className="gf-form-label query-segment-operator">=</div>
             <div className="gf-form-label">Time range / max data points</div>
           </div>
@@ -269,27 +255,16 @@ export class QueryGroupOptionsEditor extends PureComponent<Props, State> {
   };
 
   renderCollapsedText(styles: StylesType): React.ReactNode | undefined {
-    const { data, options } = this.props;
     const { isOpen } = this.state;
 
     if (isOpen) {
       return undefined;
     }
 
-    let mdDesc = options.maxDataPoints ?? '';
-    if (mdDesc === '' && data.request) {
-      mdDesc = `auto = ${data.request.maxDataPoints}`;
-    }
-
-    let intervalDesc = options.minInterval;
-    if (data.request) {
-      intervalDesc = `${data.request.interval}`;
-    }
-
     return (
       <>
-        {<div className={styles.collapsedText}>MD = {mdDesc}</div>}
-        {<div className={styles.collapsedText}>Interval = {intervalDesc}</div>}
+        {<div className={styles.collapsedText}>MD = mdDesc</div>}
+        {<div className={styles.collapsedText}>Interval = intervalDesc</div>}
       </>
     );
   }

@@ -78,7 +78,7 @@ export class PanelChromeAngularUnconnected extends PureComponent<Props, State> {
 
     // we are not displaying any of this data so no need for transforms or field config
     this.subs.add(
-      queryRunner.getData({ withFieldConfig: false }).subscribe({
+      queryRunner.getData().subscribe({
         next: (data: PanelData) => this.onPanelDataUpdate(data),
       })
     );

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { renderMarkdown, LinkModelSupplier, ScopedVars } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { locationService, getTemplateSrv } from '@grafana/runtime';
+import { locationService } from '@grafana/runtime';
 import { Tooltip, PopoverContent } from '@grafana/ui';
 import { getTimeSrv, TimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
@@ -44,9 +44,9 @@ export class PanelHeaderCorner extends Component<Props> {
   getInfoContent = (): JSX.Element => {
     const { panel } = this.props;
     const markdown = panel.description || '';
-    const interpolatedMarkdown = getTemplateSrv().replace(markdown, panel.scopedVars);
+    const interpolatedMarkdown = markdown;
     const markedInterpolatedMarkdown = renderMarkdown(interpolatedMarkdown);
-    const links = this.props.links && this.props.links.getLinks(panel.replaceVariables);
+    const links = this.props.links && this.props.links.getLinks();
 
     return (
       <div className="panel-info-content markdown-html">

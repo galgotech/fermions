@@ -49,9 +49,7 @@ export function runSharedRequest(options: QueryRunnerOptions, query: DashboardQu
 
     const listenToRunner = listenToPanel.getQueryRunner();
     const subscription = listenToRunner
-      .getData({
-        withFieldConfig: false,
-      })
+      .getData()
       .subscribe({
         next: (data: PanelData) => {
           subscriber.next(data);

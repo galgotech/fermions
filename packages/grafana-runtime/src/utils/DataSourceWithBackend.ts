@@ -8,7 +8,6 @@ import {
   DataSourceInstanceSettings,
   DataQuery,
   DataSourceJsonData,
-  ScopedVars,
   makeClassES5Compatible,
   DataFrame,
   parseLiveChannelAddress,
@@ -120,7 +119,7 @@ class DataSourceWithBackend<
    * Ideally final -- any other implementation may not work as expected
    */
   query(request: DataQueryRequest<TQuery>): Observable<DataQueryResponse> {
-    const { intervalMs, maxDataPoints, range, requestId, hideFromInspector = false } = request;
+    const { requestId, hideFromInspector = false } = request;
     let targets = request.targets;
 
     if (this.filterQuery) {
@@ -133,7 +132,6 @@ class DataSourceWithBackend<
     const queries = targets.map((q) => {
       let datasource = this.getRef();
       let datasourceId = this.id;
-      let shouldApplyTemplateVariables = true;
 
       if (isExpressionReference(q.datasource)) {
         hasExpr = true;
@@ -144,7 +142,7 @@ class DataSourceWithBackend<
       }
 
       if (q.datasource) {
-        const ds = getDataSourceSrv().getInstanceSettings(q.datasource, request.scopedVars);
+        const ds = getDataSourceSrv().getInstanceSettings(q.datasource);
 
         if (!ds) {
           throw new Error(`Unknown Datasource: ${JSON.stringify(q.datasource)}`);
@@ -155,9 +153,6 @@ class DataSourceWithBackend<
         if (dsRef.uid !== datasource.uid || datasourceId !== dsId) {
           datasource = dsRef;
           datasourceId = dsId;
-          // If the query is using a different datasource, we would need to retrieve the datasource
-          // instance (async) and apply the template variables but it seems it's not necessary for now.
-          shouldApplyTemplateVariables = false;
         }
       }
       if (datasource.type?.length) {
@@ -167,11 +162,9 @@ class DataSourceWithBackend<
         dsUIDs.add(datasource.uid);
       }
       return {
-        ...(shouldApplyTemplateVariables ? this.applyTemplateVariables(q, request.scopedVars) : q),
+        ...q,
         datasource,
         datasourceId, // deprecated!
-        intervalMs,
-        maxDataPoints,
       };
     });
 
@@ -181,12 +174,6 @@ class DataSourceWithBackend<
     }
 
     const body: any = { queries };
-
-    if (range) {
-      body.range = range;
-      body.from = range.from.valueOf().toString();
-      body.to = range.to.valueOf().toString();
-    }
 
     if (config.featureToggles.queryOverLive) {
       return getGrafanaLiveSrv().getQueryData({
@@ -239,26 +226,6 @@ class DataSourceWithBackend<
     headers[PluginRequestHeaders.PluginID] = this.type;
     headers[PluginRequestHeaders.DatasourceUID] = this.uid;
     return headers;
-  }
-
-  /**
-   * Apply template variables for explore
-   */
-  interpolateVariablesInQueries(queries: TQuery[], scopedVars: ScopedVars | {}): TQuery[] {
-    return queries.map((q) => this.applyTemplateVariables(q, scopedVars) as TQuery);
-  }
-
-  /**
-   * Override to apply template variables.  The result is usually also `TQuery`, but sometimes this can
-   * be used to modify the query structure before sending to the backend.
-   *
-   * NOTE: if you do modify the structure or use template variables, alerting queries may not work
-   * as expected
-   *
-   * @virtual
-   */
-  applyTemplateVariables(query: TQuery, scopedVars: ScopedVars): Record<string, any> {
-    return query;
   }
 
   /**
@@ -396,14 +363,12 @@ export type StreamOptionsProvider<TQuery extends DataQuery = DataQuery> = (
  */
 export const standardStreamOptionsProvider: StreamOptionsProvider = (request: DataQueryRequest, frame: DataFrame) => {
   const opts: Partial<StreamingFrameOptions> = {
-    maxLength: request.maxDataPoints ?? 500,
+    maxLength: 500,
     action: StreamingFrameAction.Append,
   };
 
   // For recent queries, clamp to the current time range
-  if (request.rangeRaw?.to === 'now') {
-    opts.maxDelta = request.range.to.valueOf() - request.range.from.valueOf();
-  }
+  opts.maxDelta = 1000;
   return opts;
 };
 

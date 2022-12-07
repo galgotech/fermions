@@ -94,7 +94,6 @@ export const selectOverrideProcessor = (
 export interface StringFieldConfigSettings {
   placeholder?: string;
   maxLength?: number;
-  expandTemplateVars?: boolean;
   useTextarea?: boolean;
   rows?: number;
 }
@@ -106,9 +105,6 @@ export const stringOverrideProcessor = (
 ) => {
   if (value === null || value === undefined) {
     return value;
-  }
-  if (settings && settings.expandTemplateVars && context.replaceVariables) {
-    return context.replaceVariables(value, context.field!.state!.scopedVars);
   }
   return `${value}`;
 };

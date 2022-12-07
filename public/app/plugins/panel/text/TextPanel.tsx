@@ -44,7 +44,7 @@ export class TextPanel extends PureComponent<Props, State> {
   }
 
   prepareHTML(html: string): string {
-    const result = this.interpolateString(html);
+    const result = html;
     return config.disableSanitizeHtml ? result : this.sanitizeString(result);
   }
 
@@ -52,7 +52,7 @@ export class TextPanel extends PureComponent<Props, State> {
     // Always interpolate variables before converting to markdown
     // because `marked` replaces '{' and '}' in URLs with '%7B' and '%7D'
     // See https://marked.js.org/demo
-    let result = this.interpolateString(content);
+    let result = content;
 
     if (config.disableSanitizeHtml) {
       result = renderTextPanelMarkdown(result, {
@@ -65,10 +65,7 @@ export class TextPanel extends PureComponent<Props, State> {
     return this.sanitizeString(result);
   }
 
-  interpolateString(content: string): string {
-    const { replaceVariables, options } = this.props;
-    return replaceVariables(content, {}, options.code?.language === 'json' ? 'json' : 'html');
-  }
+
 
   sanitizeString(content: string): string {
     return textUtil.sanitizeTextPanelContent(content);
@@ -84,7 +81,7 @@ export class TextPanel extends PureComponent<Props, State> {
     if (mode === TextMode.HTML) {
       return this.prepareHTML(content);
     } else if (mode === TextMode.Code) {
-      return this.interpolateString(content);
+      return content;
     }
 
     return this.prepareMarkdown(content);

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import { CoreApp, DataSourceApi, formattedValueToString, getValueFormat, PanelData, PanelPlugin } from '@grafana/data';
-import { getTemplateSrv } from '@grafana/runtime';
 import { Drawer, Tab, TabsBar } from '@grafana/ui';
 import { t, Trans } from 'app/core/internationalization';
 import { InspectDataTab } from 'app/features/inspector/InspectDataTab';
@@ -12,7 +11,6 @@ import { InspectStatsTab } from 'app/features/inspector/InspectStatsTab';
 import { QueryInspector } from 'app/features/inspector/QueryInspector';
 import { InspectTab } from 'app/features/inspector/types';
 
-import { GetDataOptions } from '../../../query/state/PanelQueryRunner';
 import { DashboardModel, PanelModel } from '../../state';
 
 interface Props {
@@ -24,10 +22,8 @@ interface Props {
   // The last raw response
   data?: PanelData;
   isDataLoading: boolean;
-  dataOptions: GetDataOptions;
   // If the datasource supports custom metadata
   metadataDatasource?: DataSourceApi;
-  onDataOptionsChange: (options: GetDataOptions) => void;
   onClose: () => void;
 }
 
@@ -38,10 +34,8 @@ export const InspectContent = ({
   tabs,
   data,
   isDataLoading,
-  dataOptions,
   metadataDatasource,
   defaultTab,
-  onDataOptionsChange,
   onClose,
 }: Props) => {
   const [currentTab, setCurrentTab] = useState(defaultTab ?? InspectTab.Data);
@@ -58,7 +52,7 @@ export const InspectContent = ({
     activeTab = InspectTab.JSON;
   }
 
-  const panelTitle = getTemplateSrv().replace(panel.title, panel.scopedVars, 'text') || 'Panel';
+  const panelTitle = panel.title || 'Panel';
   const title = t('dashboard.inspect.title', 'Inspect: {{panelTitle}}', { panelTitle });
 
   return (
@@ -89,8 +83,6 @@ export const InspectContent = ({
           panel={panel}
           data={data && data.series}
           isLoading={isDataLoading}
-          options={dataOptions}
-          onOptionsChange={onDataOptionsChange}
           timeZone={dashboard.timezone}
           app={CoreApp.Dashboard}
         />

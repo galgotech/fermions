@@ -6,7 +6,6 @@ import {
   DataFrameView,
   DataQuery,
   DataSourceInstanceSettings,
-  DataSourceRef,
   MetricFindValue,
   ScopedVars,
   TimeRange,
@@ -23,7 +22,7 @@ import { toDataQueryResponse, toTestingStatus } from '@grafana/runtime/src/utils
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 
 import { VariableWithMultiSupport } from '../../../variables/types';
-import { getSearchFilterScopedVar, SearchFilterOptions } from '../../../variables/utils';
+import { SearchFilterOptions } from '../../../variables/utils';
 import { ResponseParser } from '../ResponseParser';
 import { MACRO_NAMES } from '../constants';
 import { DB, SQLQuery, SQLOptions, SqlQueryModel, QueryFormat } from '../types';
@@ -77,36 +76,8 @@ export abstract class SqlDatasource extends DataSourceWithBackend<SQLQuery, SQLO
     return value;
   };
 
-  interpolateVariablesInQueries(queries: SQLQuery[], scopedVars: ScopedVars): SQLQuery[] {
-    let expandedQueries = queries;
-    if (queries && queries.length > 0) {
-      expandedQueries = queries.map((query) => {
-        const expandedQuery = {
-          ...query,
-          datasource: this.getRef(),
-          rawSql: this.templateSrv.replace(query.rawSql, scopedVars, this.interpolateVariable),
-          rawQuery: true,
-        };
-        return expandedQuery;
-      });
-    }
-    return expandedQueries;
-  }
-
   filterQuery(query: SQLQuery): boolean {
     return !query.hide;
-  }
-
-  applyTemplateVariables(
-    target: SQLQuery,
-    scopedVars: ScopedVars
-  ): Record<string, string | DataSourceRef | SQLQuery['format']> {
-    return {
-      refId: target.refId,
-      datasource: this.getRef(),
-      rawSql: this.templateSrv.replace(target.rawSql, scopedVars, this.interpolateVariable),
-      format: target.format,
-    };
   }
 
   async metricFindQuery(query: string, optionalOptions?: MetricFindQueryOptions): Promise<MetricFindValue[]> {
@@ -115,11 +86,7 @@ export abstract class SqlDatasource extends DataSourceWithBackend<SQLQuery, SQLO
       refId = optionalOptions.variable.name;
     }
 
-    const rawSql = this.templateSrv.replace(
-      query,
-      getSearchFilterScopedVar({ query, wildcardChar: '%', options: optionalOptions }),
-      this.interpolateVariable
-    );
+    const rawSql = query;
 
     const interpolatedQuery: SQLQuery = {
       refId: refId,

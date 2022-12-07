@@ -3,7 +3,6 @@ import { Unsubscribable } from 'rxjs';
 
 import { DataQueryError, LoadingState, PanelData } from '@grafana/data';
 
-import { GetDataOptions } from '../../../query/state/PanelQueryRunner';
 import { PanelModel } from '../../state';
 
 interface UsePanelLatestData {
@@ -18,7 +17,6 @@ interface UsePanelLatestData {
  */
 export const usePanelLatestData = (
   panel: PanelModel,
-  options: GetDataOptions,
   checkSchema?: boolean
 ): UsePanelLatestData => {
   const querySubscription = useRef<Unsubscribable>();
@@ -30,7 +28,7 @@ export const usePanelLatestData = (
 
     querySubscription.current = panel
       .getQueryRunner()
-      .getData(options)
+      .getData()
       .subscribe({
         next: (data) => {
           if (checkSchema) {
@@ -58,7 +56,7 @@ export const usePanelLatestData = (
      * Otherwise, passing different references to the same object might cause troubles.
      */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panel, options.withFieldConfig]);
+  }, [panel]);
 
   return {
     data: latestData,

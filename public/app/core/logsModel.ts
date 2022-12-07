@@ -28,7 +28,6 @@ import {
   LogsModel,
   MutableDataFrame,
   rangeUtil,
-  ScopedVars,
   textUtil,
   TimeRange,
   toDataFrame,
@@ -52,12 +51,6 @@ export const LogLevelColor = {
   [LogLevel.trace]: colors[2],
   [LogLevel.unknown]: getThemeColor('#8e8e8e', '#bdc4cd'),
 };
-
-const MILLISECOND = 1;
-const SECOND = 1000 * MILLISECOND;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 
 const isoDateRegexp = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-6]\d[,\.]\d+([+-][0-2]\d:[0-5]\d|Z)/g;
 function isDuplicateRow(row: LogRowModel, other: LogRowModel, strategy?: LogsDedupStrategy): boolean {
@@ -677,17 +670,6 @@ export function queryLogsVolume<TQuery extends DataQuery, TOptions extends DataS
   logsVolumeRequest: DataQueryRequest<TQuery>,
   options: LogsVolumeQueryOptions<TQuery>
 ): Observable<DataQueryResponse> {
-  const timespan = options.range.to.valueOf() - options.range.from.valueOf();
-  const intervalInfo = getIntervalInfo(logsVolumeRequest.scopedVars, timespan);
-
-  logsVolumeRequest.interval = intervalInfo.interval;
-  logsVolumeRequest.scopedVars.__interval = { value: intervalInfo.interval, text: intervalInfo.interval };
-
-  if (intervalInfo.intervalMs !== undefined) {
-    logsVolumeRequest.intervalMs = intervalInfo.intervalMs;
-    logsVolumeRequest.scopedVars.__interval_ms = { value: intervalInfo.intervalMs, text: intervalInfo.intervalMs };
-  }
-
   logsVolumeRequest.hideFromInspector = true;
 
   return new Observable((observer) => {
@@ -745,32 +727,4 @@ export function queryLogsVolume<TQuery extends DataQuery, TOptions extends DataS
       subscription?.unsubscribe();
     };
   });
-}
-
-function getIntervalInfo(scopedVars: ScopedVars, timespanMs: number): { interval: string; intervalMs?: number } {
-  if (scopedVars.__interval) {
-    let intervalMs: number = scopedVars.__interval_ms.value;
-    let interval = '';
-    // below 5 seconds we force the resolution to be per 1ms as interval in scopedVars is not less than 10ms
-    if (timespanMs < SECOND * 5) {
-      intervalMs = MILLISECOND;
-      interval = '1ms';
-    } else if (intervalMs > HOUR) {
-      intervalMs = DAY;
-      interval = '1d';
-    } else if (intervalMs > MINUTE) {
-      intervalMs = HOUR;
-      interval = '1h';
-    } else if (intervalMs > SECOND) {
-      intervalMs = MINUTE;
-      interval = '1m';
-    } else {
-      intervalMs = SECOND;
-      interval = '1s';
-    }
-
-    return { interval, intervalMs };
-  } else {
-    return { interval: '$__interval' };
-  }
 }

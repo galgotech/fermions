@@ -7,14 +7,11 @@ import {
   DataQueryRequest,
   DataSourceApi,
   PanelData,
-  rangeUtil,
-  ScopedVars,
   QueryRunnerOptions,
   QueryRunner as QueryRunnerSrv,
   LoadingState,
   DataSourceRef,
 } from '@grafana/data';
-import { getTemplateSrv } from '@grafana/runtime';
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { getNextRequestId } from './PanelQueryRunner';
@@ -37,17 +34,12 @@ export class QueryRunner implements QueryRunnerSrv {
   run(options: QueryRunnerOptions): void {
     const {
       queries,
-      timezone,
       datasource,
       panelId,
       app,
       dashboardId,
-      timeRange,
       timeInfo,
       cacheTimeout,
-      maxDataPoints,
-      scopedVars,
-      minInterval,
     } = options;
 
     if (this.subscription) {
@@ -57,24 +49,15 @@ export class QueryRunner implements QueryRunnerSrv {
     const request: DataQueryRequest = {
       app: app ?? CoreApp.Unknown,
       requestId: getNextRequestId(),
-      timezone,
       panelId,
       dashboardId,
-      range: timeRange,
       timeInfo,
-      interval: '',
-      intervalMs: 0,
       targets: cloneDeep(queries),
-      maxDataPoints: maxDataPoints,
-      scopedVars: scopedVars || {},
       cacheTimeout,
       startTime: Date.now(),
     };
 
-    // Add deprecated property
-    request.rangeRaw = timeRange.raw;
-
-    from(getDataSource(datasource, request.scopedVars))
+    from(getDataSource(datasource))
       .pipe(first())
       .subscribe({
         next: (ds) => {
@@ -85,21 +68,6 @@ export class QueryRunner implements QueryRunnerSrv {
             }
             return query;
           });
-
-          const lowerIntervalLimit = minInterval
-            ? getTemplateSrv().replace(minInterval, request.scopedVars)
-            : ds.interval;
-          const norm = rangeUtil.calculateInterval(timeRange, maxDataPoints, lowerIntervalLimit);
-
-          // make shallow copy of scoped vars,
-          // and add built in variables interval and interval_ms
-          request.scopedVars = Object.assign({}, request.scopedVars, {
-            __interval: { text: norm.interval, value: norm.interval },
-            __interval_ms: { text: norm.intervalMs.toString(), value: norm.intervalMs },
-          });
-
-          request.interval = norm.interval;
-          request.intervalMs = norm.intervalMs;
 
           this.subscription = runRequest(ds, request).subscribe({
             next: (data) => {
@@ -142,13 +110,10 @@ export class QueryRunner implements QueryRunnerSrv {
   }
 }
 
-async function getDataSource(
-  datasource: DataSourceRef | DataSourceApi | null,
-  scopedVars: ScopedVars
-): Promise<DataSourceApi> {
+async function getDataSource(datasource: DataSourceRef | DataSourceApi | null): Promise<DataSourceApi> {
   if (datasource && 'query' in datasource) {
     return datasource;
   }
 
-  return getDatasourceSrv().get(datasource, scopedVars);
+  return getDatasourceSrv().get(datasource);
 }

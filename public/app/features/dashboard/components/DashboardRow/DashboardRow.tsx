@@ -3,7 +3,7 @@ import React from 'react';
 import { Unsubscribable } from 'rxjs';
 
 import { selectors } from '@grafana/e2e-selectors';
-import { getTemplateSrv, RefreshEvent } from '@grafana/runtime';
+import { RefreshEvent } from '@grafana/runtime';
 import { Icon } from '@grafana/ui';
 import appEvents from 'app/core/app_events';
 
@@ -69,7 +69,7 @@ export class DashboardRow extends React.Component<DashboardRowProps> {
       'dashboard-row--collapsed': this.props.panel.collapsed,
     });
 
-    const title = getTemplateSrv().replace(this.props.panel.title, this.props.panel.scopedVars, 'text');
+    const title = this.props.panel.title;
     const count = this.props.panel.panels ? this.props.panel.panels.length : 0;
     const panels = count === 1 ? 'panel' : 'panels';
     const canEdit = this.props.dashboard.meta.canEdit === true;

@@ -3,7 +3,6 @@ import React, { PureComponent } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
-  applyFieldOverrides,
   applyRawFieldOverrides,
   CoreApp,
   CSVConfig,
@@ -14,11 +13,9 @@ import {
 import { selectors } from '@grafana/e2e-selectors';
 import { reportInteraction } from '@grafana/runtime';
 import { Button, Spinner, Table } from '@grafana/ui';
-import { config } from 'app/core/config';
 import { Trans } from 'app/core/internationalization';
 import { dataFrameToLogsModel } from 'app/core/logsModel';
 import { PanelModel } from 'app/features/dashboard/state';
-import { GetDataOptions } from 'app/features/query/state/PanelQueryRunner';
 
 import { InspectDataOptions } from './InspectDataOptions';
 import { getPanelInspectorStyles } from './styles';
@@ -26,12 +23,10 @@ import { downloadAsJson, downloadDataFrameAsCsv, downloadLogsModelAsTxt } from '
 
 interface Props {
   isLoading: boolean;
-  options: GetDataOptions;
   timeZone: TimeZone;
   app?: CoreApp;
   data?: DataFrame[];
   panel?: PanelModel;
-  onOptionsChange?: (options: GetDataOptions) => void;
 }
 
 interface State {
@@ -69,7 +64,7 @@ export class InspectDataTab extends PureComponent<Props, State> {
   exportCsv = (dataFrame: DataFrame, csvConfig: CSVConfig = {}) => {
     const { panel } = this.props;
 
-    downloadDataFrameAsCsv(dataFrame, panel ? panel.getDisplayTitle() : 'Explore', csvConfig);
+    downloadDataFrameAsCsv(dataFrame, panel ? panel.title : 'Explore', csvConfig);
   };
 
   exportLogsAsTxt = () => {
@@ -81,7 +76,7 @@ export class InspectDataTab extends PureComponent<Props, State> {
     });
 
     const logsModel = dataFrameToLogsModel(data || [], undefined);
-    downloadLogsModelAsTxt(logsModel, panel ? panel.getDisplayTitle() : 'Explore');
+    downloadLogsModelAsTxt(logsModel, panel ? panel.title : 'Explore');
   };
 
   exportServiceGraph = () => {
@@ -90,7 +85,7 @@ export class InspectDataTab extends PureComponent<Props, State> {
       return;
     }
 
-    downloadAsJson(data, panel ? panel.getDisplayTitle() : 'Explore');
+    downloadAsJson(data, panel ? panel.title : 'Explore');
   };
 
   onDataFrameChange = (item: SelectableValue<number>) => {
@@ -107,28 +102,12 @@ export class InspectDataTab extends PureComponent<Props, State> {
   };
 
   getProcessedData(): DataFrame[] {
-    const { options, panel, timeZone } = this.props;
     const data = this.state.transformedData;
-
-    if (!options.withFieldConfig || !panel) {
-      return applyRawFieldOverrides(data);
-    }
-
-    // We need to apply field config even though it was already applied in the PanelQueryRunner.
-    // That's because transformers create new fields and data frames, so i.e. display processor is no longer there
-    return applyFieldOverrides({
-      data,
-      theme: config.theme2,
-      fieldConfig: panel.fieldConfig,
-      timeZone,
-      replaceVariables: (value: string) => {
-        return value;
-      },
-    });
+    return applyRawFieldOverrides(data);
   }
 
   render() {
-    const { isLoading, options, data, panel, onOptionsChange, app } = this.props;
+    const { isLoading, data, panel, app } = this.props;
     const { dataFrameIndex, selectedDataFrame, downloadForExcel } = this.state;
     const styles = getPanelInspectorStyles();
 
@@ -158,11 +137,9 @@ export class InspectDataTab extends PureComponent<Props, State> {
           <InspectDataOptions
             data={data}
             panel={panel}
-            options={options}
             dataFrames={dataFrames}
             selectedDataFrame={selectedDataFrame}
             downloadForExcel={downloadForExcel}
-            onOptionsChange={onOptionsChange}
             onDataFrameChange={this.onDataFrameChange}
             toggleDownloadForExcel={this.toggleDownloadForExcel}
           />

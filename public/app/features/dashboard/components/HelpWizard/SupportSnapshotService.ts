@@ -47,7 +47,7 @@ export class SupportSnapshotService extends StateManagerBase<SupportSnapshotStat
   constructor(panel: PanelModel) {
     super({
       panel,
-      panelTitle: panel.replaceVariables(panel.title, undefined, 'text') || 'Panel',
+      panelTitle: panel.title || 'Panel',
       currentTab: SnapshotTab.Support,
       showMessage: ShowMessage.GithubComment,
       snapshotText: '',

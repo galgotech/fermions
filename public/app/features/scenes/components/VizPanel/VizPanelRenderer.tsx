@@ -73,7 +73,6 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
                     width={innerWidth}
                     height={innerHeight}
                     renderCounter={0}
-                    replaceVariables={(str: string) => str}
                     onOptionsChange={model.onOptionsChange}
                     onFieldConfigChange={model.onFieldConfigChange}
                     eventBus={appEvents}

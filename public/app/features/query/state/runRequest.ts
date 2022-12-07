@@ -1,5 +1,5 @@
 // Libraries
-import { isString, map as isArray } from 'lodash';
+import { map as isArray } from 'lodash';
 import { from, merge, Observable, of, timer } from 'rxjs';
 import { catchError, map, mapTo, share, takeUntil, tap } from 'rxjs/operators';
 
@@ -12,11 +12,9 @@ import {
   DataQueryResponse,
   DataQueryResponseData,
   DataSourceApi,
-  dateMath,
   guessFieldTypes,
   LoadingState,
   PanelData,
-  TimeRange,
   toDataFrame,
 } from '@grafana/data';
 import { toDataQueryError } from '@grafana/runtime';
@@ -68,31 +66,14 @@ export function processResponsePacket(packet: DataQueryResponse, state: RunningQ
     }
   }
 
-  const timeRange = getRequestTimeRange(request, loadingState);
-
   const panelData = {
     state: loadingState,
     series,
     error,
     request,
-    timeRange,
   };
 
   return { packets, panelData };
-}
-
-function getRequestTimeRange(request: DataQueryRequest, loadingState: LoadingState): TimeRange {
-  const range = request.range;
-
-  if (!isString(range.raw.from) || loadingState !== LoadingState.Streaming) {
-    return range;
-  }
-
-  return {
-    ...range,
-    from: dateMath.parse(range.raw.from, false)!,
-    to: dateMath.parse(range.raw.to, true)!,
-  };
 }
 
 /**

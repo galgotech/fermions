@@ -83,7 +83,7 @@ export class DatasourceSrv implements DataSourceService {
     // Complex logic to support template variable data source names
     // For this we just pick the current or first data source in the variable
     if (nameOrUid[0] === '$') {
-      const interpolatedName = this.templateSrv.replace(nameOrUid, scopedVars, variableInterpolation);
+      const interpolatedName = nameOrUid;
 
       let dsSettings;
 
@@ -110,7 +110,7 @@ export class DatasourceSrv implements DataSourceService {
     return this.settingsMapByUid[nameOrUid] ?? this.settingsMapByName[nameOrUid];
   }
 
-  get(ref?: string | DataSourceRef | null, scopedVars?: ScopedVars): Promise<DataSourceApi> {
+  get(ref?: string | DataSourceRef | null): Promise<DataSourceApi> {
     let nameOrUid = typeof ref === 'string' ? (ref as string) : ((ref as any)?.uid as string | undefined);
     if (!nameOrUid) {
       return this.get(this.defaultName);
@@ -126,9 +126,6 @@ export class DatasourceSrv implements DataSourceService {
     if (this.datasources[nameOrUid]) {
       return Promise.resolve(this.datasources[nameOrUid]);
     }
-
-    // Interpolation here is to support template variable in data source selection
-    nameOrUid = this.templateSrv.replace(nameOrUid, scopedVars, variableInterpolation);
 
     if (nameOrUid === 'default' && this.defaultName !== 'default') {
       return this.get(this.defaultName);

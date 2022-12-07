@@ -12,7 +12,6 @@ export const mockStandardProperties = () => {
     process: displayNameOverrideProcessor,
     settings: {
       placeholder: 'none',
-      expandTemplateVars: true,
     },
     shouldApply: () => true,
   };

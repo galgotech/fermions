@@ -6,9 +6,8 @@ import {
   DataSourceInstanceSettings,
   DataSourcePluginMeta,
   PluginType,
-  ScopedVars,
 } from '@grafana/data';
-import { DataSourceWithBackend, getDataSourceSrv, getTemplateSrv } from '@grafana/runtime';
+import { DataSourceWithBackend } from '@grafana/runtime';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 
 import { ExpressionQueryEditor } from './ExpressionQueryEditor';
@@ -22,28 +21,13 @@ export class ExpressionDatasourceApi extends DataSourceWithBackend<ExpressionQue
     super(instanceSettings);
   }
 
-  applyTemplateVariables(query: ExpressionQuery, scopedVars: ScopedVars): Record<string, any> {
-    const templateSrv = getTemplateSrv();
-    return {
-      ...query,
-      expression: templateSrv.replace(query.expression, scopedVars),
-      window: templateSrv.replace(query.window, scopedVars),
-    };
-  }
-
   getCollapsedText(query: ExpressionQuery) {
     return `Expression: ${query.type}`;
   }
 
   query(request: DataQueryRequest<ExpressionQuery>): Observable<DataQueryResponse> {
     let targets = request.targets.map(async (query: ExpressionQuery): Promise<ExpressionQuery> => {
-      const ds = await getDataSourceSrv().get(query.datasource);
-
-      if (!ds.interpolateVariablesInQueries) {
-        return query;
-      }
-
-      return ds?.interpolateVariablesInQueries([query], request.scopedVars)[0] as ExpressionQuery;
+      return query;
     });
 
     let sub = from(Promise.all(targets));

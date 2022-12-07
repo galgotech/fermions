@@ -1,7 +1,6 @@
 import { chain } from 'lodash';
 
 import { stringToJsRegex } from '@grafana/data';
-import { getTemplateSrv } from '@grafana/runtime';
 
 import { ThunkResult } from '../../../types';
 import { getDatasourceSrv } from '../../plugins/datasource_srv';
@@ -34,7 +33,7 @@ export const updateDataSourceVariableOptions =
     let regex;
 
     if (variableInState.regex) {
-      regex = getTemplateSrv().replace(variableInState.regex, undefined, 'regex');
+      regex = variableInState.regex;
       regex = stringToJsRegex(regex);
     }
 

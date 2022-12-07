@@ -1,4 +1,4 @@
-import { ScopedVars, TimeRange, TypedVariableModel } from '@grafana/data';
+import { TimeRange, TypedVariableModel } from '@grafana/data';
 
 /**
  * Via the TemplateSrv consumers get access to all the available template variables
@@ -12,11 +12,6 @@ export interface TemplateSrv {
    * List the dashboard variables
    */
   getVariables(): TypedVariableModel[];
-
-  /**
-   * Replace the values within the target string.  See also {@link InterpolateFunction}
-   */
-  replace(target?: string, scopedVars?: ScopedVars, format?: string | Function): string;
 
   /**
    * Checks if a target contains template variables.

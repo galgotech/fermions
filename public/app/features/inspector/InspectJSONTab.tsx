@@ -103,9 +103,7 @@ export class InspectJSONTab extends PureComponent<Props, State> {
       // do not include transforms and
       if (panel && data?.state === LoadingState.Done) {
         d = await firstValueFrom(
-          panel.getQueryRunner().getData({
-            withFieldConfig: false,
-          })
+          panel.getQueryRunner().getData()
         );
       }
       return getPanelDataFrames(d);

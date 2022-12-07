@@ -4,18 +4,16 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   DataConfigSource,
   DataLink,
-  DataLinkBuiltInVars,
   DataQuery,
   EventBusSrv,
   FieldConfigSource,
   PanelPlugin,
   PanelPluginDataSupport,
   ScopedVars,
-  urlUtil,
   PanelModel as IPanelModel,
   DataSourceRef,
 } from '@grafana/data';
-import { getTemplateSrv, RefreshEvent } from '@grafana/runtime';
+import { RefreshEvent } from '@grafana/runtime';
 import config from 'app/core/config';
 import { safeStringifyValue } from 'app/core/utils/explore';
 import { getNextRefIdChar } from 'app/core/utils/query';
@@ -29,8 +27,6 @@ import {
 
 import { LibraryElementDTO, LibraryPanelRef } from '../../library-panels/types';
 import { PanelQueryRunner } from '../../query/state/PanelQueryRunner';
-import { getVariablesUrlParams } from '../../variables/getAllVariableValuesForUrl';
-import { getTimeSrv } from '../services/TimeSrv';
 import { TimeOverrideResult } from '../utils/panel';
 
 import {
@@ -66,10 +62,8 @@ const notPersistedProperties: { [str: string]: boolean } = {
   cachedPluginOptions: true,
   plugin: true,
   queryRunner: true,
-  replaceVariables: true,
   configRev: true,
   hasSavedPanelEditChange: true,
-  getDisplayTitle: true,
   dataSupport: true,
   key: true,
 };
@@ -111,9 +105,7 @@ const mustKeepProps: { [str: string]: boolean } = {
   fieldConfig: true,
   maxDataPoints: true,
   interval: true,
-  replaceVariables: true,
   libraryPanel: true,
-  getDisplayTitle: true,
   configRev: true,
   key: true,
 };
@@ -201,7 +193,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   constructor(model: any) {
     this.events = new EventBusSrv();
     this.restoreModel(model);
-    this.replaceVariables = this.replaceVariables.bind(this);
     this.key = uuidv4();
   }
 
@@ -572,7 +563,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
     return {
       fieldConfig: this.fieldConfig,
-      replaceVariables: this.replaceVariables,
       fieldConfigRegistry: this.plugin.fieldConfigRegistry,
       theme: config.theme2,
     };
@@ -617,41 +607,12 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     }
   }
 
-  replaceVariables(value: string, extraVars: ScopedVars | undefined, format?: string | Function) {
-    const lastRequest = this.getQueryRunner().getLastRequest();
-    const vars: ScopedVars = Object.assign({}, this.scopedVars, lastRequest?.scopedVars, extraVars);
-
-    const allVariablesParams = getVariablesUrlParams(vars);
-    const variablesQuery = urlUtil.toUrlParams(allVariablesParams);
-    const timeRangeUrl = urlUtil.toUrlParams(getTimeSrv().timeRangeForUrl());
-
-    vars[DataLinkBuiltInVars.keepTime] = {
-      text: timeRangeUrl,
-      value: timeRangeUrl,
-    };
-
-    vars[DataLinkBuiltInVars.includeVars] = {
-      text: variablesQuery,
-      value: variablesQuery,
-    };
-
-    return getTemplateSrv().replace(value, vars, format);
-  }
-
   resendLastResult() {
     if (!this.plugin) {
       return;
     }
 
     this.getQueryRunner().resendLastResult();
-  }
-
-  /*
-   * This is the title used when displaying the title in the UI so it will include any interpolated variables.
-   * If you need the raw title without interpolation use title property instead.
-   * */
-  getDisplayTitle(): string {
-    return this.replaceVariables(this.title, undefined, 'text');
   }
 
   initLibraryPanel(libPanel: LibraryElementDTO) {

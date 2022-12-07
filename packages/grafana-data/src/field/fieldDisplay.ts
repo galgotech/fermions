@@ -14,7 +14,6 @@ import {
   FieldConfig,
   FieldConfigSource,
   FieldType,
-  InterpolateFunction,
   LinkModel,
   TimeRange,
   TimeZone,
@@ -70,7 +69,6 @@ export interface GetFieldDisplayValuesOptions {
   data?: DataFrame[];
   reduceOptions: ReduceDataOptions;
   fieldConfig: FieldConfigSource;
-  replaceVariables: InterpolateFunction;
   sparkline?: boolean; // Calculate the sparkline
   theme: GrafanaTheme2;
   timeZone?: TimeZone;
@@ -79,7 +77,7 @@ export interface GetFieldDisplayValuesOptions {
 export const DEFAULT_FIELD_DISPLAY_VALUES_LIMIT = 25;
 
 export const getFieldDisplayValues = (options: GetFieldDisplayValuesOptions): FieldDisplay[] => {
-  const { replaceVariables, reduceOptions, timeZone, theme } = options;
+  const { reduceOptions, timeZone, theme } = options;
   const calcs = reduceOptions.calcs.length ? reduceOptions.calcs : [ReducerID.last];
 
   const values: FieldDisplay[] = [];
@@ -155,7 +153,7 @@ export const getFieldDisplayValues = (options: GetFieldDisplayValuesOptions): Fi
           field.state = setIndexForPaletteColor(field, values.length);
 
           const displayValue = display(field.values.get(j));
-          const rowName = getSmartDisplayNameForRow(dataFrame, field, j, replaceVariables, scopedVars);
+          const rowName = getSmartDisplayNameForRow(dataFrame, field, j);
           const overrideColor = lookupRowColorFromOverride(rowName, options.fieldConfig, theme);
 
           values.push({
@@ -194,10 +192,7 @@ export const getFieldDisplayValues = (options: GetFieldDisplayValuesOptions): Fi
           const displayValue = display(results[calc]);
 
           if (displayName !== '') {
-            displayValue.title = replaceVariables(displayName, {
-              ...field.state?.scopedVars, // series and field scoped vars
-              ...scopedVars,
-            });
+            displayValue.title = displayName;
           } else {
             displayValue.title = getFieldDisplayName(field, dataFrame, data);
           }
@@ -246,17 +241,12 @@ function getSmartDisplayNameForRow(
   frame: DataFrame,
   field: Field,
   rowIndex: number,
-  replaceVariables: InterpolateFunction,
-  scopedVars: ScopedVars
 ): string {
   let parts: string[] = [];
   let otherNumericFields = 0;
 
   if (field.config.displayName) {
-    return replaceVariables(field.config.displayName, {
-      ...field.state?.scopedVars, // series and field scoped vars
-      ...scopedVars,
-    });
+    return field.config.displayName;
   }
 
   for (const otherField of frame.fields) {

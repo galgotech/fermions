@@ -8,6 +8,5 @@ export function prepDataForStorybook(data: DataFrame[], theme: GrafanaTheme2) {
       defaults: {},
     },
     theme,
-    replaceVariables: (value: string) => value,
   });
 }

@@ -52,9 +52,7 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
 
   // reproducable
   const data = await firstValueFrom(
-    panel.getQueryRunner().getData({
-      withFieldConfig: false,
-    })
+    panel.getQueryRunner().getData()
   );
 
   const dsref = panel.datasource;

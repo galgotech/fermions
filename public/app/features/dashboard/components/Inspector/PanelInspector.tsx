@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { connect, MapStateToProps } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -9,7 +9,6 @@ import { InspectTab } from 'app/features/inspector/types';
 import { getPanelStateForModel } from 'app/features/panel/state/selectors';
 import { StoreState } from 'app/types';
 
-import { GetDataOptions } from '../../../query/state/PanelQueryRunner';
 import { HelpWizard } from '../HelpWizard/HelpWizard';
 import { usePanelLatestData } from '../PanelEditor/usePanelLatestData';
 
@@ -28,12 +27,8 @@ export interface ConnectedProps {
 export type Props = OwnProps & ConnectedProps;
 
 const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
-  const [dataOptions, setDataOptions] = useState<GetDataOptions>({
-    withFieldConfig: true,
-  });
-
   const location = useLocation();
-  const { data, isLoading, error } = usePanelLatestData(panel, dataOptions, true);
+  const { data, isLoading, error } = usePanelLatestData(panel, true);
   const metaDs = useDatasourceMetadata(data);
   const tabs = useInspectTabs(panel, dashboard, plugin, error, metaDs);
   const defaultTab = new URLSearchParams(location.search).get('inspectTab') as InspectTab;
@@ -62,8 +57,6 @@ const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
       tabs={tabs}
       data={data}
       isDataLoading={isLoading}
-      dataOptions={dataOptions}
-      onDataOptionsChange={setDataOptions}
       metadataDatasource={metaDs}
       onClose={onClose}
     />

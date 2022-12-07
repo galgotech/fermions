@@ -53,7 +53,7 @@ class MetricsPanelCtrl extends PanelCtrl {
   private onMetricsPanelMounted() {
     const queryRunner = this.panel.getQueryRunner() as PanelQueryRunner;
     this.querySubscription = queryRunner
-      .getData({ withFieldConfig: true })
+      .getData()
       .subscribe(this.panelDataObserver);
   }
 

@@ -1,14 +1,13 @@
 import { ComponentType } from 'react';
 
 import { EventBus } from '../events';
-import { DataFrame, InterpolateFunction, VariableSuggestionsScope, VariableSuggestion } from '../types';
+import { DataFrame, VariableSuggestionsScope, VariableSuggestion } from '../types';
 import { Registry, RegistryItem } from '../utils/Registry';
 
 import { FieldConfigOptionsRegistry } from './FieldConfigOptionsRegistry';
 
 export interface StandardEditorContext<TOptions, TState = any> {
   data: DataFrame[]; // All results
-  replaceVariables?: InterpolateFunction;
   eventBus?: EventBus;
   getSuggestions?: (scope?: VariableSuggestionsScope) => VariableSuggestion[];
   options?: TOptions;

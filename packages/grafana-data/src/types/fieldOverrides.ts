@@ -6,7 +6,6 @@ import { MatcherConfig, FieldConfig, Field, DataFrame, TimeZone } from '../types
 
 import { OptionsEditorItem } from './OptionsUIRegistryBuilder';
 import { OptionEditorConfig } from './options';
-import { InterpolateFunction } from './panel';
 
 export interface DynamicConfigValue {
   id: string;
@@ -116,7 +115,6 @@ export interface ApplyFieldOverrideOptions {
   data?: DataFrame[];
   fieldConfig: FieldConfigSource;
   fieldConfigRegistry?: FieldConfigOptionsRegistry;
-  replaceVariables: InterpolateFunction;
   theme: GrafanaTheme2;
   timeZone?: TimeZone;
 }

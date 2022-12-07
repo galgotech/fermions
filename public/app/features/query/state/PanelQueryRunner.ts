@@ -16,12 +16,10 @@ import {
   DataSourceRef,
   LoadingState,
   PanelData,
-  rangeUtil,
   ScopedVars,
   TimeRange,
   TimeZone,
 } from '@grafana/data';
-import { getTemplateSrv } from '@grafana/runtime';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 import { StreamingDataFrame } from 'app/features/live/data/StreamingDataFrame';
 import { isStreamingDataFrame } from 'app/features/live/data/utils';
@@ -58,10 +56,6 @@ export function getNextRequestId() {
   return 'Q' + counter++;
 }
 
-export interface GetDataOptions {
-  withFieldConfig: boolean;
-}
-
 export class PanelQueryRunner {
   private subject: ReplaySubject<PanelData>;
   private subscription?: Unsubscribable;
@@ -77,8 +71,7 @@ export class PanelQueryRunner {
   /**
    * Returns an observable that subscribes to the shared multi-cast subject (that reply last result).
    */
-  getData(options: GetDataOptions): Observable<PanelData> {
-    const { withFieldConfig } = options;
+  getData(): Observable<PanelData> {
     let structureRev = 1;
     let lastData: DataFrame[] = [];
     let isFirstPacket = true;
@@ -89,7 +82,7 @@ export class PanelQueryRunner {
         let processedData = data;
         let streamingPacketWithSameSchema = false;
 
-        if (withFieldConfig && data.series?.length) {
+        if (data.series?.length) {
           if (lastConfigRev === this.dataConfigSource.configRev) {
             const streamingDataFrame = data.series.find((data) => isStreamingDataFrame(data)) as
               | StreamingDataFrame
@@ -131,7 +124,6 @@ export class PanelQueryRunner {
             processedData = {
               ...processedData,
               series: applyFieldOverrides({
-                timeZone: data.request?.timezone ?? 'browser',
                 data: processedData.series,
                 ...fieldConfig!,
               }),
@@ -156,7 +148,6 @@ export class PanelQueryRunner {
   async run(options: QueryRunnerOptions) {
     const {
       queries,
-      timezone,
       datasource,
       panelId,
       dashboardId,
@@ -165,9 +156,6 @@ export class PanelQueryRunner {
       timeRange,
       timeInfo,
       cacheTimeout,
-      maxDataPoints,
-      scopedVars,
-      minInterval,
     } = options;
 
     if (isSharedDashboardQuery(datasource)) {
@@ -178,18 +166,12 @@ export class PanelQueryRunner {
     const request: DataQueryRequest = {
       app: CoreApp.Dashboard,
       requestId: getNextRequestId(),
-      timezone,
       panelId,
       dashboardId,
       dashboardUID,
       publicDashboardAccessToken,
-      range: timeRange,
       timeInfo,
-      interval: '',
-      intervalMs: 0,
       targets: cloneDeep(queries),
-      maxDataPoints: maxDataPoints,
-      scopedVars: scopedVars || {},
       cacheTimeout,
       startTime: Date.now(),
     };
@@ -198,7 +180,7 @@ export class PanelQueryRunner {
     (request as any).rangeRaw = timeRange.raw;
 
     try {
-      const ds = await getDataSource(datasource, request.scopedVars, publicDashboardAccessToken);
+      const ds = await getDataSource(datasource, publicDashboardAccessToken);
       const isMixedDS = ds.meta?.mixed;
 
       // Attach the data source to each query
@@ -211,19 +193,6 @@ export class PanelQueryRunner {
         }
         return query;
       });
-
-      const lowerIntervalLimit = minInterval ? getTemplateSrv().replace(minInterval, request.scopedVars) : ds.interval;
-      const norm = rangeUtil.calculateInterval(timeRange, maxDataPoints, lowerIntervalLimit);
-
-      // make shallow copy of scoped vars,
-      // and add built in variables interval and interval_ms
-      request.scopedVars = Object.assign({}, request.scopedVars, {
-        __interval: { text: norm.interval, value: norm.interval },
-        __interval_ms: { text: norm.intervalMs.toString(), value: norm.intervalMs },
-      });
-
-      request.interval = norm.interval;
-      request.intervalMs = norm.intervalMs;
 
       this.lastRequest = request;
 
@@ -316,14 +285,13 @@ export class PanelQueryRunner {
 
 async function getDataSource(
   datasource: DataSourceRef | string | DataSourceApi | null,
-  scopedVars: ScopedVars,
   publicDashboardAccessToken?: string
 ): Promise<DataSourceApi> {
   if (!publicDashboardAccessToken && datasource && typeof datasource === 'object' && 'query' in datasource) {
     return datasource;
   }
 
-  const ds = await getDatasourceSrv().get(datasource, scopedVars);
+  const ds = await getDatasourceSrv().get(datasource);
   if (publicDashboardAccessToken) {
     return new PublicDashboardDataSource(ds);
   }

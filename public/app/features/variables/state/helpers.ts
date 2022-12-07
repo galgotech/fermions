@@ -5,7 +5,6 @@ import { dashboardReducer } from 'app/features/dashboard/state/reducers';
 
 import { DashboardState, StoreState } from '../../../types';
 import { VariableAdapter } from '../adapters';
-import { NEW_VARIABLE_ID } from '../constants';
 import {
   DashboardVariableModel,
   initialVariableModelState,
@@ -15,15 +14,11 @@ import {
   VariableModel,
 } from '../types';
 
-import { createQueryVariable } from './__tests__/fixtures';
 import { keyedVariablesReducer, KeyedVariablesState } from './keyedVariablesReducer';
 import { getInitialTemplatingState, TemplatingState } from './reducers';
 import { VariablesState } from './types';
 
 export const getVariableState = (
-  noOfVariables: number,
-  inEditorIndex = -1,
-  includeEmpty = false,
   includeSystem = false
 ): VariablesState => {
   const variables: Record<string, TypedVariableModel> = {};
@@ -84,24 +79,6 @@ export const getVariableState = (
     variables[dashboardModel.id] = dashboardModel;
     variables[orgModel.id] = orgModel;
     variables[userModel.id] = userModel;
-  }
-
-  for (let index = 0; index < noOfVariables; index++) {
-    variables[index] = createQueryVariable({
-      id: index.toString(),
-      name: `Name-${index}`,
-      label: `Label-${index}`,
-      index,
-    });
-  }
-
-  if (includeEmpty) {
-    variables[NEW_VARIABLE_ID] = createQueryVariable({
-      id: NEW_VARIABLE_ID,
-      name: `Name-${NEW_VARIABLE_ID}`,
-      label: `Label-${NEW_VARIABLE_ID}`,
-      index: noOfVariables,
-    });
   }
 
   return variables;

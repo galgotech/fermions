@@ -57,7 +57,7 @@ export class PublicDashboardDataSource extends DataSourceApi<DataQuery, DataSour
    * Ideally final -- any other implementation may not work as expected
    */
   query(request: DataQueryRequest<DataQuery>): Observable<DataQueryResponse> {
-    const { intervalMs, maxDataPoints, requestId, publicDashboardAccessToken, panelId } = request;
+    const { requestId, publicDashboardAccessToken, panelId } = request;
     let queries: DataQuery[];
 
     // Return early if no queries exist
@@ -65,7 +65,7 @@ export class PublicDashboardDataSource extends DataSourceApi<DataQuery, DataSour
       return of({ data: [] });
     }
 
-    const body = { intervalMs, maxDataPoints };
+    const body = {};
 
     return getBackendSrv()
       .fetch<BackendDataSourceResponse>({
