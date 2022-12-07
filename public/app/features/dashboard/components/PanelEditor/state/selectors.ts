@@ -11,22 +11,14 @@ export const getPanelEditorTabs = memoizeOne((tab?: string, plugin?: PanelPlugin
     return tabs;
   }
 
-  let defaultTab = PanelEditorTabId.Visualize;
+  let defaultTab = PanelEditorTabId.Query;
+  tabs.push({
+    id: PanelEditorTabId.Query,
+    text: 'Query',
+    icon: 'database',
+    active: false,
+  });
 
-  if (plugin.meta.skipDataQuery) {
-    return [];
-  }
-
-  if (!plugin.meta.skipDataQuery) {
-    defaultTab = PanelEditorTabId.Query;
-
-    tabs.push({
-      id: PanelEditorTabId.Query,
-      text: 'Query',
-      icon: 'database',
-      active: false,
-    });
-  }
 
   const activeTab = tabs.find((item) => item.id === (tab || defaultTab)) ?? tabs[0];
   activeTab.active = true;

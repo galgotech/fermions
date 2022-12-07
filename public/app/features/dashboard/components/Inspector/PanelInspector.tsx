@@ -29,7 +29,7 @@ export type Props = OwnProps & ConnectedProps;
 const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
   const location = useLocation();
   const { data, isLoading, error } = usePanelLatestData(panel, true);
-  const tabs = useInspectTabs(panel, dashboard, plugin, error);
+  const tabs = useInspectTabs(panel, dashboard, error);
   const defaultTab = new URLSearchParams(location.search).get('inspectTab') as InspectTab;
 
   const onClose = () => {

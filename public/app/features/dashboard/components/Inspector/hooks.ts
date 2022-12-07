@@ -5,8 +5,6 @@ import { t } from 'app/core/internationalization';
 import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
 import { InspectTab } from 'app/features/inspector/types';
 
-import { supportsDataQuery } from '../PanelEditor/utils';
-
 import { PanelInspectActionSupplier } from './PanelInspectActions';
 
 /**
@@ -15,15 +13,12 @@ import { PanelInspectActionSupplier } from './PanelInspectActions';
 export const useInspectTabs = (
   panel: PanelModel,
   dashboard: DashboardModel,
-  plugin: PanelPlugin | undefined | null,
   error?: DataQueryError
 ) => {
   return useMemo(() => {
     const tabs = [];
-    if (supportsDataQuery(plugin)) {
-      tabs.push({ label: t('dashboard.inspect.data-tab', 'Data'), value: InspectTab.Data });
-      tabs.push({ label: t('dashboard.inspect.stats-tab', 'Stats'), value: InspectTab.Stats });
-    }
+    tabs.push({ label: t('dashboard.inspect.data-tab', 'Data'), value: InspectTab.Data });
+    tabs.push({ label: t('dashboard.inspect.stats-tab', 'Stats'), value: InspectTab.Stats });
 
     tabs.push({ label: t('dashboard.inspect.json-tab', 'JSON'), value: InspectTab.JSON });
 
@@ -41,9 +36,9 @@ export const useInspectTabs = (
       });
     }
 
-    if (dashboard.meta.canEdit && supportsDataQuery(plugin)) {
+    if (dashboard.meta.canEdit) {
       tabs.push({ label: t('dashboard.inspect.query-tab', 'Query'), value: InspectTab.Query });
     }
     return tabs;
-  }, [panel, plugin, dashboard, error]);
+  }, [panel, dashboard, error]);
 };

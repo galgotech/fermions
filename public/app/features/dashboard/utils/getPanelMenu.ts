@@ -117,7 +117,7 @@ export function getPanelMenu(
   const inspectMenu: PanelMenuItem[] = [];
 
   // Only show these inspect actions for data plugins
-  if (panel.plugin && !panel.plugin.meta.skipDataQuery) {
+  if (panel.plugin) {
     const dataTextTranslation = t('panel.header-menu.inspect-data', `Data`);
 
     inspectMenu.push({
@@ -217,7 +217,7 @@ export function getPanelMenu(
     subMenu.length = 0;
   }
 
-  if (canEdit && panel.plugin && !panel.plugin.meta.skipDataQuery) {
+  if (canEdit && panel.plugin) {
     subMenu.push({
       text: 'Get help',
       onClick: (e: React.MouseEvent) => onInspectPanel(InspectTab.Help),

@@ -202,14 +202,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
   // The next is outside a react synthetic event so setState is not batched
   // So in this context we can only do a single call to setState
   onDataUpdate(data: PanelData) {
-    const { plugin } = this.props;
-
-    // Ignore this data update if we are now a non data panel
-    if (plugin.meta.skipDataQuery) {
-      this.setState({ data: this.getInitialPanelDataState() });
-      return;
-    }
-
     let { isFirstLoad } = this.state;
     let errorMessage: string | undefined;
 
@@ -260,7 +252,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         dashboardId: dashboard.id,
         dashboardUID: dashboard.uid,
         dashboardTimezone: dashboard.getTimezone(),
-        publicDashboardAccessToken: dashboard.meta.publicDashboardAccessToken,
         width,
       });
     } else {
@@ -298,11 +289,11 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
   };
 
   get wantsQueryExecution() {
-    return !this.props.plugin.meta.skipDataQuery;
+    return true;
   }
 
   shouldSignalRenderingCompleted(loadingState: LoadingState, pluginMeta: PanelPluginMeta) {
-    return loadingState === LoadingState.Done || pluginMeta.skipDataQuery;
+    return loadingState === LoadingState.Done ;
   }
 
   skipFirstRender(loadingState: LoadingState) {

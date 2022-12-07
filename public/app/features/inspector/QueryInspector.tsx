@@ -8,7 +8,6 @@ import { Stack } from '@grafana/experimental';
 import { config, RefreshEvent } from '@grafana/runtime';
 import { Button, ClipboardButton, JSONFormatter, LoadingPlaceholder } from '@grafana/ui';
 import { backendSrv } from 'app/core/services/backend_srv';
-import { supportsDataQuery } from 'app/features/dashboard/components/PanelEditor/utils';
 import { PanelModel } from 'app/features/dashboard/state';
 
 import { getPanelInspectorStyles } from './styles';
@@ -249,15 +248,11 @@ export class QueryInspector extends PureComponent<Props, State> {
 
   render() {
     const { allNodesExpanded, executedQueries } = this.state;
-    const { panel, onRefreshQuery } = this.props;
+    const { onRefreshQuery } = this.props;
     const { response, isLoading } = this.state.dsQuery;
     const openNodes = this.getNrOfOpenNodes();
     const styles = getPanelInspectorStyles();
     const haveData = Object.keys(response).length > 0;
-
-    if (panel && !supportsDataQuery(panel.plugin)) {
-      return null;
-    }
 
     return (
       <div className={styles.wrap}>

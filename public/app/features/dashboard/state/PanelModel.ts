@@ -303,14 +303,12 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   runAllPanelQueries({
     dashboardId,
     dashboardUID,
-    publicDashboardAccessToken,
   }: RunPanelQueryOptions) {
     this.getQueryRunner().run({
       queries: this.targets,
       panelId: this.id,
       dashboardId: dashboardId,
       dashboardUID: dashboardUID,
-      publicDashboardAccessToken,
       cacheTimeout: this.cacheTimeout,
     });
   }

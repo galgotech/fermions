@@ -1,6 +1,6 @@
 import { omit } from 'lodash';
 
-import { FieldConfigSource, PanelPlugin } from '@grafana/data';
+import { FieldConfigSource } from '@grafana/data';
 import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT } from 'app/core/constants';
 
 import { PanelModel } from '../../state/PanelModel';
@@ -30,10 +30,6 @@ export function calculatePanelSize(mode: DisplayMode, width: number, height: num
     width: pWidth * scale,
     height: pHeight * scale,
   };
-}
-
-export function supportsDataQuery(plugin: PanelPlugin | undefined | null): boolean {
-  return plugin?.meta.skipDataQuery === false;
 }
 
 export const updateDefaultFieldConfigValue = (

@@ -3,7 +3,6 @@
   "name": "News",
   "id": "news",
 
-  "skipDataQuery": true,
 
   "state": "beta",
 
