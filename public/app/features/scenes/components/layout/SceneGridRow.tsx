@@ -50,8 +50,6 @@ export class SceneGridRow extends SceneObjectBase<SceneGridRowState> {
     if (!layout || !(layout instanceof SceneGridLayout)) {
       throw new Error('SceneGridRow must be a child of SceneGridLayout');
     }
-
-    layout.toggleRow(this);
   };
 
   public getUrlState(state: SceneGridRowState) {

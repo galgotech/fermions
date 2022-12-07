@@ -76,7 +76,7 @@ class MetricsPanelCtrl extends PanelCtrl {
 
     // load datasource service
     return this.datasourceSrv
-      .get(this.panel.datasource, this.panel.scopedVars)
+      .get(this.panel.datasource)
       .then(this.issueQueries.bind(this))
       .catch((err: any) => {
         this.processDataError(err);
@@ -167,13 +167,8 @@ class MetricsPanelCtrl extends PanelCtrl {
       queries: panel.targets,
       panelId: panel.id,
       dashboardId: this.dashboard.id,
-      timezone: this.dashboard.getTimezone(),
       timeInfo: this.timeInfo,
-      timeRange: this.range,
-      maxDataPoints: panel.maxDataPoints || this.width,
-      minInterval: panel.interval,
       publicDashboardAccessToken: this.dashboard.meta.publicDashboardAccessToken,
-      scopedVars: panel.scopedVars,
       cacheTimeout: panel.cacheTimeout,
     });
   }

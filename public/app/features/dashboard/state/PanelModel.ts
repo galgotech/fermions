@@ -9,7 +9,6 @@ import {
   FieldConfigSource,
   PanelPlugin,
   PanelPluginDataSupport,
-  ScopedVars,
   PanelModel as IPanelModel,
   DataSourceRef,
 } from '@grafana/data';
@@ -77,13 +76,7 @@ const mustKeepProps: { [str: string]: boolean } = {
   gridPos: true,
   type: true,
   title: true,
-  scopedVars: true,
-  repeat: true,
-  repeatPanelId: true,
-  repeatDirection: true,
-  repeatedByRow: true,
   minSpan: true,
-  collapsed: true,
   panels: true,
   targets: true,
   datasource: true,
@@ -131,14 +124,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   type!: string;
   title!: string;
   alert?: any;
-  scopedVars?: ScopedVars;
-  repeat?: string;
-  repeatIteration?: number;
-  repeatPanelId?: number;
-  repeatDirection?: string;
-  repeatedByRow?: boolean;
-  maxPerRow?: number;
-  collapsed?: boolean;
 
   panels?: PanelModel[];
   declare targets: DataQuery[];
@@ -342,12 +327,7 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       dashboardId: dashboardId,
       dashboardUID: dashboardUID,
       publicDashboardAccessToken,
-      timezone: dashboardTimezone,
-      timeRange: timeData.timeRange,
       timeInfo: timeData.timeInfo,
-      maxDataPoints: this.maxDataPoints || Math.floor(width),
-      minInterval: this.interval,
-      scopedVars: this.scopedVars,
       cacheTimeout: this.cacheTimeout,
     });
   }
@@ -594,17 +574,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   setProperty(key: keyof this, value: any) {
     this[key] = value;
     this.configRev++;
-
-    // Custom handling of repeat dependent options, handled here as PanelEditor can
-    // update one key at a time right now
-    if (key === 'repeat') {
-      if (this.repeat && !this.repeatDirection) {
-        this.repeatDirection = 'h';
-      } else if (!this.repeat) {
-        delete this.repeatDirection;
-        delete this.maxPerRow;
-      }
-    }
   }
 
   resendLastResult() {

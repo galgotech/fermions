@@ -39,7 +39,6 @@ export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, dat
         panel={panel}
         title={title}
         description={panel.description}
-        scopedVars={panel.scopedVars}
         links={getPanelLinksSupplier(panel)}
         error={error}
       />

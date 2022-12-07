@@ -103,10 +103,6 @@ export class GrafanaDatasource extends DataSourceWithBackend<GrafanaQuery> {
     );
   }
 
-  metricFindQuery(options: any) {
-    return Promise.resolve([]);
-  }
-
   testDatasource() {
     return Promise.resolve();
   }

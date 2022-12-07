@@ -61,24 +61,12 @@ import { GrafanaJavascriptAgentBackend } from './core/services/echo/backends/gra
 import { SentryEchoBackend } from './core/services/echo/backends/sentry/SentryBackend';
 import { KeybindingSrv } from './core/services/keybindingSrv';
 import { initDevFeatures } from './dev';
-import { getTimeSrv } from './features/dashboard/services/TimeSrv';
 import { PanelDataErrorView } from './features/panel/components/PanelDataErrorView';
 import { PanelRenderer } from './features/panel/components/PanelRenderer';
 import { DatasourceSrv } from './features/plugins/datasource_srv';
 import { preloadPlugins } from './features/plugins/pluginPreloader';
 import { QueryRunner } from './features/query/state/QueryRunner';
 import { initWindowRuntime } from './features/runtime/init';
-import { variableAdapters } from './features/variables/adapters';
-import { createAdHocVariableAdapter } from './features/variables/adhoc/adapter';
-import { createConstantVariableAdapter } from './features/variables/constant/adapter';
-import { createCustomVariableAdapter } from './features/variables/custom/adapter';
-import { createDataSourceVariableAdapter } from './features/variables/datasource/adapter';
-import { getVariablesUrlParams } from './features/variables/getAllVariableValuesForUrl';
-import { createIntervalVariableAdapter } from './features/variables/interval/adapter';
-import { setVariableQueryRunner, VariableQueryRunner } from './features/variables/query/VariableQueryRunner';
-import { createQueryVariableAdapter } from './features/variables/query/adapter';
-import { createSystemVariableAdapter } from './features/variables/system/adapter';
-import { createTextBoxVariableAdapter } from './features/variables/textbox/adapter';
 import { configureStore } from './store/configureStore';
 
 // add move to lodash for backward compatabilty with plugins
@@ -122,25 +110,12 @@ export class GrafanaApp {
 
       standardEditorsRegistry.setInit(getAllOptionEditors);
       standardFieldConfigEditorRegistry.setInit(getAllStandardFieldConfigs);
-      variableAdapters.setInit(() => [
-        createQueryVariableAdapter(),
-        createCustomVariableAdapter(),
-        createTextBoxVariableAdapter(),
-        createConstantVariableAdapter(),
-        createDataSourceVariableAdapter(),
-        createIntervalVariableAdapter(),
-        createAdHocVariableAdapter(),
-        createSystemVariableAdapter(),
-      ]);
       monacoLanguageRegistry.setInit(getDefaultMonacoLanguages);
 
       setQueryRunnerFactory(() => new QueryRunner());
-      setVariableQueryRunner(new VariableQueryRunner());
 
       locationUtil.initialize({
         config,
-        getTimeRangeForUrl: getTimeSrv().timeRangeForUrl,
-        getVariablesUrlParams: getVariablesUrlParams,
       });
 
       // intercept anchor clicks and forward it to custom history instead of relying on browser's history

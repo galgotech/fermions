@@ -29,7 +29,6 @@ import { Configuration } from 'app/features/dashboard/components/ShareModal/Shar
 import { Description } from 'app/features/dashboard/components/ShareModal/SharePublicDashboard/Description';
 import {
   Acknowledgements,
-  dashboardHasTemplateVariables,
   generatePublicDashboardUrl,
   getUnsupportedDashboardDatasources,
   publicDashboardPersisted,
@@ -51,7 +50,6 @@ export const SharePublicDashboard = (props: Props) => {
   const { showModal, hideModal } = useContext(ModalsContext);
   const isDesktop = useIsDesktop();
 
-  const dashboardVariables = props.dashboard.getVariables();
   const selectors = e2eSelectors.pages.ShareDashboardModal.PublicDashboard;
   const { hasPublicDashboard } = props.dashboard.meta;
 
@@ -177,15 +175,7 @@ export const SharePublicDashboard = (props: Props) => {
             </div>
           </Alert>
         ) : null}
-        {dashboardHasTemplateVariables(dashboardVariables) && !publicDashboardPersisted(publicDashboard) ? (
-          <Alert
-            severity="warning"
-            title="dashboard cannot be public"
-            data-testid={selectors.TemplateVariablesWarningAlert}
-          >
-            This dashboard cannot be made public because it has template variables
-          </Alert>
-        ) : (
+        (
           <>
             <Description />
             <hr />
@@ -231,14 +221,7 @@ export const SharePublicDashboard = (props: Props) => {
                   title="Please save your dashboard changes before updating the public configuration"
                   severity="warning"
                 />
-              ) : (
-                dashboardHasTemplateVariables(dashboardVariables) && (
-                  <Alert
-                    title="This public dashboard may not work since it uses template variables"
-                    severity="warning"
-                  />
-                )
-              )
+              ) : null
             ) : (
               <Alert title="You don't have permissions to create or update a public dashboard" severity="warning" />
             )}
@@ -267,7 +250,7 @@ export const SharePublicDashboard = (props: Props) => {
               {(isSaveLoading || isFetching) && <Spinner />}
             </HorizontalGroup>
           </>
-        )}
+        )
       </div>
     </>
   );

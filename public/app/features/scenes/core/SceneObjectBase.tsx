@@ -5,8 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { BusEvent, BusEventHandler, BusEventType, EventBusSrv } from '@grafana/data';
 import { useForceUpdate } from '@grafana/ui';
 
-import { SceneVariableDependencyConfigLike } from '../variables/types';
-
 import { SceneComponentWrapper } from './SceneComponentWrapper';
 import { SceneObjectStateChangedEvent } from './events';
 import { SceneObject, SceneComponent, SceneObjectState, SceneObjectUrlSyncHandler } from './types';
@@ -25,7 +23,6 @@ export abstract class SceneObjectBase<TState extends SceneObjectState = SceneObj
   protected _parent?: SceneObject;
   protected _subs = new Subscription();
 
-  protected _variableDependency: SceneVariableDependencyConfigLike | undefined;
   protected _urlSync: SceneObjectUrlSyncHandler<TState> | undefined;
 
   public constructor(state: TState) {
@@ -51,11 +48,6 @@ export abstract class SceneObjectBase<TState extends SceneObjectState = SceneObj
   /** Returns the parent, undefined for root object */
   public get parent(): SceneObject | undefined {
     return this._parent;
-  }
-
-  /** Returns variable dependency config */
-  public get variableDependency(): SceneVariableDependencyConfigLike | undefined {
-    return this._variableDependency;
   }
 
   /** Returns url sync config */
@@ -140,14 +132,10 @@ export abstract class SceneObjectBase<TState extends SceneObjectState = SceneObj
   public activate() {
     this._isActive = true;
 
-    const { $data, $variables } = this.state;
+    const { $data } = this.state;
 
     if ($data && !$data.isActive) {
       $data.activate();
-    }
-
-    if ($variables && !$variables.isActive) {
-      $variables.activate();
     }
   }
 
@@ -157,14 +145,10 @@ export abstract class SceneObjectBase<TState extends SceneObjectState = SceneObj
   public deactivate(): void {
     this._isActive = false;
 
-    const { $data, $variables } = this.state;
+    const { $data } = this.state;
 
     if ($data && $data.isActive) {
       $data.deactivate();
-    }
-
-    if ($variables && $variables.isActive) {
-      $variables.deactivate();
     }
 
     // Clear subscriptions and listeners

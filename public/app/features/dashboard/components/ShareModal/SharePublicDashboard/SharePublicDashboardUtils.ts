@@ -1,5 +1,4 @@
 import { getConfig } from 'app/core/config';
-import { VariableModel } from 'app/features/variables/types';
 import { DashboardDataDTO, DashboardMeta } from 'app/types/dashboard';
 
 import { PanelModel } from '../../../state';
@@ -24,11 +23,6 @@ export interface Acknowledgements {
   datasources: boolean;
   usage: boolean;
 }
-
-// Instance methods
-export const dashboardHasTemplateVariables = (variables: VariableModel[]): boolean => {
-  return variables.length > 0;
-};
 
 export const publicDashboardPersisted = (publicDashboard?: PublicDashboard): boolean => {
   return publicDashboard?.uid !== '' && publicDashboard?.uid !== undefined;

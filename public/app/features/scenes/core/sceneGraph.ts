@@ -1,27 +1,8 @@
-import { LoadingState, ScopedVars } from '@grafana/data';
-
-import { CustomFormatterFn, sceneInterpolator } from '../variables/interpolation/sceneInterpolator';
-import { SceneVariableSet } from '../variables/sets/SceneVariableSet';
-import { SceneVariables } from '../variables/types';
+import { LoadingState } from '@grafana/data';
 
 import { SceneDataNode } from './SceneDataNode';
 import { SceneTimeRange as SceneTimeRangeImpl } from './SceneTimeRange';
 import { SceneDataState, SceneEditor, SceneLayoutState, SceneObject, SceneTimeRangeLike } from './types';
-
-/**
- * Get the closest node with variables
- */
-export function getVariables(sceneObject: SceneObject): SceneVariables {
-  if (sceneObject.state.$variables) {
-    return sceneObject.state.$variables;
-  }
-
-  if (sceneObject.parent) {
-    return getVariables(sceneObject.parent);
-  }
-
-  return EmptyVariableSet;
-}
 
 /**
  * Will walk up the scene object graph to the closest $data scene object
@@ -86,25 +67,6 @@ export function getLayout(scene: SceneObject): SceneObject<SceneLayoutState> {
   throw new Error('No layout found in scene tree');
 }
 
-/**
- * Interpolates the given string using the current scene object as context.   *
- */
-export function interpolate(
-  sceneObject: SceneObject,
-  value: string | undefined | null,
-  scopedVars?: ScopedVars,
-  format?: string | CustomFormatterFn
-): string {
-  // Skip interpolation if there are no variable dependencies
-  if (!value || !sceneObject.variableDependency || sceneObject.variableDependency.getNames().size === 0) {
-    return value ?? '';
-  }
-
-  return sceneInterpolator(sceneObject, value, scopedVars, format);
-}
-
-export const EmptyVariableSet = new SceneVariableSet({ variables: [] });
-
 export const EmptyDataNode = new SceneDataNode({
   data: {
     state: LoadingState.Done,
@@ -115,10 +77,8 @@ export const EmptyDataNode = new SceneDataNode({
 export const DefaultTimeRange = new SceneTimeRangeImpl();
 
 export const sceneGraph = {
-  getVariables,
   getData,
   getTimeRange,
   getSceneEditor,
   getLayout,
-  interpolate,
 };

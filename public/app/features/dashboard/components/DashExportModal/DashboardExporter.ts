@@ -8,8 +8,6 @@ import { getLibraryPanel } from 'app/features/library-panels/state/api';
 
 import { isPanelModelLibraryPanel } from '../../../library-panels/guard';
 import { LibraryElementKind } from '../../../library-panels/types';
-import { isConstant, isQuery } from '../../../variables/guard';
-import { VariableOption, VariableRefresh } from '../../../variables/types';
 import { DashboardModel } from '../../state/DashboardModel';
 import { GridPos } from '../../state/PanelModel';
 
@@ -70,27 +68,13 @@ export interface LibraryElementExport {
 
 export class DashboardExporter {
   async makeExportable(dashboard: DashboardModel) {
-    // clean up repeated rows and panels,
-    // this is done on the live real dashboard instance, not on a clone
-    // so we need to undo this
-    // this is pretty hacky and needs to be changed
-    dashboard.cleanUpRepeats();
-
     const saveModel = dashboard.getSaveModelClone();
     saveModel.id = null;
-
-    // undo repeat cleanup
-    dashboard.processRepeats();
 
     const inputs: Input[] = [];
     const requires: Requires = {};
     const datasources: DataSources = {};
-    const variableLookup: { [key: string]: any } = {};
     const libraryPanels: Map<string, LibraryElementExport> = new Map<string, LibraryElementExport>();
-
-    for (const variable of saveModel.getVariables()) {
-      variableLookup[variable.name] = variable;
-    }
 
     const templateizeDatasourceUsage = (obj: any, fallback?: DataSourceRef) => {
       if (obj.datasource === undefined) {
@@ -100,17 +84,6 @@ export class DashboardExporter {
 
       let datasource: string = obj.datasource;
       let datasourceVariable: any = null;
-
-      const datasourceUid: string = (datasource as any)?.uid;
-      // ignore data source properties that contain a variable
-      if (datasourceUid) {
-        if (datasourceUid.indexOf('$') === 0) {
-          datasourceVariable = variableLookup[datasourceUid.substring(1)];
-          if (datasourceVariable && datasourceVariable.current) {
-            datasource = datasourceVariable.current.value;
-          }
-        }
-      }
 
       return getDataSourceSrv()
         .get(datasource)
@@ -190,21 +163,10 @@ export class DashboardExporter {
         await processPanel(panel);
 
         // handle collapsed rows
-        if (panel.collapsed !== undefined && panel.collapsed === true && panel.panels) {
+        if (panel.panels) {
           for (const rowPanel of panel.panels) {
             await processPanel(rowPanel);
           }
-        }
-      }
-
-      // templatize template vars
-      for (const variable of saveModel.getVariables()) {
-        if (isQuery(variable)) {
-          await templateizeDatasourceUsage(variable);
-          variable.options = [];
-          variable.current = {} as unknown as VariableOption;
-          variable.refresh =
-            variable.refresh !== VariableRefresh.never ? variable.refresh : VariableRefresh.onDashboardLoad;
         }
       }
 
@@ -224,32 +186,10 @@ export class DashboardExporter {
       // so all data sources, variables and targets have been templateized when we process library panels
       for (const panel of dashboard.panels) {
         await processLibraryPanels(panel);
-        if (panel.collapsed !== undefined && panel.collapsed === true && panel.panels) {
+        if (panel.panels) {
           for (const rowPanel of panel.panels) {
             await processLibraryPanels(rowPanel);
           }
-        }
-      }
-
-      // templatize constants
-      for (const variable of saveModel.getVariables()) {
-        if (isConstant(variable)) {
-          const refName = 'VAR_' + variable.name.replace(' ', '_').toUpperCase();
-          inputs.push({
-            name: refName,
-            type: 'constant',
-            label: variable.label || variable.name,
-            value: variable.query,
-            description: '',
-          });
-          // update current and option
-          variable.query = '${' + refName + '}';
-          variable.current = {
-            value: variable.query,
-            text: variable.query,
-            selected: false,
-          };
-          variable.options = [variable.current];
         }
       }
 

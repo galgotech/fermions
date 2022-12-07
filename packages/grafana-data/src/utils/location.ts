@@ -105,22 +105,16 @@ const updateSearchParams = (init: string, partial: string) => {
 
 interface LocationUtilDependencies {
   config: GrafanaConfig;
-  getTimeRangeForUrl: () => RawTimeRange;
-  getVariablesUrlParams: (scopedVars?: ScopedVars) => UrlQueryMap;
 }
 
 export const locationUtil = {
   /**
    *
    * @param getConfig
-   * @param getAllVariableValuesForUrl
-   * @param getTimeRangeForUrl
    * @internal
    */
   initialize: (dependencies: LocationUtilDependencies) => {
     grafanaConfig = dependencies.config;
-    getTimeRangeUrlParams = dependencies.getTimeRangeForUrl;
-    getVariablesUrlParams = dependencies.getVariablesUrlParams;
   },
   stripBaseFromUrl,
   assureBaseUrl,

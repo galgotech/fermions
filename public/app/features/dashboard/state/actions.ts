@@ -8,7 +8,6 @@ import { updateTimeZoneForSession, updateWeekStartForSession } from 'app/feature
 import { DashboardAcl, DashboardAclUpdateDTO, NewDashboardAclItem, PermissionLevel, ThunkResult } from 'app/types';
 
 import { loadPluginDashboards } from '../../plugins/admin/state/actions';
-import { cancelVariables } from '../../variables/state/actions';
 import { getTimeSrv } from '../services/TimeSrv';
 
 import { cleanUpDashboard, loadDashboardPermissions } from './reducers';
@@ -120,7 +119,6 @@ export const cleanUpDashboardAndVariables = (): ThunkResult<void> => (dispatch, 
 
   if (dashboard) {
     dashboard.destroy();
-    dispatch(cancelVariables(dashboard.uid));
   }
 
   getTimeSrv().stopAutoRefresh();
@@ -134,12 +132,10 @@ export const updateTimeZoneDashboard =
   (timeZone: TimeZone): ThunkResult<void> =>
   (dispatch) => {
     dispatch(updateTimeZoneForSession(timeZone));
-    getTimeSrv().refreshTimeModel();
   };
 
 export const updateWeekStartDashboard =
   (weekStart: string): ThunkResult<void> =>
   (dispatch) => {
     dispatch(updateWeekStartForSession(weekStart));
-    getTimeSrv().refreshTimeModel();
   };

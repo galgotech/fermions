@@ -17,7 +17,6 @@ import userReducers from 'app/features/profile/state/reducers';
 import serviceAccountsReducer from 'app/features/serviceaccounts/state/reducers';
 import teamsReducers from 'app/features/teams/state/reducers';
 import usersReducers from 'app/features/users/state/reducers';
-import templatingReducers from 'app/features/variables/state/keyedVariablesReducer';
 
 import { cleanUpAction } from '../actions/cleanUp';
 
@@ -37,7 +36,6 @@ const rootReducers = {
   ...importDashboardReducers,
   ...panelEditorReducers,
   ...panelsReducers,
-  ...templatingReducers,
   plugins: pluginsReducer,
   [publicDashboardApi.reducerPath]: publicDashboardApi.reducer,
 };

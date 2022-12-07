@@ -16,7 +16,6 @@ import { config } from 'app/core/config';
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { getDashboardSrv } from '../../../features/dashboard/services/DashboardSrv';
-import { applyFilterFromTable } from '../../../features/variables/adhoc/actions';
 import { dispatch } from '../../../store/store';
 
 import { PanelOptions, Data } from './models.gen';
@@ -91,7 +90,7 @@ export class TablePanel extends Component<Props> {
       return;
     }
 
-    dispatch(applyFilterFromTable({ datasource: datasourceRef, key, operator, value }));
+    dispatch({ datasource: datasourceRef, key, operator, value });
   };
 
   renderTable(frame: DataFrame, width: number, height: number, subData?: DataFrame[]) {

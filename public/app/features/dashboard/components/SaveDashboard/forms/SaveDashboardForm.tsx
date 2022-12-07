@@ -31,8 +31,6 @@ export const SaveDashboardForm = ({
   onOptionsChange,
 }: SaveProps) => {
   const hasTimeChanged = useMemo(() => dashboard.hasTimeChanged(), [dashboard]);
-  const hasVariableChanged = useMemo(() => dashboard.hasVariableValuesChanged(), [dashboard]);
-
   const [saving, setSaving] = useState(false);
 
   return (
@@ -45,9 +43,6 @@ export const SaveDashboardForm = ({
         options = { ...options, message: data.message };
         const result = await onSubmit(saveModel.clone, options, dashboard);
         if (result.status === 'success') {
-          if (options.saveVariables) {
-            dashboard.resetOriginalVariables();
-          }
           if (options.saveTimerange) {
             dashboard.resetOriginalTime();
           }
@@ -72,19 +67,6 @@ export const SaveDashboardForm = ({
                 }
                 label="Save current time range as dashboard default"
                 aria-label={selectors.pages.SaveDashboardModal.saveTimerange}
-              />
-            )}
-            {hasVariableChanged && (
-              <Checkbox
-                checked={!!options.saveVariables}
-                onChange={() =>
-                  onOptionsChange({
-                    ...options,
-                    saveVariables: !options.saveVariables,
-                  })
-                }
-                label="Save current variable values as dashboard default"
-                aria-label={selectors.pages.SaveDashboardModal.saveVariables}
               />
             )}
             <TextArea

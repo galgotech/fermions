@@ -9,7 +9,6 @@ import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT } from 'app/core
 import { DashboardPanelsChangedEvent } from 'app/types/events';
 
 import { AddPanelWidget } from '../components/AddPanelWidget';
-import { DashboardRow } from '../components/DashboardRow';
 import { DashboardModel, PanelModel } from '../state';
 import { GridPos } from '../state/PanelModel';
 
@@ -73,13 +72,6 @@ export class DashboardGrid extends PureComponent<Props, State> {
         w: panel.gridPos.w,
         h: panel.gridPos.h,
       };
-
-      if (panel.type === 'row') {
-        panelPos.w = GRID_COLUMN_COUNT;
-        panelPos.h = 1;
-        panelPos.isResizable = false;
-        panelPos.isDraggable = panel.collapsed;
-      }
 
       layout.push(panelPos);
     }
@@ -177,10 +169,6 @@ export class DashboardGrid extends PureComponent<Props, State> {
   }
 
   renderPanel(panel: PanelModel, width: number, height: number) {
-    if (panel.type === 'row') {
-      return <DashboardRow key={panel.key} panel={panel} dashboard={this.props.dashboard} />;
-    }
-
     if (panel.type === 'add-panel') {
       return <AddPanelWidget key={panel.key} panel={panel} dashboard={this.props.dashboard} />;
     }

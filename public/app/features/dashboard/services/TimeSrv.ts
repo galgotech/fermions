@@ -249,7 +249,6 @@ export class TimeSrv {
   }
 
   refreshTimeModel() {
-    this.timeModel?.timeRangeUpdated(this.timeRange());
   }
 
   private startNextRefreshTimer(afterMs: number) {

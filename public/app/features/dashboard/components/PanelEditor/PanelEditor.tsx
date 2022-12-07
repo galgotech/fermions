@@ -25,7 +25,6 @@ import { AppChromeUpdate } from 'app/core/components/AppChrome/AppChromeUpdate';
 import { Page } from 'app/core/components/Page/Page';
 import { SplitPaneWrapper } from 'app/core/components/SplitPaneWrapper/SplitPaneWrapper';
 import { appEvents } from 'app/core/core';
-import { SubMenuItems } from 'app/features/dashboard/components/SubMenu/SubMenuItems';
 import { SaveLibraryPanelModal } from 'app/features/library-panels/components/SaveLibraryPanelModal/SaveLibraryPanelModal';
 import { PanelModelWithLibraryPanel } from 'app/features/library-panels/types';
 import { getPanelStateForModel } from 'app/features/panel/state/selectors';
@@ -36,7 +35,6 @@ import { PanelOptionsChangedEvent, ShowModalReactEvent } from 'app/types/events'
 import { notifyApp } from '../../../../core/actions';
 import { UnlinkModal } from '../../../library-panels/components/UnlinkModal/UnlinkModal';
 import { isPanelModelLibraryPanel } from '../../../library-panels/guard';
-import { getVariablesByKey } from '../../../variables/state/selectors';
 import { DashboardPanel } from '../../dashgrid/DashboardPanel';
 import { DashboardModel, PanelModel } from '../../state';
 import { SaveDashboardDrawer } from '../SaveDashboard/SaveDashboardDrawer';
@@ -71,7 +69,6 @@ const mapStateToProps = (state: StoreState, ownProps: OwnProps) => {
     initDone: state.panelEditor.initDone,
     uiState: state.panelEditor.ui,
     tableViewEnabled: state.panelEditor.tableViewEnabled,
-    variables: getVariablesByKey(ownProps.dashboard.uid, state),
   };
 };
 
@@ -268,27 +265,12 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
     ];
   }
 
-  renderTemplateVariables(styles: EditorStyles) {
-    const { variables } = this.props;
-
-    if (!variables.length) {
-      return null;
-    }
-
-    return (
-      <div className={styles.variablesWrapper}>
-        <SubMenuItems variables={variables} />
-      </div>
-    );
-  }
-
   renderPanelToolbar(styles: EditorStyles) {
-    const { uiState, variables, panel, tableViewEnabled } = this.props;
+    const { uiState, panel, tableViewEnabled } = this.props;
 
     return (
       <div className={styles.panelToolbar}>
-        <HorizontalGroup justify={variables.length > 0 ? 'space-between' : 'flex-end'} align="flex-start">
-          {this.renderTemplateVariables(styles)}
+        <HorizontalGroup justify={'flex-end'} align="flex-start">
           <Stack gap={1}>
             <InlineSwitch
               label="Table view"

@@ -2,7 +2,6 @@ import angular from 'angular';
 import { isArray, isNull, isObject, isUndefined } from 'lodash';
 
 import { dateTime } from '@grafana/data';
-import { getTemplateSrv, TemplateSrv } from 'app/features/templating/template_srv';
 
 import coreModule from '../core_module';
 
@@ -41,21 +40,4 @@ coreModule.filter('moment', () => {
   };
 });
 
-function interpolateTemplateVars(templateSrv: TemplateSrv = getTemplateSrv()) {
-  const filterFunc: any = (text: string, scope: any) => {
-    let scopedVars;
-    if (scope.ctrl) {
-      scopedVars = (scope.ctrl.panel || scope.ctrl.row).scopedVars;
-    } else {
-      scopedVars = scope.row.scopedVars;
-    }
-
-    return templateSrv.replaceWithText(text, scopedVars);
-  };
-
-  filterFunc.$stateful = true;
-  return filterFunc;
-}
-
-coreModule.filter('interpolateTemplateVars', interpolateTemplateVars);
 export default {};

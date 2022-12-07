@@ -23,8 +23,6 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
   const isDraggable = layout.state.isDraggable ? state.isDraggable : false;
   const dragHandle = <SceneDragHandle layoutKey={layout.state.key!} />;
 
-  const titleInterpolated = sceneGraph.interpolate(model, title);
-
   // Not sure we need to subscribe to this state
   const timeZone = sceneGraph.getTimeRange(model).state.timeZone;
 
@@ -52,7 +50,7 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
   return (
     <div ref={ref as RefCallback<HTMLDivElement>} style={{ position: 'absolute', width: '100%', height: '100%' }}>
       <PanelChrome
-        title={titleInterpolated}
+        title={title}
         width={width}
         height={height}
         leftItems={isDraggable ? [dragHandle] : undefined}

@@ -18,8 +18,6 @@ import { getPageNavFromSlug, getRootContentNavModel } from 'app/features/storage
 import { DashboardRoutes, StoreState } from 'app/types';
 import { PanelEditEnteredEvent, PanelEditExitedEvent } from 'app/types/events';
 
-import { cancelVariables, templateVarsChangedInUrl } from '../../variables/state/actions';
-import { findTemplateVarChanges } from '../../variables/utils';
 import { DashNav } from '../components/DashNav';
 import { DashboardFailed } from '../components/DashboardLoading/DashboardFailed';
 import { DashboardLoading } from '../components/DashboardLoading/DashboardLoading';
@@ -28,7 +26,6 @@ import { DashboardSettings } from '../components/DashboardSettings';
 import { PanelInspector } from '../components/Inspector/PanelInspector';
 import { PanelEditor } from '../components/PanelEditor/PanelEditor';
 import { PublicDashboardFooter } from '../components/PublicDashboardFooter/PublicDashboardsFooter';
-import { SubMenu } from '../components/SubMenu/SubMenu';
 import { DashboardGrid } from '../dashgrid/DashboardGrid';
 import { getTimeSrv } from '../services/TimeSrv';
 import { cleanUpDashboardAndVariables } from '../state/actions';
@@ -66,8 +63,6 @@ const mapDispatchToProps = {
   initDashboard,
   cleanUpDashboardAndVariables,
   notifyApp,
-  cancelVariables,
-  templateVarsChangedInUrl,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -146,7 +141,7 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const { dashboard, match, templateVarsChangedInUrl } = this.props;
+    const { dashboard, match } = this.props;
     const routeReloadCounter = (this.props.history.location.state as any)?.routeReloadCounter;
 
     if (!dashboard) {
@@ -168,12 +163,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
 
       if (!prevUrlParams?.refresh && urlParams?.refresh) {
         getTimeSrv().setAutoRefresh(urlParams.refresh);
-      }
-
-      const templateVarChanges = findTemplateVarChanges(this.props.queryParams, prevProps.queryParams);
-
-      if (templateVarChanges) {
-        templateVarsChangedInUrl(dashboard.uid, templateVarChanges);
       }
     }
 
@@ -330,7 +319,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
     }
 
     const inspectPanel = this.getInspectPanel();
-    const showSubMenu = !editPanel && !this.props.queryParams.editview;
 
     const toolbar = !queryParams.editview && (
       <header data-testid={selectors.pages.Dashboard.DashNav.navV2}>
@@ -364,11 +352,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
           <DashboardPrompt dashboard={dashboard} />
 
           {initError && <DashboardFailed />}
-          {showSubMenu && (
-            <section aria-label={selectors.pages.Dashboard.SubMenu.submenu}>
-              <SubMenu dashboard={dashboard} links={dashboard.links} />
-            </section>
-          )}
           <DashboardGrid dashboard={dashboard} viewPanel={viewPanel} editPanel={editPanel} />
           {inspectPanel && <PanelInspector dashboard={dashboard} panel={inspectPanel} />}
         </Page>

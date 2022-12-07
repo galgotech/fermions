@@ -33,10 +33,6 @@ import {
 import getFactors from 'app/core/utils/factors';
 import kbn from 'app/core/utils/kbn';
 import { DatasourceSrv } from 'app/features/plugins/datasource_srv';
-import { isConstant, isMulti } from 'app/features/variables/guard';
-import { alignCurrentWithMulti } from 'app/features/variables/shared/multiOptions';
-
-import { ConstantVariableModel, TextBoxVariableModel, VariableHide } from '../../variables/types';
 
 import { DashboardModel } from './DashboardModel';
 import { PanelModel } from './PanelModel';
@@ -277,20 +273,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 12) {
-      // update template variables
-      each(this.dashboard.getVariables(), (templateVariable: any) => {
-        if (templateVariable.refresh) {
-          templateVariable.refresh = 1;
-        }
-        if (!templateVariable.refresh) {
-          templateVariable.refresh = 0;
-        }
-        if (templateVariable.hideVariable) {
-          templateVariable.hide = 2;
-        } else if (templateVariable.hideLabel) {
-          templateVariable.hide = 1;
-        }
-      });
     }
 
     if (oldVersion < 12) {
@@ -553,13 +535,7 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 23) {
-      for (const variable of this.dashboard.templating.list) {
-        if (!isMulti(variable)) {
-          continue;
-        }
-        const { multi, current } = variable;
-        variable.current = alignCurrentWithMulti(current, multi);
-      }
+
     }
 
     if (oldVersion < 25) {
@@ -580,27 +556,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 27) {
-      this.dashboard.templating.list = this.dashboard.templating.list.map((variable) => {
-        if (!isConstant(variable)) {
-          return variable;
-        }
-
-        const newVariable: ConstantVariableModel | TextBoxVariableModel = {
-          ...variable,
-        };
-
-        newVariable.current = { selected: true, text: newVariable.query ?? '', value: newVariable.query ?? '' };
-        newVariable.options = [newVariable.current];
-
-        if (newVariable.hide === VariableHide.dontHide || newVariable.hide === VariableHide.hideLabel) {
-          return {
-            ...newVariable,
-            type: 'textbox',
-          };
-        }
-
-        return newVariable;
-      });
     }
 
     if (oldVersion < 28) {
@@ -788,8 +743,6 @@ export class DashboardMigrator {
         rowPanel.id = nextRowId;
         rowPanel.type = 'row';
         rowPanel.title = row.title;
-        rowPanel.collapsed = row.collapse;
-        rowPanel.repeat = row.repeat;
         rowPanel.panels = [];
         rowPanel.gridPos = {
           x: 0,

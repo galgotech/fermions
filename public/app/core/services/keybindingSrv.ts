@@ -199,7 +199,6 @@ export class KeybindingSrv {
     this.bind('mod+o', () => {
       dashboard.graphTooltip = (dashboard.graphTooltip + 1) % 3;
       dashboard.events.publish(new LegacyGraphHoverClearEvent());
-      dashboard.startRefresh();
     });
 
     this.bind('mod+s', () => {
@@ -282,22 +281,8 @@ export class KeybindingSrv {
       dashboard.toggleLegendsForAll();
     });
 
-    // collapse all rows
-    this.bind('d shift+c', () => {
-      dashboard.collapseRows();
-    });
-
-    // expand all rows
-    this.bind('d shift+e', () => {
-      dashboard.expandRows();
-    });
-
     this.bind('d n', () => {
       this.locationService.push('/dashboard/new');
-    });
-
-    this.bind('d r', () => {
-      dashboard.startRefresh();
     });
 
     this.bind('d s', () => {

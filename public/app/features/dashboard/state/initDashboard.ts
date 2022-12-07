@@ -10,7 +10,6 @@ import { dashboardLoaderSrv } from 'app/features/dashboard/services/DashboardLoa
 import { DashboardSrv, getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { getTimeSrv, TimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { dashboardWatcher } from 'app/features/live/dashboard/dashboardWatcher';
-import { toStateKey } from 'app/features/variables/utils';
 import {
   DashboardDTO,
   DashboardInitPhase,
@@ -22,8 +21,6 @@ import {
 } from 'app/types';
 
 import { createDashboardQueryRunner } from '../../query/state/DashboardQueryRunner/DashboardQueryRunner';
-import { initVariablesTransaction } from '../../variables/state/actions';
-import { getIfExistsLastKey } from '../../variables/state/selectors';
 
 import { DashboardModel } from './DashboardModel';
 import { PanelModel } from './PanelModel';
@@ -192,21 +189,10 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
 
     timeSrv.init(dashboard);
 
-    const dashboardUid = toStateKey(args.urlUid ?? dashboard.uid);
-    // template values service needs to initialize completely before the rest of the dashboard can load
-    await dispatch(initVariablesTransaction(dashboardUid, dashboard));
-
     // DashboardQueryRunner needs to run after all variables have been resolved so that any annotation query including a variable
     // will be correctly resolved
     const runner = createDashboardQueryRunner({ dashboard, timeSrv });
     runner.run({ dashboard, range: timeSrv.timeRange() });
-
-    if (getIfExistsLastKey(getState()) !== dashboardUid) {
-      // if a previous dashboard has slow running variable queries the batch uid will be the new one
-      // but the args.urlUid will be the same as before initVariablesTransaction was called so then we can't continue initializing
-      // the previous dashboard.
-      return;
-    }
 
     // If dashboard is in a different init phase it means it cancelled during service init
     if (getState().dashboard.initPhase !== DashboardInitPhase.Services) {
@@ -214,8 +200,6 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
     }
 
     try {
-      dashboard.processRepeats();
-
       // handle auto fix experimental feature
       if (queryParams.autofitpanels) {
         dashboard.autoFitPanels(window.innerHeight);

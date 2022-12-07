@@ -75,22 +75,9 @@ export class DashboardLoader extends StateManagerBase<DashboardLoaderState> {
     for (const panel of dashboard.panels) {
       if (panel.type === 'row') {
         if (!currentRow) {
-          if (Boolean(panel.collapsed)) {
-            // collapsed rows contain their panels within the row model
-            panels.push(
-              new SceneGridRow({
-                title: panel.title,
-                isCollapsed: true,
-                size: {
-                  y: panel.gridPos.y,
-                },
-                children: panel.panels ? panel.panels.map(createVizPanelFromPanelModel) : [],
-              })
-            );
-          } else {
-            // indicate new row to be processed
-            currentRow = panel;
-          }
+          // indicate new row to be processed
+          currentRow = panel;
+          
         } else {
           // when a row has been processed, and we hit a next one for processing
           if (currentRow.id !== panel.id) {

@@ -1,5 +1,5 @@
 import * as H from 'history';
-import { each, find } from 'lodash';
+import { find } from 'lodash';
 import React, { useContext, useEffect, useState } from 'react';
 import { Prompt } from 'react-router-dom';
 
@@ -168,11 +168,6 @@ export function ignoreChanges(current: DashboardModel, original: object | null) 
 function cleanDashboardFromIgnoredChanges(dashData: unknown) {
   // need to new up the domain model class to get access to expand / collapse row logic
   const model = new DashboardModel(dashData);
-
-  // Expand all rows before making comparison. This is required because row expand / collapse
-  // change order of panel array and panel positions.
-  model.expandRows();
-
   const dash = model.getSaveModelClone();
 
   // ignore time and refresh
@@ -180,15 +175,7 @@ function cleanDashboardFromIgnoredChanges(dashData: unknown) {
   dash.refresh = 0;
   dash.schemaVersion = 0;
   dash.timezone = 0;
-
   dash.panels = [];
-
-  // ignore template variable values
-  each(dash.getVariables(), (variable: any) => {
-    variable.current = null;
-    variable.options = null;
-    variable.filters = null;
-  });
 
   return dash;
 }

@@ -1,4 +1,4 @@
-import { TimeRange, TimeZone } from '@grafana/data';
+import { TimeZone } from '@grafana/data';
 
 export interface TimeModel {
   time: any;
@@ -6,5 +6,4 @@ export interface TimeModel {
   refresh: any;
   timepicker: any;
   getTimezone(): TimeZone;
-  timeRangeUpdated(timeRange: TimeRange): void;
 }

@@ -12,7 +12,6 @@ import {
   GrafanaTheme2,
 } from '@grafana/data';
 import { fieldMatchersUI, useStyles2, ValuePicker } from '@grafana/ui';
-import { getDataLinksVariableSuggestions } from 'app/features/panel/panellinks/link_srv';
 
 import { DynamicConfigValueEditor } from './DynamicConfigValueEditor';
 import { OptionsPaneCategoryDescriptor } from './OptionsPaneCategoryDescriptor';
@@ -62,7 +61,7 @@ export function getFieldOverrideCategories(
 
   const context = {
     data,
-    getSuggestions: (scope?: VariableSuggestionsScope) => getDataLinksVariableSuggestions(data, scope),
+    getSuggestions: (scope?: VariableSuggestionsScope) => [],
     isOverride: true,
   };
 

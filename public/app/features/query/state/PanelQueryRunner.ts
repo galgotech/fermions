@@ -16,9 +16,6 @@ import {
   DataSourceRef,
   LoadingState,
   PanelData,
-  ScopedVars,
-  TimeRange,
-  TimeZone,
 } from '@grafana/data';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 import { StreamingDataFrame } from 'app/features/live/data/StreamingDataFrame';
@@ -41,12 +38,7 @@ export interface QueryRunnerOptions<
   dashboardId?: number;
   dashboardUID?: string;
   publicDashboardAccessToken?: string;
-  timezone: TimeZone;
-  timeRange: TimeRange;
   timeInfo?: string; // String description of time range for display
-  maxDataPoints: number;
-  minInterval: string | undefined | null;
-  scopedVars?: ScopedVars;
   cacheTimeout?: string | null;
 }
 
@@ -153,7 +145,6 @@ export class PanelQueryRunner {
       dashboardId,
       dashboardUID,
       publicDashboardAccessToken,
-      timeRange,
       timeInfo,
       cacheTimeout,
     } = options;
@@ -175,9 +166,6 @@ export class PanelQueryRunner {
       cacheTimeout,
       startTime: Date.now(),
     };
-
-    // Add deprecated property
-    (request as any).rangeRaw = timeRange.raw;
 
     try {
       const ds = await getDataSource(datasource, publicDashboardAccessToken);

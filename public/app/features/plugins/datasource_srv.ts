@@ -4,14 +4,11 @@ import {
   DataSourceInstanceSettings,
   DataSourceRef,
   DataSourceSelectItem,
-  ScopedVars,
 } from '@grafana/data';
 import {
   GetDataSourceListFilters,
   DataSourceSrv as DataSourceService,
   getDataSourceSrv as getDataSourceService,
-  TemplateSrv,
-  getTemplateSrv,
   getLegacyAngularInjector,
   getBackendSrv,
 } from '@grafana/runtime';
@@ -33,7 +30,7 @@ export class DatasourceSrv implements DataSourceService {
   private settingsMapById: Record<string, DataSourceInstanceSettings> = {};
   private defaultName = ''; // actually UID
 
-  constructor(private templateSrv: TemplateSrv = getTemplateSrv()) {}
+  constructor() {}
 
   init(settingsMapByName: Record<string, DataSourceInstanceSettings>, defaultName: string) {
     this.datasources = {};
@@ -63,7 +60,6 @@ export class DatasourceSrv implements DataSourceService {
 
   getInstanceSettings(
     ref: string | null | undefined | DataSourceRef,
-    scopedVars?: ScopedVars
   ): DataSourceInstanceSettings | undefined {
     const isstring = typeof ref === 'string';
     let nameOrUid = isstring ? (ref as string) : ((ref as any)?.uid as string | undefined);
@@ -230,29 +226,6 @@ export class DatasourceSrv implements DataSourceService {
       }
       return true;
     });
-
-    if (filters.variables) {
-      for (const variable of this.templateSrv.getVariables()) {
-        if (variable.type !== 'datasource') {
-          continue;
-        }
-        let dsValue = variable.current.value === 'default' ? this.defaultName : variable.current.value;
-        if (Array.isArray(dsValue) && dsValue.length === 1) {
-          // Support for multi-value variables with only one selected datasource
-          dsValue = dsValue[0];
-        }
-        const dsSettings = !Array.isArray(dsValue) && this.settingsMapByName[dsValue];
-
-        if (dsSettings) {
-          const key = `$\{${variable.name}\}`;
-          base.push({
-            ...dsSettings,
-            name: key,
-            uid: key,
-          });
-        }
-      }
-    }
 
     const sorted = base.sort((a, b) => {
       if (a.name.toLowerCase() > b.name.toLowerCase()) {

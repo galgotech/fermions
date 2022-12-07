@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { renderMarkdown, LinkModelSupplier, ScopedVars } from '@grafana/data';
+import { renderMarkdown, LinkModelSupplier } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { locationService } from '@grafana/runtime';
 import { Tooltip, PopoverContent } from '@grafana/ui';
@@ -18,7 +18,6 @@ export interface Props {
   panel: PanelModel;
   title?: string;
   description?: string;
-  scopedVars?: ScopedVars;
   links?: LinkModelSupplier<PanelModel>;
   error?: string;
 }

@@ -1,6 +1,5 @@
 import { DataQuery } from '@grafana/data';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
-import { VariableModel } from 'app/features/variables/types';
 
 import { DashboardAcl } from './acl';
 
@@ -49,9 +48,6 @@ export interface DashboardMeta {
 export interface DashboardDataDTO {
   title: string;
   uid: string;
-  templating: {
-    list: VariableModel[];
-  };
   panels?: any[];
 }
 

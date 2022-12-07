@@ -13,7 +13,6 @@ import {
   NestedValueAccess,
   PanelOptionsEditorBuilder,
 } from '@grafana/data/src/utils/OptionsUIBuilders';
-import { getDataLinksVariableSuggestions } from 'app/features/panel/panellinks/link_srv';
 
 import { OptionsPaneCategoryDescriptor } from './OptionsPaneCategoryDescriptor';
 import { OptionsPaneItemDescriptor } from './OptionsPaneItemDescriptor';
@@ -42,7 +41,7 @@ export function getStandardEditorContext({
     data: dataSeries,
     options,
     eventBus,
-    getSuggestions: (scope?: VariableSuggestionsScope) => getDataLinksVariableSuggestions(dataSeries, scope),
+    getSuggestions: (scope?: VariableSuggestionsScope) => [],
     instanceState,
   };
 

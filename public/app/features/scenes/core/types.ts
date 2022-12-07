@@ -3,14 +3,11 @@ import { Observer, Subscription, Unsubscribable } from 'rxjs';
 
 import { BusEvent, BusEventHandler, BusEventType, PanelData, TimeRange, TimeZone } from '@grafana/data';
 
-import { SceneVariableDependencyConfigLike, SceneVariables } from '../variables/types';
-
 export interface SceneObjectStatePlain {
   key?: string;
   $timeRange?: SceneTimeRangeLike;
   $data?: SceneObject<SceneDataState>;
   $editor?: SceneEditor;
-  $variables?: SceneVariables;
 }
 
 export interface SceneLayoutChildSize {
@@ -59,9 +56,6 @@ export interface SceneObject<TState extends SceneObjectState = SceneObjectState>
 
   /** SceneObject parent */
   readonly parent?: SceneObject;
-
-  /** This abtractions declares what variables the scene object depends on and how to handle when they change value. **/
-  readonly variableDependency?: SceneVariableDependencyConfigLike;
 
   /** This abstraction declares URL sync dependencies of a scene object. **/
   readonly urlSync?: SceneObjectUrlSyncHandler<TState>;

@@ -33,7 +33,6 @@ interface Props extends SaveProps {
 export function SaveToStorageForm(props: Props) {
   const { dashboard, saveModel, onSubmit, onCancel, onSuccess, onOptionsChange, isNew, isCopy } = props;
   const hasTimeChanged = useMemo(() => dashboard.hasTimeChanged(), [dashboard]);
-  const hasVariableChanged = useMemo(() => dashboard.hasVariableValuesChanged(), [dashboard]);
   const [saving, setSaving] = useState(false);
   const [response, setResponse] = useState<WriteValueResponse>();
   const [path, setPath] = useState(dashboard.uid);
@@ -113,9 +112,6 @@ export function SaveToStorageForm(props: Props) {
 
         console.log('GOT', rsp);
         if (rsp.code === 200) {
-          if (options.saveVariables) {
-            dashboard.resetOriginalVariables();
-          }
           if (options.saveTimerange) {
             dashboard.resetOriginalTime();
           }
@@ -149,19 +145,6 @@ export function SaveToStorageForm(props: Props) {
                 }
                 label="Save current time range as dashboard default"
                 aria-label={selectors.pages.SaveDashboardModal.saveTimerange}
-              />
-            )}
-            {hasVariableChanged && (
-              <Checkbox
-                checked={!!options.saveVariables}
-                onChange={() =>
-                  onOptionsChange({
-                    ...options,
-                    saveVariables: !options.saveVariables,
-                  })
-                }
-                label="Save current variable values as dashboard default"
-                aria-label={selectors.pages.SaveDashboardModal.saveVariables}
               />
             )}
           </Stack>

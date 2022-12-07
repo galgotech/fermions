@@ -77,12 +77,6 @@ export function updateDuplicateLibraryPanels(
         panel.getQueryRunner().useLastResultFrom(modifiedPanel.getQueryRunner());
       }, 20);
     }
-
-    if (modifiedPanel.repeat) {
-      // We skip any repeated library panels so we need to update them by calling processRepeats
-      // But do this after the panel edit editor exit process has completed
-      setTimeout(() => dashboard.processRepeats(), 20);
-    }
   };
 }
 
@@ -94,11 +88,6 @@ export function skipPanelUpdate(modifiedPanel: PanelModel, panelToUpdate: PanelM
 
   // don't update the modifiedPanel twice
   if (panelToUpdate.id && panelToUpdate.id === modifiedPanel.id) {
-    return true;
-  }
-
-  // don't update library panels that are repeated
-  if (panelToUpdate.repeatPanelId) {
     return true;
   }
 

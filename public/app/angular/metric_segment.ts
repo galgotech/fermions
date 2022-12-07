@@ -1,12 +1,10 @@
 import $ from 'jquery';
 import { debounce, find, indexOf, map, escape, unescape } from 'lodash';
 
-import { TemplateSrv } from 'app/features/templating/template_srv';
-
 import coreModule from './core_module';
 
 /** @ngInject */
-export function metricSegment($compile: any, $sce: any, templateSrv: TemplateSrv) {
+export function metricSegment($compile: any, $sce: any) {
   const inputTemplate =
     '<input type="text" data-provide="typeahead" ' +
     ' class="gf-form-input input-medium"' +
@@ -48,7 +46,7 @@ export function metricSegment($compile: any, $sce: any, templateSrv: TemplateSrv
           const selected: any = find($scope.altSegments, { value: value });
           if (selected) {
             segment.value = selected.value;
-            segment.html = selected.html || $sce.trustAsHtml(templateSrv.highlightVariablesAsHtml(selected.value));
+            segment.html = selected.html || $sce.trustAsHtml(selected.value);
             segment.fake = false;
             segment.expandable = selected.expandable;
 
@@ -57,7 +55,7 @@ export function metricSegment($compile: any, $sce: any, templateSrv: TemplateSrv
             }
           } else if (segment.custom !== 'false') {
             segment.value = value;
-            segment.html = $sce.trustAsHtml(templateSrv.highlightVariablesAsHtml(value));
+            segment.html = $sce.trustAsHtml(value);
             segment.expandable = true;
             segment.fake = false;
           }
