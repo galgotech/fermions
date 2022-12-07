@@ -191,8 +191,8 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
 
     // DashboardQueryRunner needs to run after all variables have been resolved so that any annotation query including a variable
     // will be correctly resolved
-    const runner = createDashboardQueryRunner({ dashboard, timeSrv });
-    runner.run({ dashboard, range: timeSrv.timeRange() });
+    const runner = createDashboardQueryRunner({ dashboard });
+    runner.run({ dashboard });
 
     // If dashboard is in a different init phase it means it cancelled during service init
     if (getState().dashboard.initPhase !== DashboardInitPhase.Services) {

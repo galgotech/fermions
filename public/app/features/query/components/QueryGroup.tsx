@@ -18,7 +18,6 @@ import config from 'app/core/config';
 import { backendSrv } from 'app/core/services/backend_srv';
 import { addQuery } from 'app/core/utils/query';
 import { dataSource as expressionDatasource } from 'app/features/expressions/ExpressionDatasource';
-import { DashboardQueryEditor, isSharedDashboardQuery } from 'app/plugins/datasource/dashboard';
 import { QueryGroupDataSource, QueryGroupOptions } from 'app/types';
 
 import { isQueryWithMixedDatasource } from '../../query-library/api/SavedQueriesApi';
@@ -368,17 +367,6 @@ export class QueryGroup extends PureComponent<Props, State> {
     const { onRunQueries } = this.props;
     const { data, queries } = this.state;
 
-    if (isSharedDashboardQuery(dsSettings.name)) {
-      return (
-        <DashboardQueryEditor
-          queries={queries}
-          panelData={data}
-          onChange={this.onQueriesChange}
-          onRunQueries={onRunQueries}
-        />
-      );
-    }
-
     return (
       <div aria-label={selectors.components.QueryTab.content}>
         <QueryEditorRows
@@ -411,7 +399,7 @@ export class QueryGroup extends PureComponent<Props, State> {
 
   renderAddQueryRow(dsSettings: DataSourceInstanceSettings, styles: QueriesTabStyles) {
     const { isAddingMixed } = this.state;
-    const showAddButton = !(isAddingMixed || isSharedDashboardQuery(dsSettings.name));
+    const showAddButton = !isAddingMixed;
 
     return (
       <HorizontalGroup spacing="md" align="flex-start">

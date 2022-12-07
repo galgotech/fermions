@@ -14,7 +14,6 @@ import {
   LiveChannelConnectionState,
   PanelData,
   LoadingState,
-  applyFieldOverrides,
   LiveChannelAddress,
 } from '@grafana/data';
 import { config, getGrafanaLiveSrv } from '@grafana/runtime';
@@ -181,14 +180,7 @@ export class LivePanel extends PureComponent<Props, State> {
     if (options.message === MessageDisplayMode.Auto) {
       if (message instanceof StreamingDataFrame) {
         const data: PanelData = {
-          series: applyFieldOverrides({
-            data: [message],
-            theme: config.theme2,
-            fieldConfig: {
-              defaults: {},
-              overrides: [],
-            },
-          }),
+          series: [message],
           state: LoadingState.Streaming,
         } as PanelData;
         const props = {

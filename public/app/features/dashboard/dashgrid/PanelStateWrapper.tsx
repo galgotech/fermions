@@ -26,11 +26,9 @@ import {
 } from '@grafana/ui';
 import { PANEL_BORDER } from 'app/core/constants';
 import { profiler } from 'app/core/profiler';
-import { applyPanelTimeOverrides } from 'app/features/dashboard/utils/panel';
 import { RenderEvent } from 'app/types/events';
 
 import { isSoloRoute } from '../../../routes/utils';
-import { getTimeSrv, TimeSrv } from '../services/TimeSrv';
 import { DashboardModel, PanelModel } from '../state';
 
 import { PanelHeader } from './PanelHeader/PanelHeader';
@@ -62,7 +60,6 @@ export interface State {
 }
 
 export class PanelStateWrapper extends PureComponent<Props, State> {
-  private readonly timeSrv: TimeSrv = getTimeSrv();
   private subs = new Subscription();
   private eventFilter: EventFilterOptions = { onlyLocal: true };
 
@@ -250,8 +247,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
       return;
     }
 
-    const timeData = applyPanelTimeOverrides(panel, this.timeSrv.timeRange());
-
     // Issue Query
     if (this.wantsQueryExecution) {
       if (width < 0) {
@@ -266,7 +261,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         dashboardUID: dashboard.uid,
         dashboardTimezone: dashboard.getTimezone(),
         publicDashboardAccessToken: dashboard.meta.publicDashboardAccessToken,
-        timeData,
         width,
       });
     } else {

@@ -4,7 +4,6 @@ import { useMeasure } from 'react-use';
 import { PluginContextProvider } from '@grafana/data';
 import { PanelChrome, ErrorBoundaryAlert } from '@grafana/ui';
 import { appEvents } from 'app/core/core';
-import { useFieldOverrides } from 'app/features/panel/components/PanelRenderer';
 
 import { sceneGraph } from '../../core/sceneGraph';
 import { SceneComponentProps } from '../../core/types';
@@ -23,10 +22,7 @@ export function VizPanelRenderer({ model }: SceneComponentProps<VizPanel>) {
   const isDraggable = layout.state.isDraggable ? state.isDraggable : false;
   const dragHandle = <SceneDragHandle layoutKey={layout.state.key!} />;
 
-  // Not sure we need to subscribe to this state
-  const timeZone = sceneGraph.getTimeRange(model).state.timeZone;
-
-  const dataWithOverrides = useFieldOverrides(plugin, fieldConfig, data, timeZone);
+  const dataWithOverrides = data;
 
   if (pluginLoadError) {
     return <div>Failed to load plugin: {pluginLoadError}</div>;

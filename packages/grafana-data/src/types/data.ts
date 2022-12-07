@@ -1,9 +1,6 @@
 import { FieldConfig } from './dataFrame';
 import { DataFrameType } from './dataFrameTypes';
-import { ApplyFieldOverrideOptions } from './fieldOverrides';
 import { DataTopic } from './query';
-
-import { PanelPluginDataSupport } from '.';
 
 export type KeyValue<T = any> = Record<string, T>;
 
@@ -171,8 +168,6 @@ export enum NullValueMode {
  */
 export interface DataConfigSource {
   configRev?: number;
-  getDataSupport: () => PanelPluginDataSupport;
-  getFieldOverrideOptions: () => ApplyFieldOverrideOptions | undefined;
 }
 
 type Truthy<T> = T extends false | '' | 0 | null | undefined ? never : T;

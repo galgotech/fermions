@@ -158,8 +158,6 @@ export enum VizOrientation {
   Horizontal = 'horizontal',
 }
 
-export interface PanelPluginDataSupport {}
-
 /**
  * @alpha
  */

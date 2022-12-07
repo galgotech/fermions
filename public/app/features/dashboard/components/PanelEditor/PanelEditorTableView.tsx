@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import { RefreshEvent } from '@grafana/runtime';
 import { PanelChrome } from '@grafana/ui';
-import { applyPanelTimeOverrides } from 'app/features/dashboard/utils/panel';
 import { PanelRenderer } from 'app/features/panel/components/PanelRenderer';
 import { PanelOptions } from 'app/plugins/panel/table/models.gen';
 
 import PanelHeaderCorner from '../../dashgrid/PanelHeader/PanelHeaderCorner';
-import { getTimeSrv } from '../../services/TimeSrv';
 import { DashboardModel, PanelModel } from '../../state';
 
 import { usePanelLatestData } from './usePanelLatestData';
@@ -29,15 +27,11 @@ export function PanelEditorTableView({ width, height, panel, dashboard }: Props)
 
   // Subscribe to panel event
   useEffect(() => {
-    const timeSrv = getTimeSrv();
-
     const sub = panel.events.subscribe(RefreshEvent, () => {
-      const timeData = applyPanelTimeOverrides(panel, timeSrv.timeRange());
       panel.runAllPanelQueries({
         dashboardId: dashboard.id,
         dashboardUID: dashboard.uid,
         dashboardTimezone: dashboard.getTimezone(),
-        timeData,
         width,
       });
     });

@@ -1,12 +1,9 @@
 import { Observable } from 'rxjs';
 
-import { TimeRange } from '@grafana/data';
-
 import { DashboardModel } from '../../../dashboard/state';
 
 export interface DashboardQueryRunnerOptions {
   dashboard: DashboardModel;
-  range: TimeRange;
 }
 
 export interface DashboardQueryRunnerResult {}

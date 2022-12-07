@@ -1,6 +1,6 @@
 import { isString as _isString } from 'lodash';
 
-import { TimeRange, AppEvents, rangeUtil, dateMath, PanelModel as IPanelModel } from '@grafana/data';
+import { TimeRange, AppEvents, PanelModel as IPanelModel } from '@grafana/data';
 import appEvents from 'app/core/app_events';
 import config from 'app/core/config';
 import { LS_PANEL_COPY_KEY, PANEL_BORDER } from 'app/core/constants';
@@ -106,69 +106,11 @@ export interface TimeOverrideResult {
   timeInfo: string;
 }
 
-export function applyPanelTimeOverrides(panel: PanelModel, timeRange: TimeRange): TimeOverrideResult {
-  const newTimeData = {
-    timeInfo: '',
-    timeRange: timeRange,
-  };
-
-  if (panel.timeFrom) {
-    const timeFromInterpolated = panel.timeFrom;
-    const timeFromInfo = rangeUtil.describeTextRange(timeFromInterpolated);
-    if (timeFromInfo.invalid) {
-      newTimeData.timeInfo = 'invalid time override';
-      return newTimeData;
-    }
-
-    if (_isString(timeRange.raw.from)) {
-      const timeFromDate = dateMath.parse(timeFromInfo.from)!;
-      newTimeData.timeInfo = timeFromInfo.display;
-      newTimeData.timeRange = {
-        from: timeFromDate,
-        to: dateMath.parse(timeFromInfo.to)!,
-        raw: {
-          from: timeFromInfo.from,
-          to: timeFromInfo.to,
-        },
-      };
-    }
-  }
-
-  if (panel.timeShift) {
-    const timeShiftInterpolated = panel.timeShift;
-    const timeShiftInfo = rangeUtil.describeTextRange(timeShiftInterpolated);
-    if (timeShiftInfo.invalid) {
-      newTimeData.timeInfo = 'invalid timeshift';
-      return newTimeData;
-    }
-
-    const timeShift = '-' + timeShiftInterpolated;
-    newTimeData.timeInfo += ' timeshift ' + timeShift;
-    const from = dateMath.parseDateMath(timeShift, newTimeData.timeRange.from, false)!;
-    const to = dateMath.parseDateMath(timeShift, newTimeData.timeRange.to, true)!;
-
-    newTimeData.timeRange = {
-      from,
-      to,
-      raw: {
-        from,
-        to,
-      },
-    };
-  }
-
-  if (panel.hideTimeOverride) {
-    newTimeData.timeInfo = '';
-  }
-
-  return newTimeData;
-}
-
 export function getResolution(panel: PanelModel): number {
   const htmlEl = document.getElementsByTagName('html')[0];
   const width = htmlEl.getBoundingClientRect().width; // https://stackoverflow.com/a/21454625
 
-  return panel.maxDataPoints ? panel.maxDataPoints : Math.ceil(width * (panel.gridPos.w / 24));
+  return Math.ceil(width * (panel.gridPos.w / 24));
 }
 
 export function calculateInnerPanelHeight(panel: PanelModel, containerHeight: number): number {

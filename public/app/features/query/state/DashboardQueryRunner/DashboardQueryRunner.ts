@@ -3,7 +3,6 @@ import { finalize, map, mapTo, mergeAll, share, takeUntil } from 'rxjs/operators
 
 import { RefreshEvent } from '@grafana/runtime';
 
-import { getTimeSrv, TimeSrv } from '../../../dashboard/services/TimeSrv';
 import { DashboardModel } from '../../../dashboard/state';
 
 import {
@@ -22,7 +21,6 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
 
   constructor(
     private readonly dashboard: DashboardModel,
-    private readonly timeSrv: TimeSrv = getTimeSrv(),
     private readonly workers: DashboardQueryRunnerWorker[] = []
   ) {
     this.run = this.run.bind(this);
@@ -33,7 +31,7 @@ class DashboardQueryRunnerImpl implements DashboardQueryRunner {
     this.runs = new Subject<DashboardQueryRunnerOptions>();
     this.runsSubscription = this.runs.subscribe((options) => this.executeRun(options));
     this.eventsSubscription = dashboard.events.subscribe(RefreshEvent, (event) => {
-      this.run({ dashboard: this.dashboard, range: this.timeSrv.timeRange() });
+      this.run({ dashboard: this.dashboard });
     });
   }
 
@@ -112,7 +110,6 @@ export function getDashboardQueryRunner(): DashboardQueryRunner {
 
 export interface DashboardQueryRunnerFactoryArgs {
   dashboard: DashboardModel;
-  timeSrv?: TimeSrv;
   workers?: DashboardQueryRunnerWorker[];
 }
 
@@ -126,8 +123,8 @@ export function setDashboardQueryRunnerFactory(instance: DashboardQueryRunnerFac
 
 export function createDashboardQueryRunner(args: DashboardQueryRunnerFactoryArgs): DashboardQueryRunner {
   if (!factory) {
-    factory = ({ dashboard, timeSrv, workers }: DashboardQueryRunnerFactoryArgs) =>
-      new DashboardQueryRunnerImpl(dashboard, timeSrv, workers);
+    factory = ({ dashboard, workers }: DashboardQueryRunnerFactoryArgs) =>
+      new DashboardQueryRunnerImpl(dashboard, workers);
   }
 
   const runner = factory(args);

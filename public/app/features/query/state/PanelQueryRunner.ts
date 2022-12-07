@@ -3,11 +3,9 @@ import { Observable, ReplaySubject, Unsubscribable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import {
-  applyFieldOverrides,
   compareArrayValues,
   compareDataFrameStructures,
   CoreApp,
-  DataConfigSource,
   DataFrame,
   DataQuery,
   DataQueryRequest,
@@ -18,11 +16,8 @@ import {
   PanelData,
 } from '@grafana/data';
 import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
-import { StreamingDataFrame } from 'app/features/live/data/StreamingDataFrame';
-import { isStreamingDataFrame } from 'app/features/live/data/utils';
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
-import { isSharedDashboardQuery, runSharedRequest } from '../../../plugins/datasource/dashboard';
 import { PublicDashboardDataSource } from '../../dashboard/services/PublicDashboardDataSource';
 
 import { preProcessPanelData, runRequest } from './runRequest';
@@ -52,12 +47,10 @@ export class PanelQueryRunner {
   private subject: ReplaySubject<PanelData>;
   private subscription?: Unsubscribable;
   private lastResult?: PanelData;
-  private dataConfigSource: DataConfigSource;
   private lastRequest?: DataQueryRequest;
 
-  constructor(dataConfigSource: DataConfigSource) {
+  constructor() {
     this.subject = new ReplaySubject(1);
-    this.dataConfigSource = dataConfigSource;
   }
 
   /**
@@ -66,73 +59,15 @@ export class PanelQueryRunner {
   getData(): Observable<PanelData> {
     let structureRev = 1;
     let lastData: DataFrame[] = [];
-    let isFirstPacket = true;
-    let lastConfigRev = -1;
 
     return this.subject.pipe(
       map((data: PanelData) => {
-        let processedData = data;
-        let streamingPacketWithSameSchema = false;
-
-        if (data.series?.length) {
-          if (lastConfigRev === this.dataConfigSource.configRev) {
-            const streamingDataFrame = data.series.find((data) => isStreamingDataFrame(data)) as
-              | StreamingDataFrame
-              | undefined;
-
-            if (
-              streamingDataFrame &&
-              !streamingDataFrame.packetInfo.schemaChanged &&
-              // TODO: remove the condition below after fixing
-              // https://github.com/grafana/grafana/pull/41492#issuecomment-970281430
-              lastData[0].fields.length === streamingDataFrame.fields.length
-            ) {
-              processedData = {
-                ...processedData,
-                series: lastData.map((frame, frameIndex) => ({
-                  ...frame,
-                  length: data.series[frameIndex].length,
-                  fields: frame.fields.map((field, fieldIndex) => ({
-                    ...field,
-                    values: data.series[frameIndex].fields[fieldIndex].values,
-                    state: {
-                      ...field.state,
-                      calcs: undefined,
-                      range: undefined,
-                    },
-                  })),
-                })),
-              };
-
-              streamingPacketWithSameSchema = true;
-            }
-          }
-
-          // Apply field defaults and overrides
-          let fieldConfig = this.dataConfigSource.getFieldOverrideOptions();
-
-          if (fieldConfig != null && (isFirstPacket || !streamingPacketWithSameSchema)) {
-            lastConfigRev = this.dataConfigSource.configRev!;
-            processedData = {
-              ...processedData,
-              series: applyFieldOverrides({
-                data: processedData.series,
-                ...fieldConfig!,
-              }),
-            };
-            isFirstPacket = false;
-          }
-        }
-
-        if (
-          !streamingPacketWithSameSchema &&
-          !compareArrayValues(lastData, processedData.series, compareDataFrameStructures)
-        ) {
+        if (!compareArrayValues(lastData, data.series, compareDataFrameStructures)) {
           structureRev++;
         }
-        lastData = processedData.series;
+        lastData = data.series;
 
-        return { ...processedData, structureRev };
+        return { ...data, structureRev };
       })
     );
   }
@@ -148,11 +83,6 @@ export class PanelQueryRunner {
       timeInfo,
       cacheTimeout,
     } = options;
-
-    if (isSharedDashboardQuery(datasource)) {
-      this.pipeToSubject(runSharedRequest(options, queries[0]), panelId);
-      return;
-    }
 
     const request: DataQueryRequest = {
       app: CoreApp.Dashboard,

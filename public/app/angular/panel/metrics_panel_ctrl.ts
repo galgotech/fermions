@@ -14,7 +14,6 @@ import {
 import { PanelCtrl } from 'app/angular/panel/panel_ctrl';
 import { ContextSrv } from 'app/core/services/context_srv';
 import { PanelModel } from 'app/features/dashboard/state';
-import { applyPanelTimeOverrides } from 'app/features/dashboard/utils/panel';
 
 import { PanelQueryRunner } from '../../features/query/state/PanelQueryRunner';
 
@@ -145,18 +144,7 @@ class MetricsPanelCtrl extends PanelCtrl {
     },
   };
 
-  updateTimeRange(datasource?: DataSourceApi) {
-    this.datasource = datasource || this.datasource;
-    this.range = this.timeSrv.timeRange();
-
-    const newTimeData = applyPanelTimeOverrides(this.panel, this.range);
-    this.timeInfo = newTimeData.timeInfo;
-    this.range = newTimeData.timeRange;
-  }
-
   issueQueries(datasource: DataSourceApi) {
-    this.updateTimeRange(datasource);
-
     this.datasource = datasource;
 
     const panel = this.panel as PanelModel;

@@ -8,7 +8,6 @@ import {
   EventBusSrv,
   FieldConfigSource,
   PanelPlugin,
-  PanelPluginDataSupport,
   PanelModel as IPanelModel,
   DataSourceRef,
 } from '@grafana/data';
@@ -26,7 +25,6 @@ import {
 
 import { LibraryElementDTO, LibraryPanelRef } from '../../library-panels/types';
 import { PanelQueryRunner } from '../../query/state/PanelQueryRunner';
-import { TimeOverrideResult } from '../utils/panel';
 
 import {
   filterFieldConfigOverrides,
@@ -48,7 +46,6 @@ type RunPanelQueryOptions = {
   dashboardId: number;
   dashboardUID: string;
   dashboardTimezone: string;
-  timeData: TimeOverrideResult;
   width: number;
   publicDashboardAccessToken?: string;
 };
@@ -80,7 +77,6 @@ const mustKeepProps: { [str: string]: boolean } = {
   panels: true,
   targets: true,
   datasource: true,
-  timeFrom: true,
   timeShift: true,
   hideTimeOverride: true,
   description: true,
@@ -96,8 +92,6 @@ const mustKeepProps: { [str: string]: boolean } = {
   queryRunner: true,
   transformations: true,
   fieldConfig: true,
-  maxDataPoints: true,
-  interval: true,
   libraryPanel: true,
   configRev: true,
   key: true,
@@ -132,7 +126,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   pluginVersion?: string;
   savedQueryLink: SavedQueryLink | null = null; // Used by the experimental feature queryLibrary
 
-  timeFrom?: any;
   timeShift?: any;
   hideTimeOverride?: any;
   declare options: {
@@ -140,8 +133,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   };
   declare fieldConfig: FieldConfigSource;
 
-  maxDataPoints?: number | null;
-  interval?: string | null;
   description?: string;
   links?: DataLink[];
   declare transparent: boolean;
@@ -315,9 +306,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   runAllPanelQueries({
     dashboardId,
     dashboardUID,
-    dashboardTimezone,
-    timeData,
-    width,
     publicDashboardAccessToken,
   }: RunPanelQueryOptions) {
     this.getQueryRunner().run({
@@ -327,7 +315,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       dashboardId: dashboardId,
       dashboardUID: dashboardUID,
       publicDashboardAccessToken,
-      timeInfo: timeData.timeInfo,
       cacheTimeout: this.cacheTimeout,
     });
   }
@@ -488,11 +475,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     }
 
     this.cacheTimeout = options.cacheTimeout;
-    this.timeFrom = options.timeRange?.from;
     this.timeShift = options.timeRange?.shift;
     this.hideTimeOverride = options.timeRange?.hide;
-    this.interval = options.minInterval;
-    this.maxDataPoints = options.maxDataPoints;
     this.targets = options.queries;
     this.configRev++;
 
@@ -535,25 +519,9 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     return clone;
   }
 
-  getFieldOverrideOptions() {
-    if (!this.plugin) {
-      return undefined;
-    }
-
-    return {
-      fieldConfig: this.fieldConfig,
-      fieldConfigRegistry: this.plugin.fieldConfigRegistry,
-      theme: config.theme2,
-    };
-  }
-
-  getDataSupport(): PanelPluginDataSupport {
-    return this.plugin?.dataSupport ?? { };
-  }
-
   getQueryRunner(): PanelQueryRunner {
     if (!this.queryRunner) {
-      this.queryRunner = new PanelQueryRunner(this);
+      this.queryRunner = new PanelQueryRunner();
     }
     return this.queryRunner;
   }

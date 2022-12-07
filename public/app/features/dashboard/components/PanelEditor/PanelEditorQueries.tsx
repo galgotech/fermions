@@ -34,14 +34,7 @@ export class PanelEditorQueries extends PureComponent<Props> {
         uid: datasourceSettings?.uid,
       },
       queries: panel.targets,
-      maxDataPoints: panel.maxDataPoints,
-      minInterval: panel.interval,
       savedQueryUid: panel.savedQueryLink?.ref.uid ?? null, // Used by experimental feature queryLibrary
-      timeRange: {
-        from: panel.timeFrom,
-        shift: panel.timeShift,
-        hide: panel.hideTimeOverride,
-      },
     };
   }
 

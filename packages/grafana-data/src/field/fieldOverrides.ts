@@ -17,15 +17,12 @@ import {
   FieldOverrideContext,
   FieldType,
   NumericRange,
-  ScopedVars,
 } from '../types';
 import { FieldMatcher } from '../types/transformations';
 
 import { FieldConfigOptionsRegistry } from './FieldConfigOptionsRegistry';
 import { getDisplayProcessor, getRawDisplayProcessor } from './displayProcessor';
-import { getFrameDisplayName } from './fieldState';
 import { standardFieldConfigEditorRegistry } from './standardFieldConfigEditorRegistry';
-import { getTemplateProxyForField } from './templateProxies';
 
 interface OverrideProps {
   match: FieldMatcher;
@@ -105,21 +102,8 @@ export function applyFieldOverrides(options: ApplyFieldOverrideOptions): DataFra
       };
     });
 
-    const scopedVars: ScopedVars = {
-      __series: { text: 'Series', value: { name: getFrameDisplayName(newFrame, index) } }, // might be missing
-    };
-
     for (const field of newFrame.fields) {
       const config = field.config;
-
-      field.state!.scopedVars = {
-        ...scopedVars,
-        __field: {
-          text: 'Field',
-          value: getTemplateProxyForField(field, newFrame, options.data),
-        },
-      };
-
       const context = {
         field: field,
         data: options.data!,
