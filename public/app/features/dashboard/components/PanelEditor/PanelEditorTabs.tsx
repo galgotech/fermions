@@ -8,7 +8,6 @@ import { PanelQueriesChangedEvent } from 'app/types/events';
 
 import { DashboardModel, PanelModel } from '../../state';
 
-import { PanelEditorQueries } from './PanelEditorQueries';
 import { PanelEditorTab, PanelEditorTabId } from './types';
 
 interface PanelEditorTabsProps {
@@ -28,7 +27,7 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
     return () => eventSubs.unsubscribe();
   }, [panel, dashboard, forceUpdate]);
 
-  const activeTab = tabs.find((item) => item.active)!;
+  // const activeTab = tabs.find((item) => item.active)!;
 
   if (tabs.length === 0) {
     return null;
@@ -51,7 +50,7 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
         })}
       </TabsBar>
       <TabContent className={styles.tabContent}>
-        {activeTab.id === PanelEditorTabId.Query && <PanelEditorQueries panel={panel} queries={panel.targets} />}
+        a
       </TabContent>
     </div>
   );

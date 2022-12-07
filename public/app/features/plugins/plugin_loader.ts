@@ -29,8 +29,6 @@ import * as flatten from 'app/core/utils/flatten';
 import kbn from 'app/core/utils/kbn';
 import * as ticks from 'app/core/utils/ticks';
 
-import { GenericDataSourcePlugin } from '../datasources/types';
-
 import builtInPlugins from './built_in_plugins';
 import { locateWithCache, registerPluginInCache } from './pluginCacheBuster';
 
@@ -169,29 +167,6 @@ export async function importPluginModule(path: string, version?: string): Promis
     }
   }
   return grafanaRuntime.SystemJS.import(path);
-}
-
-export function importDataSourcePlugin(meta: grafanaData.DataSourcePluginMeta): Promise<GenericDataSourcePlugin> {
-  return importPluginModule(meta.module, meta.info?.version).then((pluginExports) => {
-    if (pluginExports.plugin) {
-      const dsPlugin = pluginExports.plugin as GenericDataSourcePlugin;
-      dsPlugin.meta = meta;
-      return dsPlugin;
-    }
-
-    if (pluginExports.Datasource) {
-      const dsPlugin = new grafanaData.DataSourcePlugin<
-        grafanaData.DataSourceApi<grafanaData.DataQuery, grafanaData.DataSourceJsonData>,
-        grafanaData.DataQuery,
-        grafanaData.DataSourceJsonData
-      >(pluginExports.Datasource);
-      dsPlugin.setComponentsFromLegacyExports(pluginExports);
-      dsPlugin.meta = meta;
-      return dsPlugin;
-    }
-
-    throw new Error('Plugin module is missing DataSourcePlugin or Datasource constructor export');
-  });
 }
 
 export function importAppPlugin(meta: grafanaData.PluginMeta): Promise<grafanaData.AppPlugin> {

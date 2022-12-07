@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 
-import { CoreApp, DataSourceApi, formattedValueToString, getValueFormat, PanelData, PanelPlugin } from '@grafana/data';
+import { CoreApp, formattedValueToString, getValueFormat, PanelData, PanelPlugin } from '@grafana/data';
 import { Drawer, Tab, TabsBar } from '@grafana/ui';
 import { t, Trans } from 'app/core/internationalization';
 import { InspectDataTab } from 'app/features/inspector/InspectDataTab';
 import { InspectErrorTab } from 'app/features/inspector/InspectErrorTab';
 import { InspectJSONTab } from 'app/features/inspector/InspectJSONTab';
-import { InspectMetadataTab } from 'app/features/inspector/InspectMetadataTab';
 import { InspectStatsTab } from 'app/features/inspector/InspectStatsTab';
 import { QueryInspector } from 'app/features/inspector/QueryInspector';
 import { InspectTab } from 'app/features/inspector/types';
@@ -23,7 +22,6 @@ interface Props {
   data?: PanelData;
   isDataLoading: boolean;
   // If the datasource supports custom metadata
-  metadataDatasource?: DataSourceApi;
   onClose: () => void;
 }
 
@@ -34,7 +32,6 @@ export const InspectContent = ({
   tabs,
   data,
   isDataLoading,
-  metadataDatasource,
   defaultTab,
   onClose,
 }: Props) => {
@@ -86,9 +83,6 @@ export const InspectContent = ({
           timeZone={dashboard.timezone}
           app={CoreApp.Dashboard}
         />
-      )}
-      {data && activeTab === InspectTab.Meta && (
-        <InspectMetadataTab data={data} metadataDatasource={metadataDatasource} />
       )}
 
       {activeTab === InspectTab.JSON && (

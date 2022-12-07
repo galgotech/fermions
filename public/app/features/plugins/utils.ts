@@ -3,7 +3,7 @@ import { config } from '@grafana/runtime';
 
 import { importPanelPluginFromMeta } from './importPanelPlugin';
 import { getPluginSettings } from './pluginSettings';
-import { importAppPlugin, importDataSourcePlugin } from './plugin_loader';
+import { importAppPlugin } from './plugin_loader';
 
 export async function loadPlugin(pluginId: string): Promise<GrafanaPlugin> {
   const info = await getPluginSettings(pluginId);
@@ -11,9 +11,6 @@ export async function loadPlugin(pluginId: string): Promise<GrafanaPlugin> {
 
   if (info.type === PluginType.app) {
     result = await importAppPlugin(info);
-  }
-  if (info.type === PluginType.datasource) {
-    result = await importDataSourcePlugin(info);
   }
   if (info.type === PluginType.panel) {
     const panelPlugin = await importPanelPluginFromMeta(info as PanelPluginMeta);

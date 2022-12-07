@@ -6,7 +6,6 @@ import { AsyncState } from 'react-use/lib/useAsyncFn';
 
 import { DataSourceInstanceSettings, isUnsignedPluginSignature, SelectableValue } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { getDataSourceSrv } from '@grafana/runtime/src';
 import { HorizontalGroup, PluginSignatureBadge, Select } from '@grafana/ui';
 
 import { getGrafanaSearcher, QueryResponse, SearchQuery } from '../../search/service';
@@ -45,13 +44,11 @@ function getSavedQueryPickerOptions(results: AsyncState<QueryResponse>): Array<S
   const hits = results.value.view.toArray();
 
   return hits.map((h) => {
-    const dsSettings = h.ds_uid?.length ? getDataSourceSrv().getInstanceSettings(h.ds_uid[0]) : undefined;
-
     return {
       value: h.uid,
       label: h.name,
-      imgUrl: dsSettings?.meta.info.logos.small,
-      meta: dsSettings?.meta,
+      imgUrl: undefined,
+      meta: undefined,
     };
   });
 }

@@ -13,7 +13,7 @@ import { HelpWizard } from '../HelpWizard/HelpWizard';
 import { usePanelLatestData } from '../PanelEditor/usePanelLatestData';
 
 import { InspectContent } from './InspectContent';
-import { useDatasourceMetadata, useInspectTabs } from './hooks';
+import { useInspectTabs } from './hooks';
 
 interface OwnProps {
   dashboard: DashboardModel;
@@ -29,8 +29,7 @@ export type Props = OwnProps & ConnectedProps;
 const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
   const location = useLocation();
   const { data, isLoading, error } = usePanelLatestData(panel, true);
-  const metaDs = useDatasourceMetadata(data);
-  const tabs = useInspectTabs(panel, dashboard, plugin, error, metaDs);
+  const tabs = useInspectTabs(panel, dashboard, plugin, error);
   const defaultTab = new URLSearchParams(location.search).get('inspectTab') as InspectTab;
 
   const onClose = () => {
@@ -57,7 +56,6 @@ const PanelInspectorUnconnected = ({ panel, dashboard, plugin }: Props) => {
       tabs={tabs}
       data={data}
       isDataLoading={isLoading}
-      metadataDatasource={metaDs}
       onClose={onClose}
     />
   );

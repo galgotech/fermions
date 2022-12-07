@@ -1,7 +1,6 @@
 import { defaults, each, sortBy } from 'lodash';
 
-import { DataSourceRef, PanelPluginMeta } from '@grafana/data';
-import { getDataSourceSrv } from '@grafana/runtime';
+import { PanelPluginMeta } from '@grafana/data';
 import config from 'app/core/config';
 import { PanelModel } from 'app/features/dashboard/state';
 import { getLibraryPanel } from 'app/features/library-panels/state/api';
@@ -76,59 +75,8 @@ export class DashboardExporter {
     const datasources: DataSources = {};
     const libraryPanels: Map<string, LibraryElementExport> = new Map<string, LibraryElementExport>();
 
-    const templateizeDatasourceUsage = (obj: any, fallback?: DataSourceRef) => {
-      if (obj.datasource === undefined) {
-        obj.datasource = fallback;
-        return;
-      }
-
-      let datasource: string = obj.datasource;
-      let datasourceVariable: any = null;
-
-      return getDataSourceSrv()
-        .get(datasource)
-        .then((ds) => {
-          if (ds.meta?.builtIn) {
-            return;
-          }
-
-          // add data source type to require list
-          requires['datasource' + ds.meta?.id] = {
-            type: 'datasource',
-            id: ds.meta.id,
-            name: ds.meta.name,
-            version: ds.meta.info.version || '1.0.0',
-          };
-
-          // if used via variable we can skip templatizing usage
-          if (datasourceVariable) {
-            return;
-          }
-
-          const refName = 'DS_' + ds.name.replace(' ', '_').toUpperCase();
-          datasources[refName] = {
-            name: refName,
-            label: ds.name,
-            description: '',
-            type: 'datasource',
-            pluginId: ds.meta?.id,
-            pluginName: ds.meta?.name,
-          };
-
-          obj.datasource = { type: ds.meta.id, uid: '${' + refName + '}' };
-        });
-    };
-
     const processPanel = async (panel: PanelModel) => {
       if (panel.type !== 'row') {
-        await templateizeDatasourceUsage(panel);
-
-        if (panel.targets) {
-          for (const target of panel.targets) {
-            await templateizeDatasourceUsage(target, panel.datasource!);
-          }
-        }
-
         const panelDef: PanelPluginMeta = config.panels[panel.type];
         if (panelDef) {
           requires['panel' + panelDef.id] = {

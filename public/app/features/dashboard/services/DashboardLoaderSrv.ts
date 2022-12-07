@@ -7,7 +7,6 @@ import { getBackendSrv, locationService } from '@grafana/runtime';
 import { backendSrv } from 'app/core/services/backend_srv';
 import impressionSrv from 'app/core/services/impression_srv';
 import kbn from 'app/core/utils/kbn';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { getGrafanaStorage } from 'app/features/storage/storage';
 import { DashboardDTO, DashboardRoutes } from 'app/types';
 
@@ -109,42 +108,12 @@ export class DashboardLoaderSrv {
    * loading code
    */
   async _loadFromDatasource(dsid: string) {
-    const ds = await getDatasourceSrv().get(dsid);
-    if (!ds) {
-      return Promise.reject('can not find datasource: ' + dsid);
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const path = params.get('path');
-    if (!path) {
-      return Promise.reject('expecting path parameter');
-    }
-
-    const queryParams: { [key: string]: any } = {};
-
-    params.forEach((value, key) => {
-      queryParams[key] = value;
-    });
-
-    return getBackendSrv()
-      .get(`/api/datasources/${ds.id}/resources/${path}`, queryParams)
-      .then((data) => {
-        return {
-          meta: {
-            fromScript: true,
-            canDelete: false,
-            canSave: false,
-            canStar: false,
-          },
-          dashboard: data,
-        };
-      });
+    return Promise.reject('can not find datasource: ' + dsid);
   }
 
   _executeScript(result: any) {
     const services = {
       dashboardSrv: getDashboardSrv(),
-      datasourceSrv: getDatasourceSrv(),
     };
     const scriptFunc = new Function(
       'ARGS',

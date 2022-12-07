@@ -3,7 +3,6 @@ import React, { ReactNode, useState } from 'react';
 
 import { DataQuery, DataSourceInstanceSettings, GrafanaTheme2 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { DataSourcePicker } from '@grafana/runtime';
 import { Icon, Input, FieldValidationMessage, useStyles2 } from '@grafana/ui';
 
 export interface Props<TQuery extends DataQuery = DataQuery> {
@@ -140,7 +139,6 @@ const renderDataSource = <TQuery extends DataQuery>(
 
   return (
     <div className={styles.itemWrapper}>
-      <DataSourcePicker current={dataSource.name} onChange={onChangeDataSource} />
     </div>
   );
 };

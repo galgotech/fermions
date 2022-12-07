@@ -1,6 +1,5 @@
 import { getBackendSrv } from 'app/core/services/backend_srv';
 import store from 'app/core/store';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { SetupStep } from './types';
 
@@ -27,26 +26,6 @@ export const getSteps = (): SetupStep[] => [
         icon: 'grafana',
         check: () => Promise.resolve(store.get(step1Key)),
         key: step1Key,
-        done: false,
-      },
-      {
-        type: 'docs',
-        title: 'Add your first data source',
-        heading: 'data sources',
-        icon: 'database',
-        learnHref: 'https://grafana.com/docs/grafana/latest/features/datasources/add-a-data-source',
-        href: 'datasources/new',
-        check: () => {
-          return new Promise((resolve) => {
-            resolve(
-              getDatasourceSrv()
-                .getMetricSources()
-                .filter((item) => {
-                  return item.meta.builtIn !== true;
-                }).length > 0
-            );
-          });
-        },
         done: false,
       },
       {

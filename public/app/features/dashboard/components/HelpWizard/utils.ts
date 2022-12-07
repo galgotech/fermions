@@ -55,7 +55,6 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
     panel.getQueryRunner().getData()
   );
 
-  const dsref = panel.datasource;
   const frames = randomizeData(getPanelDataFrames(data), rand);
   const grafanaVersion = `${config.buildInfo.version} (${config.buildInfo.commit})`;
   const queries = saveModel?.targets ?? [];
@@ -68,8 +67,7 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
       <th>Queries</th>
       <td>${queries
         .map((t: DataQuery) => {
-          const ds = t.datasource ?? dsref;
-          return `${t.refId}[${ds?.type}]`;
+          return `${t.refId}`;
         })
         .join(', ')}</td>
     </tr>

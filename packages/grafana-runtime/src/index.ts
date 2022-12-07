@@ -11,14 +11,6 @@ export { reportMetaAnalytics, reportInteraction, reportPageview, reportExperimen
 export { featureEnabled } from './utils/licensing';
 export { logInfo, logDebug, logWarning, logError } from './utils/logging';
 export {
-  DataSourceWithBackend,
-  HealthCheckError,
-  type HealthCheckResult,
-  type HealthCheckResultDetails,
-  HealthStatus,
-  type StreamOptionsProvider,
-} from './utils/DataSourceWithBackend';
-export {
   toDataQueryResponse,
   frameToMetricFindValue,
   type BackendDataSourceResponse,
@@ -29,11 +21,6 @@ export { PanelDataErrorView, type PanelDataErrorViewProps } from './components/P
 export { toDataQueryError } from './utils/toDataQueryError';
 export { PluginPage } from './components/PluginPage';
 export type { PluginPageType, PluginPageProps } from './components/PluginPage';
-export {
-  DataSourcePicker,
-  type DataSourcePickerProps,
-  type DataSourcePickerState,
-} from './components/DataSourcePicker';
 export {
   type PluginEventProperties,
   createPluginEventProperties,

@@ -8,7 +8,6 @@ import { Drawer, IconName, Tab, TabContent, TabsBar, useStyles2 } from '@grafana
 import { SavedQuery } from '../api/SavedQueriesApi';
 
 import { HistoryTab } from './HistoryTab';
-import { QueryEditor } from './QueryEditor';
 import { QueryEditorDrawerHeader } from './QueryEditorDrawerHeader';
 import { UsagesTab } from './UsagesTab';
 
@@ -62,7 +61,6 @@ export const QueryEditorDrawer = (props: Props) => {
           onDismiss={onDismiss}
         />
         <div className={styles.queryWrapper}>
-          <QueryEditor onSavedQueryChange={setSavedQuery} savedQuery={query} />
         </div>
         <TabsBar>
           {tabs.map((tab, index) => (

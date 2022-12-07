@@ -8,8 +8,6 @@ import config from 'app/core/config';
 import { contextSrv } from 'app/core/services/context_srv';
 import UserAdminPage from 'app/features/admin/UserAdminPage';
 import LdapPage from 'app/features/admin/ldap/LdapPage';
-import { getRoutes as getDataConnectionsRoutes } from 'app/features/connections/routes';
-import { DATASOURCES_ROUTES } from 'app/features/datasources/constants';
 import { getLiveRoutes } from 'app/features/live/pages/routes';
 import { getRoutes as getPluginCatalogRoutes } from 'app/features/plugins/admin/routes';
 import { getAppPluginRoutes } from 'app/features/plugins/routes';
@@ -123,43 +121,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       roles: () => contextSrv.evaluatePermission(() => ['Editor', 'Admin'], [AccessControlAction.DashboardsCreate]),
       component: SafeDynamicImport(
         () => import(/* webpackChunkName: "DashboardImport"*/ 'app/features/manage-dashboards/DashboardImportPage')
-      ),
-    },
-    {
-      path: DATASOURCES_ROUTES.List,
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "DataSourcesListPage"*/ 'app/features/datasources/pages/DataSourcesListPage')
-      ),
-    },
-    {
-      path: DATASOURCES_ROUTES.Edit,
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "EditDataSourcePage"*/ '../features/datasources/pages/EditDataSourcePage')
-      ),
-    },
-    {
-      path: DATASOURCES_ROUTES.Dashboards,
-      component: SafeDynamicImport(
-        () =>
-          import(
-            /* webpackChunkName: "DataSourceDashboards"*/ 'app/features/datasources/pages/DataSourceDashboardsPage'
-          )
-      ),
-    },
-    {
-      path: DATASOURCES_ROUTES.New,
-      component: SafeDynamicImport(
-        () => import(/* webpackChunkName: "NewDataSourcePage"*/ '../features/datasources/pages/NewDataSourcePage')
-      ),
-    },
-    {
-      path: '/datasources/correlations',
-      component: SafeDynamicImport(() =>
-        config.featureToggles.correlations
-          ? import(/* webpackChunkName: "CorrelationsPage" */ 'app/features/correlations/CorrelationsPage')
-          : import(
-              /* webpackChunkName: "CorrelationsFeatureToggle" */ 'app/features/correlations/CorrelationsFeatureToggle'
-            )
       ),
     },
     {
@@ -446,7 +407,6 @@ export function getAppRoutes(): RouteDescriptor[] {
     ...getQueryLibraryRoutes(),
     ...extraRoutes,
     ...getPublicDashboardRoutes(),
-    ...getDataConnectionsRoutes(),
     {
       path: '/*',
       component: ErrorPage,

@@ -1,10 +1,8 @@
 import { css } from '@emotion/css';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Field, FilterInput, Select, useStyles2 } from '@grafana/ui';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
-import { FileElement, GrafanaDatasource } from 'app/plugins/datasource/grafana/datasource';
 
 import { MediaType, ResourceFolderName } from '../types';
 
@@ -51,7 +49,7 @@ export const FolderPickerTab = (props: Props) => {
   const [currentFolder, setCurrentFolder] = useState<SelectableValue<string>>(
     getFolderIfExists(folders, value?.length ? value : folderName)
   );
-  const [directoryIndex, setDirectoryIndex] = useState<ResourceItem[]>([]);
+  const [directoryIndex] = useState<ResourceItem[]>([]);
   const [filteredIndex, setFilteredIndex] = useState<ResourceItem[]>([]);
 
   const onChangeSearch = (query: string) => {
@@ -62,40 +60,6 @@ export const FolderPickerTab = (props: Props) => {
       setFilteredIndex(directoryIndex);
     }
   };
-
-  useEffect(() => {
-    // we don't want to load everything before picking a folder
-    const folder = currentFolder?.value;
-    if (folder) {
-      const filter =
-        mediaType === MediaType.Icon
-          ? (item: FileElement) => item.name.endsWith('.svg')
-          : (item: FileElement) => item.name.endsWith('.png') || item.name.endsWith('.gif');
-
-      getDatasourceSrv()
-        .get('-- Grafana --')
-        .then((ds) => {
-          (ds as GrafanaDatasource).listFiles(folder).subscribe({
-            next: (frame) => {
-              const cards: ResourceItem[] = [];
-              frame.forEach((item) => {
-                if (filter(item)) {
-                  const idx = item.name.lastIndexOf('.');
-                  cards.push({
-                    value: `${folder}/${item.name}`,
-                    label: item.name,
-                    search: (idx ? item.name.substring(0, idx) : item.name).toLowerCase(),
-                    imgUrl: `public/${folder}/${item.name}`,
-                  });
-                }
-              });
-              setDirectoryIndex(cards);
-              setFilteredIndex(cards);
-            },
-          });
-        });
-    }
-  }, [mediaType, currentFolder]);
 
   return (
     <>

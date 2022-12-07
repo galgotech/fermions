@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-import { DataSourceRef, LiveChannelScope, SelectableValue } from '@grafana/data';
-import { DataSourcePicker, getBackendSrv } from '@grafana/runtime';
+import { SelectableValue } from '@grafana/data';
+import { getBackendSrv } from '@grafana/runtime';
 import { Input, Field, Button, ValuePicker, HorizontalGroup } from '@grafana/ui';
 import { useAppNotification } from 'app/core/copy/appNotification';
 
@@ -11,14 +11,9 @@ interface Props {
   onRuleAdded: (rule: Rule) => void;
 }
 
-type PatternType = 'ds' | 'any';
+type PatternType = 'any';
 
 const patternTypes: Array<SelectableValue<PatternType>> = [
-  {
-    label: 'Data source',
-    description: 'Configure a channel scoped to a data source instance',
-    value: 'ds',
-  },
   {
     label: 'Any',
     description: 'Enter an arbitray channel pattern',
@@ -29,17 +24,12 @@ const patternTypes: Array<SelectableValue<PatternType>> = [
 export function AddNewRule({ onRuleAdded }: Props) {
   const [patternType, setPatternType] = useState<PatternType>();
   const [pattern, setPattern] = useState<string>();
-  const [patternPrefix, setPatternPrefix] = useState<string>('');
-  const [datasource, setDatasource] = useState<DataSourceRef>();
+  const [patternPrefix] = useState<string>('');
   const notifyApp = useAppNotification();
 
   const onSubmit = () => {
     if (!pattern) {
       notifyApp.error('Enter path');
-      return;
-    }
-    if (patternType === 'ds' && !patternPrefix.length) {
-      notifyApp.error('Select datasource');
       return;
     }
 
@@ -82,23 +72,6 @@ export function AddNewRule({ onRuleAdded }: Props) {
               />
             </Field>
           )}
-          {patternType === 'ds' && (
-            <>
-              <Field label="Data source">
-                <DataSourcePicker
-                  current={datasource}
-                  onChange={(ds) => {
-                    setDatasource(ds);
-                    setPatternPrefix(`${LiveChannelScope.DataSource}/${ds.uid}/`);
-                  }}
-                />
-              </Field>
-              <Field label="Path">
-                <Input value={pattern ?? ''} onChange={(e) => setPattern(e.currentTarget.value)} placeholder="path" />
-              </Field>
-            </>
-          )}
-
           <Field label="">
             <Button onClick={onSubmit} variant={pattern?.length ? 'primary' : 'secondary'}>
               Add

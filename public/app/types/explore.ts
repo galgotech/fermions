@@ -21,7 +21,6 @@ export const EXPLORE_GRAPH_STYLES = ['lines', 'bars', 'points', 'stacked_lines',
 export type ExploreGraphStyle = typeof EXPLORE_GRAPH_STYLES[number];
 
 export interface ExploreUpdateState {
-  datasource: boolean;
   queries: boolean;
   range: boolean;
   mode: boolean;
@@ -47,8 +46,6 @@ export interface QueryTransaction {
 export type RichHistoryQuery<T extends DataQuery = DataQuery> = {
   id: string;
   createdAt: number;
-  datasourceUid: string;
-  datasourceName: string;
   starred: boolean;
   comment: string;
   queries: T[];

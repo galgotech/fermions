@@ -56,8 +56,6 @@ export interface DataSourceResponse<T> {
   readonly config: any;
 }
 
-type DataSourceResponsePayload = DataSourceResponse<any>;
-
 export interface GraphClickedPayload {
   pos: any;
   panel: any;
@@ -81,7 +79,6 @@ export interface PanelChangeViewPayload {}
  * Events
  */
 
-export const dsRequestResponse = eventFactory<DataSourceResponsePayload>('ds-request-response');
 export const dsRequestError = eventFactory<any>('ds-request-error');
 export const toggleSidemenuHidden = eventFactory('toggle-sidemenu-hidden');
 export const graphClicked = eventFactory<GraphClickedPayload>('graph-click');

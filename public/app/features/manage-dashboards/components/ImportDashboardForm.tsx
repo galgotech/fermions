@@ -1,8 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 
 import { selectors } from '@grafana/e2e-selectors';
-import { DataSourcePicker } from '@grafana/runtime';
-import { ExpressionDatasourceRef } from '@grafana/runtime/src/utils/DataSourceWithBackend';
 import {
   Button,
   Field,
@@ -19,7 +17,6 @@ import { FolderPicker } from 'app/core/components/Select/FolderPicker';
 import {
   DashboardInput,
   DashboardInputs,
-  DataSourceInput,
   ImportDashboardDTO,
   LibraryPanelInputState,
 } from '../state/reducers';
@@ -51,7 +48,6 @@ export const ImportDashboardForm: FC<Props> = ({
   watch,
 }) => {
   const [isSubmitted, setSubmitted] = useState(false);
-  const watchDataSources = watch('dataSources');
   const watchFolder = watch('folder');
 
   /*
@@ -108,37 +104,6 @@ export const ImportDashboardForm: FC<Props> = ({
           )}
         </>
       </Field>
-      {inputs.dataSources &&
-        inputs.dataSources.map((input: DataSourceInput, index: number) => {
-          if (input.pluginId === ExpressionDatasourceRef.type) {
-            return null;
-          }
-          const dataSourceOption = `dataSources[${index}]`;
-          const current = watchDataSources ?? [];
-          return (
-            <Field
-              label={input.label}
-              key={dataSourceOption}
-              invalid={errors.dataSources && !!errors.dataSources[index]}
-              error={errors.dataSources && errors.dataSources[index] && 'A data source is required'}
-            >
-              <InputControl
-                name={dataSourceOption as any}
-                render={({ field: { ref, ...field } }) => (
-                  <DataSourcePicker
-                    {...field}
-                    noDefault={true}
-                    placeholder={input.info}
-                    pluginId={input.pluginId}
-                    current={current[index]?.uid}
-                  />
-                )}
-                control={control}
-                rules={{ required: true }}
-              />
-            </Field>
-          );
-        })}
       {inputs.constants &&
         inputs.constants.map((input: DashboardInput, index) => {
           const constantIndex = `constants[${index}]`;

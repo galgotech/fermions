@@ -1,8 +1,3 @@
-const dashboardDSPlugin = async () =>
-  await import(/* webpackChunkName "dashboardDSPlugin" */ 'app/plugins/datasource/dashboard/module');
-const grafanaPlugin = async () =>
-  await import(/* webpackChunkName: "grafanaPlugin" */ 'app/plugins/datasource/grafana/module');
-
 import * as dashListPanel from 'app/plugins/panel/dashlist/module';
 import * as gettingStartedPanel from 'app/plugins/panel/gettingstarted/module';
 import * as livePanel from 'app/plugins/panel/live/module';
@@ -16,8 +11,6 @@ const canvasPanel = async () => await import(/* webpackChunkName: "canvasPanel" 
 const iconPanel = async () => await import(/* webpackChunkName: "iconPanel" */ 'app/plugins/panel/icon/module');
 
 const builtInPlugins: any = {
-  'app/plugins/datasource/dashboard/module': dashboardDSPlugin,
-  'app/plugins/datasource/grafana/module': grafanaPlugin,
 
   'app/plugins/panel/text/module': textPanel,
   'app/plugins/panel/canvas/module': canvasPanel,

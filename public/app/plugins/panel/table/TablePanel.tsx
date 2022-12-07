@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 
 import {
   DataFrame,
-  getDataSourceRef,
   getFrameDisplayName,
   PanelProps,
   SelectableValue,
@@ -13,7 +12,6 @@ import { PanelDataErrorView } from '@grafana/runtime';
 import { Select, Table } from '@grafana/ui';
 import { FilterItem, TableSortByFieldState } from '@grafana/ui/src/components/Table/types';
 import { config } from 'app/core/config';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { getDashboardSrv } from '../../../features/dashboard/services/DashboardSrv';
 import { dispatch } from '../../../store/store';
@@ -84,13 +82,11 @@ export class TablePanel extends Component<Props> {
 
     // When the datasource is null/undefined (for a default datasource), we use getInstanceSettings
     // to find the real datasource ref for the default datasource.
-    const datasourceInstance = getDatasourceSrv().getInstanceSettings(panelModel.datasource);
-    const datasourceRef = datasourceInstance && getDataSourceRef(datasourceInstance);
-    if (!datasourceRef) {
+    if (true) {
       return;
     }
 
-    dispatch({ datasource: datasourceRef, key, operator, value });
+    dispatch({ key, operator, value });
   };
 
   renderTable(frame: DataFrame, width: number, height: number, subData?: DataFrame[]) {

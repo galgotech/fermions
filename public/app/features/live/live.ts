@@ -1,11 +1,7 @@
 import { from, map, of, switchMap } from 'rxjs';
 
-import { DataFrame, toLiveChannelId } from '@grafana/data';
+import { toLiveChannelId } from '@grafana/data';
 import { BackendSrv, GrafanaLiveSrv, toDataQueryResponse } from '@grafana/runtime';
-import {
-  standardStreamOptionsProvider,
-  toStreamingDataResponse,
-} from '@grafana/runtime/src/utils/DataSourceWithBackend';
 
 import { CentrifugeSrv, StreamingDataQueryResponse } from './centrifuge/service';
 import { StreamingDataFrame } from './data/StreamingDataFrame';
@@ -78,13 +74,7 @@ export class GrafanaLiveService implements GrafanaLiveSrv {
     return from(this.deps.centrifugeSrv.getQueryData(options)).pipe(
       switchMap((rawResponse) => {
         const parsedResponse = toDataQueryResponse(rawResponse, options.request.targets);
-
-        const isSubscribable =
-          parsedResponse.data?.length && parsedResponse.data.find((f: DataFrame) => f.meta?.channel);
-
-        return isSubscribable
-          ? toStreamingDataResponse(parsedResponse, options.request, standardStreamOptionsProvider)
-          : of(parsedResponse);
+        return of(parsedResponse);
       })
     );
   };

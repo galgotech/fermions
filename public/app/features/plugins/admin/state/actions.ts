@@ -3,7 +3,7 @@ import { createAction, createAsyncThunk, Update } from '@reduxjs/toolkit';
 import { PanelPlugin } from '@grafana/data';
 import { getBackendSrv, isFetchError } from '@grafana/runtime';
 import { importPanelPlugin } from 'app/features/plugins/importPanelPlugin';
-import { StoreState, ThunkResult } from 'app/types';
+import { ThunkResult } from 'app/types';
 
 import { invalidatePluginInCache } from '../../pluginCacheBuster';
 import {
@@ -106,10 +106,7 @@ export const uninstall = createAsyncThunk(`${STATE_PREFIX}/uninstall`, async (id
 // (Originally in "public/app/features/plugins/state/actions.ts")
 // TODO<remove once the "plugin_admin_enabled" feature flag is removed>
 export const loadPluginDashboards = createAsyncThunk(`${STATE_PREFIX}/loadPluginDashboards`, async (_, thunkApi) => {
-  const state = thunkApi.getState() as StoreState;
-  const dataSourceType = state.dataSources.dataSource.type;
-  const url = `api/plugins/${dataSourceType}/dashboards`;
-
+  const url = `api/plugins/removed/dashboards`;
   return getBackendSrv().get(url);
 });
 

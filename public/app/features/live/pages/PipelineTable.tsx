@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 
 import { getBackendSrv } from '@grafana/runtime';
 import { Tag, IconButton } from '@grafana/ui';
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { RuleModal } from './RuleModal';
 import { Rule, Output, RuleType } from './types';
@@ -57,21 +56,6 @@ export const PipelineTable = (props: Props) => {
   };
 
   const renderPattern = (pattern: string) => {
-    if (pattern.startsWith('ds/')) {
-      const idx = pattern.indexOf('/', 4);
-      if (idx > 3) {
-        const uid = pattern.substring(3, idx);
-        const ds = getDatasourceSrv().getInstanceSettings(uid);
-        if (ds) {
-          return (
-            <div>
-              <Tag name={ds.name} colorIndex={1} /> &nbsp;
-              <span>{pattern.substring(idx + 1)}</span>
-            </div>
-          );
-        }
-      }
-    }
     return pattern;
   };
 

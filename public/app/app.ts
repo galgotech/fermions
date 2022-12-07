@@ -26,7 +26,6 @@ import {
   locationService,
   registerEchoBackend,
   setBackendSrv,
-  setDataSourceSrv,
   setEchoSrv,
   setLocationSrv,
 } from '@grafana/runtime';
@@ -62,7 +61,6 @@ import { KeybindingSrv } from './core/services/keybindingSrv';
 import { initDevFeatures } from './dev';
 import { PanelDataErrorView } from './features/panel/components/PanelDataErrorView';
 import { PanelRenderer } from './features/panel/components/PanelRenderer';
-import { DatasourceSrv } from './features/plugins/datasource_srv';
 import { preloadPlugins } from './features/plugins/pluginPreloader';
 import { initWindowRuntime } from './features/runtime/init';
 import { configureStore } from './store/configureStore';
@@ -117,10 +115,6 @@ export class GrafanaApp {
       // intercept anchor clicks and forward it to custom history instead of relying on browser's history
       document.addEventListener('click', interceptLinkClicks);
 
-      // Init DataSourceSrv
-      const dataSourceSrv = new DatasourceSrv();
-      dataSourceSrv.init(config.datasources, config.defaultDatasource);
-      setDataSourceSrv(dataSourceSrv);
       initWindowRuntime();
 
       // init modal manager

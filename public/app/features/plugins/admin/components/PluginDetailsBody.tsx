@@ -9,7 +9,6 @@ import { usePluginConfig } from '../hooks/usePluginConfig';
 import { CatalogPlugin, PluginTabIds } from '../types';
 
 import { AppConfigCtrlWrapper } from './AppConfigWrapper';
-import { PluginDashboards } from './PluginDashboards';
 import { PluginUsage } from './PluginUsage';
 
 type Props = {
@@ -74,7 +73,6 @@ export function PluginDetailsBody({ plugin, queryParams, pageId }: Props): JSX.E
   if (pageId === PluginTabIds.DASHBOARDS && pluginConfig) {
     return (
       <div className={styles.container}>
-        <PluginDashboards plugin={pluginConfig?.meta} />
       </div>
     );
   }

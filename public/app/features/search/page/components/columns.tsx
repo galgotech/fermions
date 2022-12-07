@@ -9,7 +9,7 @@ import {
   getDisplayProcessor,
   getFieldDisplayName,
 } from '@grafana/data';
-import { config, getDataSourceSrv } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
 import { Checkbox, Icon, IconButton, IconName, TagList } from '@grafana/ui';
 import appEvents from 'app/core/app_events';
 import { PluginIconName } from 'app/features/plugins/admin/types';
@@ -277,7 +277,6 @@ function makeDataSourceColumn(
   invalidDatasourceItemClass: string,
   onDatasourceChange: (datasource?: string) => void
 ): TableColumn {
-  const srv = getDataSourceSrv();
   return {
     id: `column-datasource`,
     field,
@@ -290,23 +289,7 @@ function makeDataSourceColumn(
       return (
         <div {...p.cellProps} className={cx(datasourceItemClass)}>
           {dslist.map((v, i) => {
-            const settings = srv.getInstanceSettings(v);
-            const icon = settings?.meta?.info?.logos?.small;
-            if (icon) {
-              return (
-                <span
-                  key={i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onDatasourceChange(settings.uid);
-                  }}
-                >
-                  <img src={icon} alt="" width={14} height={14} title={settings.type} className={iconClass} />
-                  {settings.name}
-                </span>
-              );
-            }
+    
             return (
               <span className={invalidDatasourceItemClass} key={i}>
                 {v}

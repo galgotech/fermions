@@ -1,47 +1,10 @@
-import { isString } from 'lodash';
-
 import {
   DataSourcePluginOptionsEditorProps,
   SelectableValue,
   KeyValue,
   DataSourceSettings,
-  DataSourceInstanceSettings,
-  DataSourceRef,
   DataSourceJsonData,
 } from '../types';
-
-/**
- * Convert instance settings to a reference
- *
- * @public
- */
-export function getDataSourceRef(ds: DataSourceInstanceSettings): DataSourceRef {
-  return { uid: ds.uid, type: ds.type };
-}
-
-/**
- * Returns true if the argument is a DataSourceRef
- *
- * @public
- */
-export function isDataSourceRef(ref: DataSourceRef | string | null | undefined): ref is DataSourceRef {
-  return typeof ref === 'object' && typeof ref?.uid === 'string';
-}
-
-/**
- * Get the UID from a string of reference
- *
- * @public
- */
-export function getDataSourceUID(ref: DataSourceRef | string | null): string | undefined {
-  if (isDataSourceRef(ref)) {
-    return ref.uid;
-  }
-  if (isString(ref)) {
-    return ref;
-  }
-  return undefined;
-}
 
 export const onUpdateDatasourceOption =
   (props: DataSourcePluginOptionsEditorProps, key: keyof DataSourceSettings) =>

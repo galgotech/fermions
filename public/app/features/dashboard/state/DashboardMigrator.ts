@@ -3,13 +3,10 @@ import { each, findIndex, flattenDeep, isArray, isBoolean, isNumber, isString, m
 import {
   DataLink,
   DataLinkBuiltInVars,
-  DataSourceRef,
   FieldConfigSource,
   FieldMatcherID,
   FieldType,
   getActiveThreshold,
-  getDataSourceRef,
-  isDataSourceRef,
   MappingType,
   SpecialValueMatch,
   standardEditorsRegistry,
@@ -19,7 +16,6 @@ import {
   ValueMap,
   ValueMapping,
 } from '@grafana/data';
-import { getDataSourceSrv, setDataSourceSrv } from '@grafana/runtime';
 import { AxisPlacement, GraphFieldConfig } from '@grafana/ui';
 import { getAllOptionEditors, getAllStandardFieldConfigs } from 'app/core/components/OptionsUI/registry';
 import {
@@ -32,7 +28,6 @@ import {
 } from 'app/core/constants';
 import getFactors from 'app/core/utils/factors';
 import kbn from 'app/core/utils/kbn';
-import { DatasourceSrv } from 'app/features/plugins/datasource_srv';
 
 import { DashboardModel } from './DashboardModel';
 import { PanelModel } from './PanelModel';
@@ -46,11 +41,6 @@ export class DashboardMigrator {
 
   constructor(dashboardModel: DashboardModel) {
     this.dashboard = dashboardModel;
-
-    // for tests to pass
-    if (!getDataSourceSrv()) {
-      setDataSourceSrv(new DatasourceSrv());
-    }
   }
 
   updateSchema(old: any) {
@@ -611,22 +601,6 @@ export class DashboardMigrator {
 
     // Replace datasource name with reference, uid and type
     if (oldVersion < 33) {
-      panelUpgrades.push((panel) => {
-        panel.datasource = migrateDatasourceNameToRef(panel.datasource, { returnDefaultAsNull: true });
-
-        if (!panel.targets) {
-          return panel;
-        }
-
-        for (const target of panel.targets) {
-          const targetRef = migrateDatasourceNameToRef(target.datasource, { returnDefaultAsNull: true });
-          if (targetRef != null) {
-            target.datasource = targetRef;
-          }
-        }
-
-        return panel;
-      });
     }
 
     if (oldVersion < 34) {
@@ -640,38 +614,7 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 36) {
-      // Migrate datasource: null to current default
-      const defaultDs = getDataSourceSrv().getInstanceSettings(null);
-      if (defaultDs) {
-        for (const variable of this.dashboard.templating.list) {
-          if (variable.type === 'query' && variable.datasource === null) {
-            variable.datasource = getDataSourceRef(defaultDs);
-          }
-        }
 
-        panelUpgrades.push((panel: PanelModel) => {
-          if (panel.targets) {
-            let panelDataSourceWasDefault = false;
-            if (panel.datasource == null && panel.targets.length > 0) {
-              panel.datasource = getDataSourceRef(defaultDs);
-              panelDataSourceWasDefault = true;
-            }
-
-            for (const target of panel.targets) {
-              if (target.datasource == null || target.datasource.uid == null) {
-                target.datasource = { ...panel.datasource };
-              }
-
-              if (panelDataSourceWasDefault && target.datasource?.uid !== '__expr__') {
-                // We can have situations when default ds changed and the panel level data source is different from the queries
-                // In this case we use the query level data source as source for truth
-                panel.datasource = target.datasource as DataSourceRef;
-              }
-            }
-          }
-          return panel;
-        });
-      }
     }
 
     if (oldVersion < 37) {
@@ -942,32 +885,6 @@ function updateVariablesSyntax(text: string) {
     }
     return match;
   });
-}
-
-
-
-interface MigrateDatasourceNameOptions {
-  returnDefaultAsNull: boolean;
-}
-
-export function migrateDatasourceNameToRef(
-  nameOrRef: string | DataSourceRef | null | undefined,
-  options: MigrateDatasourceNameOptions
-): DataSourceRef | null {
-  if (options.returnDefaultAsNull && (nameOrRef == null || nameOrRef === 'default')) {
-    return null;
-  }
-
-  if (isDataSourceRef(nameOrRef)) {
-    return nameOrRef;
-  }
-
-  const ds = getDataSourceSrv().getInstanceSettings(nameOrRef);
-  if (!ds) {
-    return { uid: nameOrRef as string }; // not found
-  }
-
-  return getDataSourceRef(ds);
 }
 
 function upgradeValueMappingsForPanel(panel: PanelModel) {

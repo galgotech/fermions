@@ -9,7 +9,6 @@ import {
   FieldConfigSource,
   PanelPlugin,
   PanelModel as IPanelModel,
-  DataSourceRef,
 } from '@grafana/data';
 import { RefreshEvent } from '@grafana/runtime';
 import config from 'app/core/config';
@@ -76,7 +75,6 @@ const mustKeepProps: { [str: string]: boolean } = {
   minSpan: true,
   panels: true,
   targets: true,
-  datasource: true,
   timeShift: true,
   hideTimeOverride: true,
   description: true,
@@ -121,7 +119,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
   panels?: PanelModel[];
   declare targets: DataQuery[];
-  datasource: DataSourceRef | null = null;
   thresholds?: any;
   pluginVersion?: string;
   savedQueryLink: SavedQueryLink | null = null; // Used by the experimental feature queryLibrary
@@ -457,12 +454,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   }
 
   updateQueries(options: QueryGroupOptions) {
-    const { dataSource } = options;
-    this.datasource = {
-      uid: dataSource.uid,
-      type: dataSource.type,
-    };
-
     if (options.savedQueryUid) {
       this.savedQueryLink = {
         ref: {

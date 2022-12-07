@@ -3,13 +3,11 @@ import React from 'react';
 
 import {
   DataSourceJsonData,
-  DataSourceInstanceSettings,
   DataSourcePluginOptionsEditorProps,
   GrafanaTheme2,
   KeyValue,
   updateDatasourcePluginJsonDataOption,
 } from '@grafana/data';
-import { DataSourcePicker } from '@grafana/runtime';
 import { InlineField, InlineFieldRow, Input, TagsInput, useStyles2, InlineSwitch } from '@grafana/ui';
 
 import KeyValueInput from './KeyValueInput';
@@ -34,13 +32,6 @@ interface Props extends DataSourcePluginOptionsEditorProps<TraceToLogsData> {}
 
 export function TraceToLogsSettings({ options, onOptionsChange }: Props) {
   const styles = useStyles2(getStyles);
-  const supportedDataSourceTypes = [
-    'loki',
-    'elasticsearch',
-    'grafana-splunk-datasource', // external
-    'grafana-opensearch-datasource', // external
-  ];
-
   return (
     <div className={css({ width: '100%' })}>
       <h3 className="page-heading">Trace to logs</h3>
@@ -48,25 +39,6 @@ export function TraceToLogsSettings({ options, onOptionsChange }: Props) {
       <div className={styles.infoText}>
         Trace to logs lets you navigate from a trace span to the selected data source&apos;s logs.
       </div>
-
-      <InlineFieldRow>
-        <InlineField tooltip="The data source the trace is going to navigate to" label="Data source" labelWidth={26}>
-          <DataSourcePicker
-            inputId="trace-to-logs-data-source-picker"
-            filter={(ds) => supportedDataSourceTypes.includes(ds.type)}
-            current={options.jsonData.tracesToLogs?.datasourceUid}
-            noDefault={true}
-            width={40}
-            onChange={(ds: DataSourceInstanceSettings) =>
-              updateDatasourcePluginJsonDataOption({ onOptionsChange, options }, 'tracesToLogs', {
-                ...options.jsonData.tracesToLogs,
-                datasourceUid: ds.uid,
-                tags: options.jsonData.tracesToLogs?.tags,
-              })
-            }
-          />
-        </InlineField>
-      </InlineFieldRow>
 
       {options.jsonData.tracesToLogs?.mapTagNamesEnabled ? (
         <InlineFieldRow>

@@ -8,7 +8,6 @@ import {
   KeyValue,
   updateDatasourcePluginJsonDataOption,
 } from '@grafana/data';
-import { DataSourcePicker } from '@grafana/runtime';
 import { Button, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 
 import KeyValueInput from '../TraceToLogs/KeyValueInput';
@@ -44,21 +43,6 @@ export function TraceToMetricsSettings({ options, onOptionsChange }: Props) {
       </div>
 
       <InlineFieldRow className={styles.row}>
-        <InlineField tooltip="The data source the trace is going to navigate to" label="Data source" labelWidth={26}>
-          <DataSourcePicker
-            inputId="trace-to-metrics-data-source-picker"
-            pluginId="prometheus"
-            current={options.jsonData.tracesToMetrics?.datasourceUid}
-            noDefault={true}
-            width={40}
-            onChange={(ds) =>
-              updateDatasourcePluginJsonDataOption({ onOptionsChange, options }, 'tracesToMetrics', {
-                ...options.jsonData.tracesToMetrics,
-                datasourceUid: ds.uid,
-              })
-            }
-          />
-        </InlineField>
         {options.jsonData.tracesToMetrics?.datasourceUid ? (
           <Button
             type="button"

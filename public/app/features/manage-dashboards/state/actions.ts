@@ -1,5 +1,5 @@
 import { DataSourceInstanceSettings, locationUtil } from '@grafana/data';
-import { getDataSourceSrv, locationService, getBackendSrv, isFetchError } from '@grafana/runtime';
+import { locationService, getBackendSrv, isFetchError } from '@grafana/runtime';
 import { notifyApp } from 'app/core/actions';
 import { createErrorNotification } from 'app/core/copy/appNotification';
 import { SaveDashboardCommand } from 'app/features/dashboard/components/SaveDashboard/types';
@@ -17,7 +17,6 @@ import {
   fetchDashboard,
   fetchFailed,
   ImportDashboardDTO,
-  InputType,
   LibraryPanelInput,
   LibraryPanelInputState,
   setGcomDashboard,
@@ -66,9 +65,7 @@ function processInputs(dashboardJson: any): ThunkResult<void> {
           options: [],
         };
 
-        if (input.type === InputType.DataSource) {
-          getDataSourceOptions(input, inputModel);
-        } else if (!inputModel.info) {
+        if (!inputModel.info) {
           inputModel.info = 'Specify a string constant';
         }
 
@@ -174,15 +171,7 @@ export function importDashboard(importDashboardForm: ImportDashboardDTO): ThunkR
   };
 }
 
-const getDataSourceOptions = (input: { pluginId: string; pluginName: string }, inputModel: any) => {
-  const sources = getDataSourceSrv().getList({ pluginId: input.pluginId });
 
-  if (sources.length === 0) {
-    inputModel.info = 'No data sources of type ' + input.pluginName + ' found';
-  } else if (!inputModel.info) {
-    inputModel.info = 'Select a ' + input.pluginName + ' data source';
-  }
-};
 
 export function moveDashboards(dashboardUids: string[], toFolder: FolderInfo) {
   const tasks = [];

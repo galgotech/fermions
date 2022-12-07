@@ -11,14 +11,12 @@ import { getGrafanaSearcher, SearchQuery } from '../../search/service';
 import { getGlobalStyles } from '../globalStyles';
 import { QueryItem } from '../types';
 
-import { DatasourceTypePicker } from './DatasourceTypePicker';
 import { QueryCreateDrawer } from './QueryCreateDrawer';
 import { QueryListItem } from './QueryListItem';
 
 const QueryLibrarySearchTable = () => {
   const styles = useStyles2(getStyles);
 
-  const [datasourceType, setDatasourceType] = useState<string | null>(null);
   const [searchQueryBy, setSearchByQuery] = useState<string>('');
   const [reload, setReload] = useState(0);
 
@@ -43,16 +41,12 @@ const QueryLibrarySearchTable = () => {
       kind: ['query'],
     };
 
-    if (datasourceType?.length) {
-      query.ds_type = datasourceType;
-    }
-
     if (searchQueryBy) {
       query.query = searchQueryBy;
     }
 
     return query;
-  }, [datasourceType, searchQueryBy]);
+  }, [searchQueryBy]);
 
   useEffect(() => {}, [reload]);
 
@@ -86,12 +80,7 @@ const QueryLibrarySearchTable = () => {
               className={styles.searchBy}
             />
             Filter by datasource type
-            <DatasourceTypePicker
-              current={datasourceType}
-              onChange={(newDsType) => {
-                setDatasourceType(() => newDsType);
-              }}
-            />
+
           </HorizontalGroup>
           <ModalsController>
             {({ showModal, hideModal }) => {

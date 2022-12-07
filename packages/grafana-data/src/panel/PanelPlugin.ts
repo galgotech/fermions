@@ -11,7 +11,6 @@ import {
   PanelProps,
   PanelTypeChangedHandler,
   FieldConfigProperty,
-  PanelPluginDataSupport,
   VisualizationSuggestionsSupplier,
 } from '../types';
 import { FieldConfigEditorBuilder, PanelOptionsEditorBuilder } from '../utils/OptionsUIBuilders';
@@ -115,7 +114,6 @@ export class PanelPlugin<
   onPanelMigration?: PanelMigrationHandler<TOptions>;
   onPanelTypeChanged?: PanelTypeChangedHandler<TOptions>;
   noPadding?: boolean;
-  dataSupport: PanelPluginDataSupport = {};
 
   constructor(panel: ComponentType<PanelProps<TOptions>> | null) {
     super();
@@ -247,33 +245,6 @@ export class PanelPlugin<
    */
   getPanelOptionsSupplier(): PanelOptionsSupplier<TOptions> {
     return this.optionsSupplier ?? ((() => {}) as PanelOptionsSupplier<TOptions>);
-  }
-
-  /**
-   * Tells Grafana if the plugin should subscribe to annotation and alertState results.
-   *
-   * @example
-   * ```typescript
-   *
-   * import { ShapePanel } from './ShapePanel';
-   *
-   * interface ShapePanelOptions {}
-   *
-   * export const plugin = new PanelPlugin<ShapePanelOptions>(ShapePanel)
-   *     .useFieldConfig({})
-   *     ...
-   *     ...
-   *     .setDataSupport({
-   *       annotations: true,
-   *       alertStates: true,
-   *     });
-   * ```
-   *
-   * @public
-   **/
-  setDataSupport(support: Partial<PanelPluginDataSupport>) {
-    this.dataSupport = { ...this.dataSupport, ...support };
-    return this;
   }
 
   /**

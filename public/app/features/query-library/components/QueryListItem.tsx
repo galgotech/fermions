@@ -1,10 +1,8 @@
 import { css, cx } from '@emotion/css';
-import { uniq } from 'lodash';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo } from 'react';
 
-import { DataSourceApi, GrafanaTheme2 } from '@grafana/data/src';
-import { getDataSourceSrv } from '@grafana/runtime/src';
-import { Icon, Tooltip } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data/src';
+import { Icon } from '@grafana/ui';
 import { Badge, IconButton, useStyles2 } from '@grafana/ui/src';
 
 import { useAppNotification } from '../../../core/copy/appNotification';
@@ -32,16 +30,6 @@ export const QueryListItem = memo(
     const notifyApp = useAppNotification();
 
     const styles = useStyles2(getStyles);
-    const [dsInfo, setDsInfo] = useState<DataSourceApi[]>([]);
-
-    useEffect(() => {
-      const getQueryDsInstance = async () => {
-        const uniqueUids = uniq(query?.ds_uid ?? []);
-        setDsInfo((await Promise.all(uniqueUids.map((dsUid) => getDataSourceSrv().get(dsUid)))).filter(Boolean));
-      };
-
-      getQueryDsInstance();
-    }, [query.ds_uid]);
 
     const closeDrawer = () => {
       hideModal();
@@ -58,33 +46,6 @@ export const QueryListItem = memo(
     const deleteQuery = async () => {
       await getSavedQuerySrv().deleteSavedQuery({ uid: query.uid });
       updateComponent();
-    };
-
-    const getDsType = () => {
-      const dsType = dsInfo?.length > 1 ? 'mixed' : dsInfo?.[0]?.type ?? 'datasource';
-      return startWithUpperCase(dsType);
-    };
-
-    const startWithUpperCase = (dsType: string) => {
-      return dsType.charAt(0).toUpperCase() + dsType.slice(1);
-    };
-
-    const getTooltip = () => {
-      return (
-        <div>
-          <ul className={styles.dsTooltipList}>
-            {dsInfo.map((dsI, key) => {
-              return (
-                <li key={key}>
-                  <img className={styles.dsTooltipIcon} src={dsI?.meta?.info.logos.small} alt="datasource" />
-                  &nbsp;
-                  {startWithUpperCase(dsI.type)}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      );
     };
 
     const copyToClipboard = async () => {
@@ -121,18 +82,6 @@ export const QueryListItem = memo(
         <td onClick={openDrawer}>{query.title}</td>
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions*/}
         <td onClick={openDrawer}>
-          <img
-            className={styles.dsIcon}
-            src={getDsType() === 'Mixed' ? 'public/img/icn-datasource.svg' : dsInfo[0]?.meta?.info.logos.small}
-            alt="datasource"
-            style={{ width: '16px', height: '16px' }}
-          />
-          &nbsp;&nbsp;{getDsType()}&nbsp;
-          {getDsType() === 'Mixed' && (
-            <Tooltip content={getTooltip()}>
-              <Icon name={'question-circle'} className={styles.infoIcon} />
-            </Tooltip>
-          )}
         </td>
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions*/}
         <td onClick={openDrawer}>

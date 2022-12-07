@@ -6,7 +6,6 @@ import apiKeysReducers from 'app/features/api-keys/state/reducers';
 import { publicDashboardApi } from 'app/features/dashboard/api/publicDashboardApi';
 import panelEditorReducers from 'app/features/dashboard/components/PanelEditor/state/reducers';
 import dashboardReducers from 'app/features/dashboard/state/reducers';
-import dataSourcesReducers from 'app/features/datasources/state/reducers';
 import foldersReducers from 'app/features/folders/state/reducers';
 import invitesReducers from 'app/features/invites/state/reducers';
 import importDashboardReducers from 'app/features/manage-dashboards/state/reducers';
@@ -26,7 +25,6 @@ const rootReducers = {
   ...apiKeysReducers,
   ...foldersReducers,
   ...dashboardReducers,
-  ...dataSourcesReducers,
   ...usersReducers,
   ...serviceAccountsReducer,
   ...userReducers,
