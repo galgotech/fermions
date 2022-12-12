@@ -1,5 +1,7 @@
 import { Specification } from '@severlessworkflow/sdk-typescript';
 
+import { BusEventBase, EventBusSrv } from '@grafana/data';
+
 type State = Specification.Sleepstate
 | Specification.Eventstate
 | Specification.Operationstate
@@ -33,16 +35,22 @@ const transitionOrEnd = (state: State): StateEndOrTransition | null => {
 
 export class PanelWorkflowRunner {
   private workflow: Specification.Workflow;
+  private eventBus: EventBusSrv;
   private lastState: any = {};
   private terminate = false;
   private currentState = "";
 
-  constructor(workflow: Specification.Workflow) {
+  constructor(workflow: Specification.Workflow, eventBus: EventBusSrv) {
     this.workflow = workflow
+    this.eventBus = eventBus;
   }
 
   start() {
     console.log(this.workflow);
+
+    this.eventBus.subscribe(WorkflowRunnerEvent, (e: WorkflowRunnerEvent) => {
+        console.log("teste", e.payload.publish);
+    });
 
     if (this.workflow.events) {
       for (const event of this.workflow.events) {
@@ -94,8 +102,9 @@ export class PanelWorkflowRunner {
       const lastStateExecuted = this.currentState;
       this.state(statesByName[this.currentState]);
 
+      // If State not terminante and don't have transition so can be executed only once
       if (!this.terminate && lastStateExecuted === this.currentState) {
-        throw new Error(`State can be executed only once: ${lastStateExecuted}`);
+        throw new Error(`The ${lastStateExecuted} don't have a trasition to next state.`);
       }
     }
   }
@@ -186,6 +195,19 @@ export class PanelWorkflowRunner {
   }
 
   private produceEvent(produceEvent: Specification.Produceeventdef) {
-    console.log("produceEvent", produceEvent.eventRef);
+    this.eventBus.publish(new WorkflowRunnerEvent(produceEvent.eventRef, produceEvent.data))
   }
+}
+
+export class WorkflowRunnerEvent extends BusEventBase {
+    static type = 'panels-workflow-event';
+    readonly payload?: any;
+
+    constructor(publish: string, data: any) {
+        super();
+        this.payload = {
+            publish,
+            data,
+        };
+    }
 }

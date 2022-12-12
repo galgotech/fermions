@@ -525,11 +525,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   }
 
   runWorkflow() {
-    // console.log('runWorkflow', this.getWorkflow());
-    // console.log(this.getWorkflow().start);
-    const runner = new PanelWorkflowRunner(this.getWorkflow());
+    const runner = new PanelWorkflowRunner(this.getWorkflow(), this.events);
     runner.start();
-    // this.stateWorkflow(this.getWorkflow().start! as string, data);
   }
 
   getWorkflow(): Specification.Workflow {
