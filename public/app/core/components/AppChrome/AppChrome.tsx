@@ -19,7 +19,7 @@ export function AppChrome({ children }: Props) {
   const { chrome } = useGrafana();
   const state = chrome.useState();
 
-  if (!config.featureToggles.topnav || config.isPublicDashboardView) {
+  if (!config.featureToggles.topnav) {
     return <main className="main-view">{children}</main>;
   }
 

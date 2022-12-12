@@ -28,8 +28,6 @@ import {
 } from '@grafana/data';
 import { RadioButtonGroup, TimeZonePicker, Switch } from '@grafana/ui';
 import { FieldNamePicker } from '@grafana/ui/src/components/MatchersUI/FieldNamePicker';
-import { ThresholdsValueEditor } from 'app/features/dimensions/editors/ThresholdsEditor/thresholds';
-import { ValueMappingsEditor } from 'app/features/dimensions/editors/ValueMappingsEditor/ValueMappingsEditor';
 
 import { DashboardPicker, DashboardPickerOptions } from './DashboardPicker';
 import { ColorValueEditor } from './color';
@@ -167,19 +165,7 @@ export const getAllOptionEditors = () => {
     editor: DashboardPicker as any,
   };
 
-  const mappings: StandardEditorsRegistryItem<ValueMapping[]> = {
-    id: 'mappings',
-    name: 'Mappings',
-    description: 'Allows defining value mappings',
-    editor: ValueMappingsEditor as any,
-  };
 
-  const thresholds: StandardEditorsRegistryItem<ThresholdsConfig> = {
-    id: 'thresholds',
-    name: 'Thresholds',
-    description: 'Allows defining thresholds',
-    editor: ThresholdsValueEditor as any,
-  };
 
   return [
     text,
@@ -198,8 +184,6 @@ export const getAllOptionEditors = () => {
     multiSelect,
     fieldName,
     dashboardPicker,
-    mappings,
-    thresholds,
   ];
 };
 

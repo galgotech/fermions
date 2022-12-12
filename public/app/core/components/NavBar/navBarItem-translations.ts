@@ -39,8 +39,6 @@ export function getNavTitle(navId: string | undefined) {
       return t('nav.new-dashboard.title', 'New dashboard');
     case 'dashboards/folder/new':
       return t('nav.new-folder.title', 'New folder');
-    case 'scenes':
-      return t('nav.scenes.title', 'Scenes');
     case 'receivers':
       return t('nav.alerting-receivers.title', 'Contact points');
     case 'am-routes':

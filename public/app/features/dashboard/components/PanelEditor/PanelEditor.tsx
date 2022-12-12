@@ -4,14 +4,13 @@ import { connect, ConnectedProps } from 'react-redux';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Subscription } from 'rxjs';
 
-import { FieldConfigSource, GrafanaTheme2, NavModel, NavModelItem, PageLayoutType } from '@grafana/data';
+import { GrafanaTheme2, NavModel, NavModelItem, PageLayoutType } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { Stack } from '@grafana/experimental';
 import { config, locationService } from '@grafana/runtime';
 import {
   Button,
   HorizontalGroup,
-  InlineSwitch,
   ModalsController,
   PageToolbar,
   RadioButtonGroup,
@@ -39,12 +38,9 @@ import { DashboardPanel } from '../../dashgrid/DashboardPanel';
 import { DashboardModel, PanelModel } from '../../state';
 import { SaveDashboardDrawer } from '../SaveDashboard/SaveDashboardDrawer';
 
-import { OptionsPane } from './OptionsPane';
-import { PanelEditorTableView } from './PanelEditorTableView';
 import { PanelEditorTabs } from './PanelEditorTabs';
-import { VisualizationButton } from './VisualizationButton';
 import { discardPanelChanges, initPanelEditor, updatePanelEditorUIState } from './state/actions';
-import { PanelEditorUIState, toggleTableView } from './state/reducers';
+import { PanelEditorUIState } from './state/reducers';
 import { getPanelEditorTabs } from './state/selectors';
 import { DisplayMode, displayModes, PanelEditorTab } from './types';
 import { calculatePanelSize } from './utils';
@@ -68,7 +64,6 @@ const mapStateToProps = (state: StoreState, ownProps: OwnProps) => {
     instanceState: panelState?.instanceState,
     initDone: state.panelEditor.initDone,
     uiState: state.panelEditor.ui,
-    tableViewEnabled: state.panelEditor.tableViewEnabled,
   };
 };
 
@@ -77,7 +72,6 @@ const mapDispatchToProps = {
   discardPanelChanges,
   updatePanelEditorUIState,
   updateTimeZoneForSession,
-  toggleTableView,
   notifyApp,
 };
 
@@ -155,42 +149,15 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
     });
   };
 
-  onFieldConfigChange = (config: FieldConfigSource) => {
-    // we do not need to trigger force update here as the function call below
-    // fires PanelOptionsChangedEvent which we subscribe to above
-    this.props.panel.updateFieldConfig({
-      ...config,
-    });
-  };
-
-  onPanelOptionsChanged = (options: any) => {
-    // we do not need to trigger force update here as the function call below
-    // fires PanelOptionsChangedEvent which we subscribe to above
-    this.props.panel.updateOptions(options);
-  };
-
-  onPanelConfigChanged = (configKey: keyof PanelModel, value: any) => {
-    this.props.panel.setProperty(configKey, value);
-    this.props.panel.render();
-    this.forceUpdate();
-  };
-
   onDisplayModeChange = (mode?: DisplayMode) => {
     const { updatePanelEditorUIState } = this.props;
-    if (this.props.tableViewEnabled) {
-      this.props.toggleTableView();
-    }
     updatePanelEditorUIState({
       mode: mode,
     });
   };
 
-  onToggleTableView = () => {
-    this.props.toggleTableView();
-  };
-
   renderPanel(styles: EditorStyles, isOnlyPanel: boolean) {
-    const { dashboard, panel, uiState, tableViewEnabled, theme } = this.props;
+    const { dashboard, panel, uiState, theme } = this.props;
 
     return (
       <div className={styles.mainPaneWrapper} key="panel">
@@ -205,10 +172,6 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
               // If no tabs limit height so panel does not extend to edge
               if (isOnlyPanel) {
                 height -= theme.spacing.gridSize * 2;
-              }
-
-              if (tableViewEnabled) {
-                return <PanelEditorTableView width={width} height={height} panel={panel} dashboard={dashboard} />;
               }
 
               const panelSize = calculatePanelSize(uiState.mode, width, height, panel);
@@ -238,50 +201,30 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
   }
 
   renderPanelAndEditor(styles: EditorStyles) {
-    const { panel, dashboard, plugin, tab } = this.props;
+    const { plugin, tab } = this.props;
     const tabs = getPanelEditorTabs(tab, plugin);
     const isOnlyPanel = tabs.length === 0;
     const panelPane = this.renderPanel(styles, isOnlyPanel);
 
-    if (tabs.length === 0) {
-      return panelPane;
-    }
+    return panelPane;
 
-    return [
-      panelPane,
-      <div
-        className={styles.tabsWrapper}
-        aria-label={selectors.components.PanelEditor.DataPane.content}
-        key="panel-editor-tabs"
-      >
-        <PanelEditorTabs
-          key={panel.key}
-          panel={panel}
-          dashboard={dashboard}
-          tabs={tabs}
-          onChangeTab={this.onChangeTab}
-        />
-      </div>,
-    ];
+    // if (tabs.length === 0) {
+    //   return panelPane;
+    // }
+
+    // return [
+    //   panelPane,
+    // ];
   }
 
   renderPanelToolbar(styles: EditorStyles) {
-    const { uiState, panel, tableViewEnabled } = this.props;
+    const { uiState } = this.props;
 
     return (
       <div className={styles.panelToolbar}>
         <HorizontalGroup justify={'flex-end'} align="flex-start">
           <Stack gap={1}>
-            <InlineSwitch
-              label="Table view"
-              showLabel={true}
-              id="table-view"
-              value={tableViewEnabled}
-              onClick={this.onToggleTableView}
-              aria-label={selectors.components.PanelEditor.toggleTableView}
-            />
             <RadioButtonGroup value={uiState.mode} options={displayModes} onChange={this.onDisplayModeChange} />
-            {!uiState.isPanelOptionsVisible && <VisualizationButton panel={panel} />}
           </Stack>
         </HorizontalGroup>
       </div>
@@ -369,26 +312,6 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
     return editorActions;
   }
 
-  renderOptionsPane() {
-    const { plugin, dashboard, panel, instanceState } = this.props;
-
-    if (!plugin) {
-      return <div />;
-    }
-
-    return (
-      <OptionsPane
-        plugin={plugin}
-        dashboard={dashboard}
-        panel={panel}
-        instanceState={instanceState}
-        onFieldConfigsChange={this.onFieldConfigChange}
-        onPanelOptionsChanged={this.onPanelOptionsChanged}
-        onPanelConfigChange={this.onPanelConfigChanged}
-      />
-    );
-  }
-
   onGoBackToDashboard = () => {
     locationService.partial({ editPanel: null, tab: null, showCategory: null });
   };
@@ -440,6 +363,9 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
       return null;
     }
 
+    const { panel, dashboard, plugin, tab } = this.props;
+    const tabs = getPanelEditorTabs(tab, plugin);
+
     return (
       <Page
         navModel={sectionNav}
@@ -451,9 +377,7 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
       >
         <div className={styles.wrapper}>
           <div className={styles.verticalSplitPanesWrapper}>
-            {!uiState.isPanelOptionsVisible ? (
-              this.renderHorizontalSplit(uiState, styles)
-            ) : (
+            {(
               <SplitPaneWrapper
                 splitOrientation="vertical"
                 maxSize={-300}
@@ -465,8 +389,21 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
                   }
                 }}
               >
-                {this.renderHorizontalSplit(uiState, styles)}
-                {this.renderOptionsPane()}
+                <div
+                  className={styles.tabsWrapper}
+                  aria-label={selectors.components.PanelEditor.DataPane.content}
+                  key="panel-editor-tabs"
+                >
+                  <PanelEditorTabs
+                    key={panel.key}
+                    panel={panel}
+                    dashboard={dashboard}
+                    tabs={tabs}
+                    onChangeTab={this.onChangeTab}
+                  />
+                </div>
+                {this.renderPanelAndEditor(styles)}
+                {/* {this.renderHorizontalSplit(uiState, styles)} */}
               </SplitPaneWrapper>
             )}
           </div>
@@ -491,7 +428,6 @@ export const PanelEditor = withTheme2(connector(PanelEditorUnconnected));
  * Styles
  */
 export const getStyles = stylesFactory((theme: GrafanaTheme2, props: Props) => {
-  const { uiState } = props;
   const paneSpacing = theme.spacing(2);
 
   return {
@@ -514,7 +450,7 @@ export const getStyles = stylesFactory((theme: GrafanaTheme2, props: Props) => {
       flex-direction: column;
       height: 100%;
       width: 100%;
-      padding-right: ${uiState.isPanelOptionsVisible ? 0 : paneSpacing};
+      padding-right: 0;
     `,
     variablesWrapper: css`
       label: variablesWrapper;

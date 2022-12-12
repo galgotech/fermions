@@ -73,7 +73,7 @@ export const AddPanelWidgetUnconnected = ({ panel, dashboard }: Props) => {
     const { gridPos } = panel;
 
     const newPanel: Partial<PanelModel> = {
-      type: 'timeseries',
+      type: 'text',
       title: 'Panel Title',
       gridPos: { x: gridPos.x, y: gridPos.y, w: gridPos.w, h: gridPos.h },
     };
@@ -122,17 +122,6 @@ export const AddPanelWidgetUnconnected = ({ panel, dashboard }: Props) => {
     dashboard.removePanel(panel);
   };
 
-  const onCreateNewRow = () => {
-    const newRow: any = {
-      type: 'row',
-      title: 'Row title',
-      gridPos: { x: 0, y: 0 },
-    };
-
-    dashboard.addPanel(newRow);
-    dashboard.removePanel(panel);
-  };
-
   const styles = useStyles2(getStyles);
   const copiedPanelPlugins = useMemo(() => getCopiedPanelPlugins(), []);
 
@@ -155,16 +144,6 @@ export const AddPanelWidgetUnconnected = ({ panel, dashboard }: Props) => {
               }}
             >
               Add a new panel
-            </CardButton>
-            <CardButton
-              icon="wrap-text"
-              aria-label={selectors.pages.AddDashboard.addNewRow}
-              onClick={() => {
-                reportInteraction('Create new row');
-                onCreateNewRow();
-              }}
-            >
-              Add a new row
             </CardButton>
             <CardButton
               icon="book-open"

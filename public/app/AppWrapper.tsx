@@ -9,7 +9,6 @@ import { SearchWrapper } from 'app/features/search';
 import { getAppRoutes } from 'app/routes/routes';
 import { store } from 'app/store/store';
 
-import { AngularRoot } from './angular/AngularRoot';
 import { GrafanaApp } from './app';
 import { AppChrome } from './core/components/AppChrome/AppChrome';
 import { AppNotificationList } from './core/components/AppNotifications/AppNotificationList';
@@ -81,7 +80,7 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
   }
 
   renderNavBar() {
-    if (config.isPublicDashboardView || !this.state.ready || config.featureToggles.topnav) {
+    if (!this.state.ready || config.featureToggles.topnav) {
       return null;
     }
 
@@ -89,11 +88,11 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
   }
 
   commandPaletteEnabled() {
-    return config.featureToggles.commandPalette && !config.isPublicDashboardView;
+    return config.featureToggles.commandPalette;
   }
 
   searchBarEnabled() {
-    return !config.isPublicDashboardView;
+    return true;
   }
 
   render() {
@@ -130,7 +129,6 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
                             <Banner key={index.toString()} />
                           ))}
 
-                          <AngularRoot />
                           <AppNotificationList />
                           {this.searchBarEnabled() && <SearchWrapper />}
                           {ready && this.renderRoutes()}

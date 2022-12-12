@@ -80,7 +80,7 @@ export function runRequest(request: DataQueryRequest): Observable<PanelData> {
   let state: RunningQueryState = {
     panelData: {
       state: LoadingState.Loading,
-      series: [],
+      data: undefined,
       request: request,
     },
     packets: {},

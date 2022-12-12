@@ -57,7 +57,7 @@ module.exports = (env = {}) =>
     // enable persistent cache for faster builds
     cache: {
       type: 'filesystem',
-      name: 'grafana-default-production',
+      name: 'fermions-default-production',
       buildDependencies: {
         config: [__filename],
       },

@@ -12,7 +12,6 @@ export * from './appNotifications';
 export * from './explore';
 export * from './store';
 export * from './ldap';
-export * from './appEvent';
 export * from './query';
 export * from './preferences';
 export * from './accessControl';

@@ -2,11 +2,10 @@ import Mousetrap from 'mousetrap';
 
 import 'mousetrap-global-bind';
 import 'mousetrap/plugins/global-bind/mousetrap-global-bind';
-import { LegacyGraphHoverClearEvent, locationUtil } from '@grafana/data';
+import { locationUtil } from '@grafana/data';
 import { config, LocationService } from '@grafana/runtime';
 import appEvents from 'app/core/app_events';
 import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardDrawer';
-import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { DashboardModel } from 'app/features/dashboard/state';
 
 import {
@@ -196,11 +195,6 @@ export class KeybindingSrv {
   }
 
   setupDashboardBindings(dashboard: DashboardModel) {
-    this.bind('mod+o', () => {
-      dashboard.graphTooltip = (dashboard.graphTooltip + 1) % 3;
-      dashboard.events.publish(new LegacyGraphHoverClearEvent());
-    });
-
     this.bind('mod+s', () => {
       if (dashboard.meta.canSave) {
         appEvents.publish(
@@ -257,28 +251,6 @@ export class KeybindingSrv {
         const panelIndex = dashboard.getPanelInfoById(panelId)!.index;
         dashboard.duplicatePanel(dashboard.panels[panelIndex]);
       }
-    });
-
-    // share panel
-    this.bindWithPanelId('p s', (panelId) => {
-      const panelInfo = dashboard.getPanelInfoById(panelId);
-
-      appEvents.publish(
-        new ShowModalReactEvent({
-          component: ShareModal,
-          props: {
-            dashboard: dashboard,
-            panel: panelInfo?.panel,
-          },
-        })
-      );
-    });
-
-    // toggle panel legend
-
-    // toggle all panel legends
-    this.bind('d l', () => {
-      dashboard.toggleLegendsForAll();
     });
 
     this.bind('d n', () => {

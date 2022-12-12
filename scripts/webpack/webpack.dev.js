@@ -66,7 +66,7 @@ module.exports = (env = {}) =>
     // enable persistent cache for faster cold starts
     cache: {
       type: 'filesystem',
-      name: 'grafana-default-development',
+      name: 'fermions-default-development',
       buildDependencies: {
         config: [__filename],
       },

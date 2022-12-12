@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Button, Input, Switch, Form, Field, InputControl, HorizontalGroup } from '@grafana/ui';
 import { FolderPicker } from 'app/core/components/Select/FolderPicker';
-import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
+import { DashboardModel } from 'app/features/dashboard/state';
 import { validationSrv } from 'app/features/manage-dashboards/services/ValidationSrv';
 
 import { SaveDashboardFormProps } from '../types';
@@ -19,17 +19,6 @@ const getSaveAsDashboardClone = (dashboard: DashboardModel) => {
   clone.uid = '';
   clone.title += ' Copy';
   clone.editable = true;
-
-  // remove alerts if source dashboard is already persisted
-  // do not want to create alert dupes
-  if (dashboard.id > 0) {
-    clone.panels.forEach((panel: PanelModel) => {
-      if (panel.type === 'graph' && panel.alert) {
-        delete panel.thresholds;
-      }
-      delete panel.alert;
-    });
-  }
 
   delete clone.autoUpdate;
   return clone;

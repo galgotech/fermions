@@ -8,6 +8,9 @@ import { PanelQueriesChangedEvent } from 'app/types/events';
 
 import { DashboardModel, PanelModel } from '../../state';
 
+import { PanelEditorCode } from './PanelEditorCode';
+import { PanelEditorWorkflow } from './PanelEditorWorkflow';
+import { VisualizationSelectPane } from './VisualizationSelectPane';
 import { PanelEditorTab, PanelEditorTabId } from './types';
 
 interface PanelEditorTabsProps {
@@ -27,7 +30,7 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
     return () => eventSubs.unsubscribe();
   }, [panel, dashboard, forceUpdate]);
 
-  // const activeTab = tabs.find((item) => item.active)!;
+  const activeTab = tabs.find((item) => item.active)!;
 
   if (tabs.length === 0) {
     return null;
@@ -44,30 +47,21 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
               active={tab.active}
               onChangeTab={() => onChangeTab(tab)}
               icon={toIconName(tab.icon)}
-              counter={getCounter(panel, tab)}
+              counter={null}
             />
           );
         })}
       </TabsBar>
       <TabContent className={styles.tabContent}>
-        a
+        {activeTab.id === PanelEditorTabId.Panel && <VisualizationSelectPane panel={panel} />}
+        {activeTab.id === PanelEditorTabId.Code && <PanelEditorCode panel={panel} queries={panel.targets} />}
+        {activeTab.id === PanelEditorTabId.Workflow && <PanelEditorWorkflow panel={panel} workflow={null} />}
       </TabContent>
     </div>
   );
 });
 
 PanelEditorTabs.displayName = 'PanelEditorTabs';
-
-function getCounter(panel: PanelModel, tab: PanelEditorTab) {
-  switch (tab.id) {
-    case PanelEditorTabId.Query:
-      return panel.targets.length;
-    case PanelEditorTabId.Alert:
-      return panel.alert ? 1 : 0;
-  }
-
-  return null;
-}
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {

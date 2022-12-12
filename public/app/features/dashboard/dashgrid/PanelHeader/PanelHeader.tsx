@@ -1,25 +1,22 @@
 import { css, cx } from '@emotion/css';
 import React, { FC } from 'react';
 
-import { DataLink, GrafanaTheme2, PanelData } from '@grafana/data';
+import { GrafanaTheme2, PanelData } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { Icon, useStyles2, ClickOutsideWrapper } from '@grafana/ui';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
-import { getPanelLinksSupplier } from 'app/features/panel/panellinks/linkSuppliers';
 
 import PanelHeaderCorner from './PanelHeaderCorner';
 import { PanelHeaderLoadingIndicator } from './PanelHeaderLoadingIndicator';
 import { PanelHeaderMenuTrigger } from './PanelHeaderMenuTrigger';
 import { PanelHeaderMenuWrapper } from './PanelHeaderMenuWrapper';
-import { PanelHeaderNotices } from './PanelHeaderNotices';
 
 export interface Props {
   panel: PanelModel;
   dashboard: DashboardModel;
   title?: string;
   description?: string;
-  links?: DataLink[];
   error?: string;
   isViewing: boolean;
   isEditing: boolean;
@@ -39,7 +36,6 @@ export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, dat
         panel={panel}
         title={title}
         description={panel.description}
-        links={getPanelLinksSupplier(panel)}
         error={error}
       />
       <div className={className}>
@@ -48,9 +44,8 @@ export const PanelHeader: FC<Props> = ({ panel, error, isViewing, isEditing, dat
             return (
               <ClickOutsideWrapper onClick={closeMenu} parent={document}>
                 <div className="panel-title">
-                  <PanelHeaderNotices frames={data.series} panelId={panel.id} />
                   <h2 className={styles.titleText}>{title}</h2>
-                  {!dashboard.meta.publicDashboardAccessToken && (
+                  {(
                     <div data-testid="panel-dropdown">
                       <Icon name="angle-down" className="panel-menu-toggle" />
                       {panelMenuOpen ? (

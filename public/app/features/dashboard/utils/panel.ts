@@ -1,11 +1,9 @@
 import { isString as _isString } from 'lodash';
 
-import { TimeRange, AppEvents, PanelModel as IPanelModel } from '@grafana/data';
+import { AppEvents, PanelModel as IPanelModel } from '@grafana/data';
 import appEvents from 'app/core/app_events';
-import config from 'app/core/config';
-import { LS_PANEL_COPY_KEY, PANEL_BORDER } from 'app/core/constants';
+import { LS_PANEL_COPY_KEY } from 'app/core/constants';
 import store from 'app/core/store';
-import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
 import { AddLibraryPanelModal } from 'app/features/library-panels/components/AddLibraryPanelModal/AddLibraryPanelModal';
@@ -18,7 +16,7 @@ import { ShowConfirmModalEvent, ShowModalReactEvent } from '../../../types/event
 export const removePanel = (dashboard: DashboardModel, panel: PanelModel, ask: boolean) => {
   // confirm deletion
   if (ask !== false) {
-    const confirmText = panel.alert ? 'YES' : undefined;
+    const confirmText = undefined;
 
     appEvents.publish(
       new ShowConfirmModalEvent({
@@ -52,18 +50,6 @@ export const copyPanel = (panel: IPanelModel) => {
   appEvents.emit(AppEvents.alertSuccess, ['Panel copied. Click **Add panel** icon to paste.']);
 };
 
-export const sharePanel = (dashboard: DashboardModel, panel: PanelModel) => {
-  appEvents.publish(
-    new ShowModalReactEvent({
-      component: ShareModal,
-      props: {
-        dashboard: dashboard,
-        panel: panel,
-      },
-    })
-  );
-};
-
 export const addLibraryPanel = (dashboard: DashboardModel, panel: PanelModel) => {
   appEvents.publish(
     new ShowModalReactEvent({
@@ -88,33 +74,3 @@ export const unlinkLibraryPanel = (panel: PanelModel) => {
     })
   );
 };
-
-export const refreshPanel = (panel: PanelModel) => {
-  panel.refresh();
-};
-
-export const toggleLegend = (panel: PanelModel) => {
-  const newOptions = { ...panel.options };
-  newOptions.legend.showLegend === true
-    ? (newOptions.legend.showLegend = false)
-    : (newOptions.legend.showLegend = true);
-  panel.updateOptions(newOptions);
-};
-
-export interface TimeOverrideResult {
-  timeRange: TimeRange;
-  timeInfo: string;
-}
-
-export function getResolution(panel: PanelModel): number {
-  const htmlEl = document.getElementsByTagName('html')[0];
-  const width = htmlEl.getBoundingClientRect().width; // https://stackoverflow.com/a/21454625
-
-  return Math.ceil(width * (panel.gridPos.w / 24));
-}
-
-export function calculateInnerPanelHeight(panel: PanelModel, containerHeight: number): number {
-  const chromePadding = panel.plugin && panel.plugin.noPadding ? 0 : config.theme.panelPadding * 2;
-  const headerHeight = panel.hasTitle() ? config.theme.panelHeaderHeight : 0;
-  return containerHeight - headerHeight - chromePadding - PANEL_BORDER;
-}

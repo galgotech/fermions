@@ -15,7 +15,6 @@ export interface DashboardMeta {
   canSave?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
-  canShare?: boolean;
   canStar?: boolean;
   canAdmin?: boolean;
   url?: string;
@@ -38,10 +37,6 @@ export interface DashboardMeta {
   fromScript?: boolean;
   fromFile?: boolean;
   hasUnsavedFolderChange?: boolean;
-  publicDashboardAccessToken?: string;
-  publicDashboardUid?: string;
-  publicDashboardEnabled?: boolean;
-  hasPublicDashboard?: boolean;
   dashboardNotFound?: boolean;
 }
 

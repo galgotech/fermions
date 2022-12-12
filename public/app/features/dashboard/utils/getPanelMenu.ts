@@ -1,6 +1,5 @@
 import { PanelMenuItem } from '@grafana/data';
-import { AngularComponent, locationService, reportInteraction } from '@grafana/runtime';
-import { PanelCtrl } from 'app/angular/panel/panel_ctrl';
+import { locationService, reportInteraction } from '@grafana/runtime';
 import { t } from 'app/core/internationalization';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
@@ -9,8 +8,6 @@ import {
   copyPanel,
   duplicatePanel,
   removePanel,
-  sharePanel,
-  toggleLegend,
   unlinkLibraryPanel,
 } from 'app/features/dashboard/utils/panel';
 import { InspectTab } from 'app/features/inspector/types';
@@ -19,7 +16,6 @@ import { isPanelModelLibraryPanel } from 'app/features/library-panels/guard';
 export function getPanelMenu(
   dashboard: DashboardModel,
   panel: PanelModel,
-  angularComponent?: AngularComponent | null
 ): PanelMenuItem[] {
   const onViewPanel = (event: React.MouseEvent<any>) => {
     event.preventDefault();
@@ -33,11 +29,6 @@ export function getPanelMenu(
     locationService.partial({
       editPanel: panel.id,
     });
-  };
-
-  const onSharePanel = (event: React.MouseEvent<any>) => {
-    event.preventDefault();
-    sharePanel(dashboard, panel);
   };
 
   const onAddLibraryPanel = (event: React.MouseEvent<any>) => {
@@ -80,10 +71,6 @@ export function getPanelMenu(
     removePanel(dashboard, panel, true);
   };
 
-  const onToggleLegend = (event: React.MouseEvent) => {
-    event.preventDefault();
-    toggleLegend(panel);
-  };
   const menu: PanelMenuItem[] = [];
 
   if (!panel.isEditing) {
@@ -104,15 +91,6 @@ export function getPanelMenu(
       shortcut: 'e',
     });
   }
-
-  const shareTextTranslation = t('panel.header-menu.share', `Share`);
-
-  menu.push({
-    text: shareTextTranslation,
-    iconClassName: 'share-alt',
-    onClick: onSharePanel,
-    shortcut: 'p s',
-  });
 
   const inspectMenu: PanelMenuItem[] = [];
 
@@ -177,39 +155,6 @@ export function getPanelMenu(
         onClick: onAddLibraryPanel,
       });
     }
-  }
-
-  // add old angular panel options
-  if (angularComponent) {
-    const scope = angularComponent.getScope();
-    const panelCtrl: PanelCtrl = scope.$$childHead.ctrl;
-    const angularMenuItems = panelCtrl.getExtendedMenu();
-
-    for (const item of angularMenuItems) {
-      const reactItem: PanelMenuItem = {
-        text: item.text,
-        href: item.href,
-        shortcut: item.shortcut,
-      };
-
-      if (item.click) {
-        reactItem.onClick = () => {
-          scope.$eval(item.click, { ctrl: panelCtrl });
-        };
-      }
-
-      subMenu.push(reactItem);
-    }
-  }
-
-  if (panel.options.legend) {
-    subMenu.push({
-      text: panel.options.legend.showLegend
-        ? t('panel.header-menu.hide-legend', 'Hide legend')
-        : t('panel.header-menu.show-legend', 'Show legend'),
-      onClick: onToggleLegend,
-      shortcut: 'p l',
-    });
   }
 
   // When editing hide most actions

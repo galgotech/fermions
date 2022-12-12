@@ -3,10 +3,7 @@ import { Observable, ReplaySubject, Unsubscribable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import {
-  compareArrayValues,
-  compareDataFrameStructures,
   CoreApp,
-  DataFrame,
   DataQuery,
   DataQueryRequest,
   LoadingState,
@@ -21,7 +18,6 @@ export interface QueryRunnerOptions<TQuery extends DataQuery = DataQuery> {
   /** @deprecate */
   dashboardId?: number;
   dashboardUID?: string;
-  publicDashboardAccessToken?: string;
   timeInfo?: string; // String description of time range for display
   cacheTimeout?: string | null;
 }
@@ -47,15 +43,10 @@ export class PanelQueryRunner {
    */
   getData(): Observable<PanelData> {
     let structureRev = 1;
-    let lastData: DataFrame[] = [];
 
     return this.subject.pipe(
       map((data: PanelData) => {
-        if (!compareArrayValues(lastData, data.series, compareDataFrameStructures)) {
-          structureRev++;
-        }
-        lastData = data.series;
-
+        structureRev++;
         return { ...data, structureRev };
       })
     );

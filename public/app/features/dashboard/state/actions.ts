@@ -8,7 +8,6 @@ import { updateTimeZoneForSession, updateWeekStartForSession } from 'app/feature
 import { DashboardAcl, DashboardAclUpdateDTO, NewDashboardAclItem, PermissionLevel, ThunkResult } from 'app/types';
 
 import { loadPluginDashboards } from '../../plugins/admin/state/actions';
-import { getTimeSrv } from '../services/TimeSrv';
 
 import { cleanUpDashboard, loadDashboardPermissions } from './reducers';
 
@@ -120,8 +119,6 @@ export const cleanUpDashboardAndVariables = (): ThunkResult<void> => (dispatch, 
   if (dashboard) {
     dashboard.destroy();
   }
-
-  getTimeSrv().stopAutoRefresh();
 
   dispatch(cleanUpDashboard());
   dispatch(removeAllPanels());

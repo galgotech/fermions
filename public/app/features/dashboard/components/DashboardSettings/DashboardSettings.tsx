@@ -17,7 +17,6 @@ import { SaveDashboardAsButton, SaveDashboardButton } from '../SaveDashboard/Sav
 
 import { GeneralSettings } from './GeneralSettings';
 import { JsonEditorSettings } from './JsonEditorSettings';
-import { LinksSettings } from './LinksSettings';
 import { VersionsSettings } from './VersionsSettings';
 import { SettingsPage, SettingsPageProps } from './types';
 
@@ -82,13 +81,6 @@ function getSettingsPages(dashboard: DashboardModel) {
       id: 'settings',
       icon: 'sliders-v-alt',
       component: GeneralSettings,
-    });
-
-    pages.push({
-      title: 'Links',
-      id: 'links',
-      icon: 'link',
-      component: LinksSettings,
     });
   }
 

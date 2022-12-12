@@ -1,14 +1,5 @@
-import { DataQuery } from '@grafana/data';
-
-export interface QueryGroupOptions {
-  queries: DataQuery[];
+export interface WorkflowOptions {
+  workflow: string;
   savedQueryUid?: string | null;
-  maxDataPoints?: number | null;
-  minInterval?: string | null;
   cacheTimeout?: string | null;
-  timeRange?: {
-    from?: string | null;
-    shift?: string | null;
-    hide?: boolean;
-  };
 }

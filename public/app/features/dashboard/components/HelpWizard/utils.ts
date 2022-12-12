@@ -3,12 +3,10 @@ import { firstValueFrom } from 'rxjs';
 
 import {
   dateTimeFormat,
-  TimeRange,
   DataQuery,
   PanelData,
   DataFrameJSON,
   LoadingState,
-  dataFrameToJSON,
 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { PanelModel } from 'app/features/dashboard/state';
@@ -17,11 +15,6 @@ import { Randomize, randomizeData } from './randomizer';
 
 export function getPanelDataFrames(data?: PanelData): DataFrameJSON[] {
   const frames: DataFrameJSON[] = [];
-  if (data?.series) {
-    for (const f of data.series) {
-      frames.push(dataFrameToJSON(f));
-    }
-  }
   return frames;
 }
 
@@ -42,7 +35,7 @@ export function getGithubMarkdown(panel: PanelModel): string {
   return md;
 }
 
-export async function getDebugDashboard(panel: PanelModel, rand: Randomize, timeRange: TimeRange) {
+export async function getDebugDashboard(panel: PanelModel, rand: Randomize) {
   const saveModel = panel.getSaveModel();
   const dashboard = cloneDeep(embeddedDataTemplate);
   const info = {
@@ -89,22 +82,14 @@ export async function getDebugDashboard(panel: PanelModel, rand: Randomize, time
 
   dashboard.title = `Debug: ${saveModel.title} // ${dateTimeFormat(new Date())}`;
   dashboard.tags = ['debug', `debug-${info.panelType}`];
-  dashboard.time = {
-    from: timeRange.from.toISOString(),
-    to: timeRange.to.toISOString(),
-  };
 
   return dashboard;
 }
 
 function getDataRow(data: PanelData, frames: DataFrameJSON[]): string {
-  let frameCount = data.series.length ?? 0;
+  let frameCount = 0;
   let fieldCount = 0;
   let rowCount = 0;
-  for (const frame of data.series) {
-    fieldCount += frame.fields.length;
-    rowCount += frame.length;
-  }
   return (
     '<tr>' +
     '<th>Data</th>' +

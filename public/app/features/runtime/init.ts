@@ -1,6 +1,5 @@
 import { PanelData } from '@grafana/data';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
-import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 
 /**
  * This will setup features that are accessible through the root window location
@@ -18,16 +17,6 @@ export function initWindowRuntime() {
         return undefined;
       }
       return d.getSaveModelClone();
-    },
-
-    /** The selected time range */
-    getDashboardTimeRange: () => {
-      const tr = getTimeSrv().timeRange();
-      return {
-        from: tr.from.valueOf(),
-        to: tr.to.valueOf(),
-        raw: tr.raw,
-      };
     },
 
     /** Get the query results for the last loaded data */

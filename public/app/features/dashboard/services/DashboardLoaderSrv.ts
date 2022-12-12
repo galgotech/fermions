@@ -36,17 +36,6 @@ export class DashboardLoaderSrv {
       promise = this._loadScriptedDashboard(slug);
     } else if (type === DashboardRoutes.Path) {
       promise = getGrafanaStorage().getDashboard(slug!);
-    } else if (type === 'ds') {
-      promise = this._loadFromDatasource(slug); // explore dashboards as code
-    } else if (type === 'public') {
-      promise = backendSrv
-        .getPublicDashboardByUid(uid)
-        .then((result: any) => {
-          return result;
-        })
-        .catch(() => {
-          return this._dashboardLoadFailed('Public Dashboard Not found');
-        });
     } else {
       promise = backendSrv
         .getDashboardByUid(uid)
@@ -100,15 +89,6 @@ export class DashboardLoaderSrv {
           return this._dashboardLoadFailed('Scripted dashboard');
         }
       );
-  }
-
-  /**
-   * This is a temporary solution to load dashboards dynamically from a datasource
-   * Eventually this should become a plugin type or a special handler in the dashboard
-   * loading code
-   */
-  async _loadFromDatasource(dsid: string) {
-    return Promise.reject('can not find datasource: ' + dsid);
   }
 
   _executeScript(result: any) {

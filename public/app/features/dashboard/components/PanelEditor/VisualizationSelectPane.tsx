@@ -3,12 +3,10 @@ import React, { FC, useCallback, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 
 import { GrafanaTheme2, PanelData, SelectableValue } from '@grafana/data';
-import { selectors } from '@grafana/e2e-selectors';
-import { Button, CustomScrollbar, FilterInput, RadioButtonGroup, useStyles2 } from '@grafana/ui';
+import { CustomScrollbar, FilterInput, RadioButtonGroup, useStyles2 } from '@grafana/ui';
 import { Field } from '@grafana/ui/src/components/Forms/Field';
 import { LS_VISUALIZATION_SELECT_TAB_KEY } from 'app/core/constants';
 import { PanelLibraryOptionsGroup } from 'app/features/library-panels/components/PanelLibraryOptionsGroup/PanelLibraryOptionsGroup';
-import { VisualizationSuggestions } from 'app/features/panel/components/VizTypePicker/VisualizationSuggestions';
 import { VizTypeChangeDetails } from 'app/features/panel/components/VizTypePicker/types';
 import { useDispatch, useSelector } from 'app/types';
 
@@ -17,7 +15,6 @@ import { changePanelPlugin } from '../../../panel/state/actions';
 import { PanelModel } from '../../state/PanelModel';
 import { getPanelPluginWithFallback } from '../../state/selectors';
 
-import { toggleVizPicker } from './state/reducers';
 import { VisualizationSelectPaneTab } from './types';
 
 interface Props {
@@ -40,18 +37,9 @@ export const VisualizationSelectPane: FC<Props> = ({ panel, data }) => {
   const onVizChange = useCallback(
     (pluginChange: VizTypeChangeDetails) => {
       dispatch(changePanelPlugin({ panel: panel, ...pluginChange }));
-
-      // close viz picker unless a mod key is pressed while clicking
-      if (!pluginChange.withModKey) {
-        dispatch(toggleVizPicker(false));
-      }
     },
     [dispatch, panel]
   );
-
-  const onCloseVizPicker = () => {
-    dispatch(toggleVizPicker(false));
-  };
 
   if (!plugin) {
     return null;
@@ -59,7 +47,6 @@ export const VisualizationSelectPane: FC<Props> = ({ panel, data }) => {
 
   const radioOptions: Array<SelectableValue<VisualizationSelectPaneTab>> = [
     { label: 'Visualizations', value: VisualizationSelectPaneTab.Visualizations },
-    { label: 'Suggestions', value: VisualizationSelectPaneTab.Suggestions },
     {
       label: 'Library panels',
       value: VisualizationSelectPaneTab.LibraryPanels,
@@ -78,14 +65,6 @@ export const VisualizationSelectPane: FC<Props> = ({ panel, data }) => {
             autoFocus={true}
             placeholder="Search for..."
           />
-          <Button
-            title="Close"
-            variant="secondary"
-            icon="angle-up"
-            className={styles.closeButton}
-            aria-label={selectors.components.PanelEditor.toggleVizPicker}
-            onClick={onCloseVizPicker}
-          />
         </div>
         <Field className={styles.customFieldMargin}>
           <RadioButtonGroup options={radioOptions} value={listMode} onChange={setListMode} fullWidth />
@@ -99,16 +78,6 @@ export const VisualizationSelectPane: FC<Props> = ({ panel, data }) => {
                 current={plugin.meta}
                 onChange={onVizChange}
                 searchQuery={searchQuery}
-                data={data}
-                onClose={() => {}}
-              />
-            )}
-            {listMode === VisualizationSelectPaneTab.Suggestions && (
-              <VisualizationSuggestions
-                current={plugin.meta}
-                onChange={onVizChange}
-                searchQuery={searchQuery}
-                panel={panel}
                 data={data}
                 onClose={() => {}}
               />

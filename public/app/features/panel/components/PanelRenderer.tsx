@@ -23,7 +23,6 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
     height,
     title,
     onOptionsChange = () => {},
-    onFieldConfigChange = () => {},
     fieldConfig = defaultFieldConfig,
   } = props;
 
@@ -72,13 +71,10 @@ export function PanelRenderer<P extends object = any, F extends object = any>(pr
           data={dataWithOverrides}
           title={title}
           options={optionsWithDefaults!.options}
-          fieldConfig={fieldConfig}
-          transparent={false}
           width={width}
           height={height}
           renderCounter={0}
           onOptionsChange={onOptionsChange}
-          onFieldConfigChange={onFieldConfigChange}
           eventBus={appEvents}
         />
       </PluginContextProvider>

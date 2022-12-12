@@ -41,7 +41,7 @@ function updatePanelModelWithUpdate(panel: PanelModel, updated: LibraryElementDT
     title: panel.title,
   });
   panel.hasSavedPanelEditChange = true;
-  panel.refresh();
+  panel.render();
 }
 
 function saveOrUpdateLibraryPanel(panel: any, folderUid: string): Promise<LibraryElementDTO> {

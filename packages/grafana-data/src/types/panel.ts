@@ -8,7 +8,6 @@ import { OptionsEditorItem } from './OptionsUIRegistryBuilder';
 import { ScopedVars } from './ScopedVars';
 import { PanelModel } from './dashboard';
 import { LoadingState, PreferredVisualisationType } from './data';
-import { DataFrame, FieldType } from './dataFrame';
 import { DataQueryError, DataQueryRequest, DataQueryTimings } from './datasource';
 import { FieldConfigSource } from './fieldOverrides';
 import { OptionEditorConfig } from './options';
@@ -28,9 +27,6 @@ export interface PanelPluginMeta extends PluginMeta {
 export interface PanelData<T = any> {
   /** State of the data (loading, done, error, streaming) */
   state: LoadingState;
-
-  /** Contains data frames with field overrides applied */
-  series: DataFrame[];
 
   data?: T;
 
@@ -60,17 +56,11 @@ export interface PanelProps<T = any, TPanelData extends object = any> {
   /** Panel options */
   options: T;
 
-  /** Indicates whether or not panel should be rendered transparent */
-  transparent: boolean;
-
   /** Current width of the panel */
   width: number;
 
   /** Current height of the panel */
   height: number;
-
-  /** Field options configuration */
-  fieldConfig: FieldConfigSource;
 
   /** @internal */
   renderCounter: number;
@@ -83,9 +73,6 @@ export interface PanelProps<T = any, TPanelData extends object = any> {
 
   /** Panel options change handler */
   onOptionsChange: (options: T) => void;
-
-  /** Field config change handler */
-  onFieldConfigChange: (config: FieldConfigSource) => void;
 }
 
 export interface PanelEditorProps<T = any> {
@@ -238,8 +225,6 @@ export class VisualizationSuggestionsBuilder {
   }
 
   private computeDataSummary() {
-    const frames = this.data?.series || [];
-
     let numberFieldCount = 0;
     let timeFieldCount = 0;
     let stringFieldCount = 0;
@@ -247,34 +232,6 @@ export class VisualizationSuggestionsBuilder {
     let rowCountMax = 0;
     let fieldCount = 0;
     let preferredVisualisationType: PreferredVisualisationType | undefined;
-
-    for (const frame of frames) {
-      rowCountTotal += frame.length;
-
-      if (frame.meta?.preferredVisualisationType) {
-        preferredVisualisationType = frame.meta.preferredVisualisationType;
-      }
-
-      for (const field of frame.fields) {
-        fieldCount++;
-
-        switch (field.type) {
-          case FieldType.number:
-            numberFieldCount += 1;
-            break;
-          case FieldType.time:
-            timeFieldCount += 1;
-            break;
-          case FieldType.string:
-            stringFieldCount += 1;
-            break;
-        }
-      }
-
-      if (frame.length > rowCountMax) {
-        rowCountMax = frame.length;
-      }
-    }
 
     return {
       numberFieldCount,
@@ -284,7 +241,7 @@ export class VisualizationSuggestionsBuilder {
       rowCountMax,
       fieldCount,
       preferredVisualisationType,
-      frameCount: frames.length,
+      frameCount: 0,
       hasData: rowCountTotal > 0,
       hasTimeField: timeFieldCount > 0,
       hasNumberField: numberFieldCount > 0,

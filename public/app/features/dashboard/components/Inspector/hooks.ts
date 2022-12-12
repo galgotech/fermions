@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { DataQueryError, PanelPlugin } from '@grafana/data';
+import { DataQueryError } from '@grafana/data';
 import { t } from 'app/core/internationalization';
 import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
 import { InspectTab } from 'app/features/inspector/types';

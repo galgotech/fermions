@@ -4,10 +4,3 @@ export type DeleteDashboardResponse = {
   title: string;
 };
 
-export interface ListPublicDashboardResponse {
-  uid: string;
-  accessToken: string;
-  dashboardUid: string;
-  title: string;
-  isEnabled: boolean;
-}

@@ -126,7 +126,6 @@ export const Components = {
     applyButton: 'data-testid Apply changes and go back to dashboard',
     toggleVizPicker: 'toggle-viz-picker',
     toggleVizOptions: 'toggle-viz-options',
-    toggleTableView: 'toggle-table-view',
 
     // [Geomap] Map controls
     measureButton: 'show measure tools',

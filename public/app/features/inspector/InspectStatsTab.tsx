@@ -22,10 +22,6 @@ export const InspectStatsTab: React.FC<InspectStatsTabProps> = ({ data, timeZone
   const processingTime = data.timings?.dataProcessingTime || -1;
   let dataRows = 0;
 
-  for (const frame of data.series) {
-    dataRows += frame.length;
-  }
-
   if (requestTime > 0) {
     stats.push({
       displayName: t('dashboard.inspect-stats.request-time', 'Total request time'),
@@ -50,13 +46,6 @@ export const InspectStatsTab: React.FC<InspectStatsTabProps> = ({ data, timeZone
   });
 
   let dataStats: QueryResultMetaStat[] = [];
-
-  for (const series of data.series) {
-    if (series.meta && series.meta.stats) {
-      dataStats = dataStats.concat(series.meta.stats);
-    }
-  }
-
   const statsTableName = t('dashboard.inspect-stats.table-title', 'Stats');
   const dataStatsTableName = t('dashboard.inspect-stats.data-title', 'Data source stats');
 

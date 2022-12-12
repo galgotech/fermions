@@ -42,7 +42,6 @@ export type DashboardLoadedEventPayload<T> = {
   orgId?: number;
   userId?: number;
   grafanaVersion?: string;
-  queries: Record<string, T[]>;
 };
 
 /** @alpha */

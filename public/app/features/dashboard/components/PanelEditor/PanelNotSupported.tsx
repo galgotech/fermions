@@ -12,7 +12,7 @@ export interface Props {
 
 export function PanelNotSupported({ message }: Props): JSX.Element {
   const onBackToQueries = useCallback(() => {
-    locationService.partial({ tab: PanelEditorTabId.Query });
+    locationService.partial({ tab: PanelEditorTabId.Code });
   }, []);
 
   return (
@@ -21,7 +21,7 @@ export function PanelNotSupported({ message }: Props): JSX.Element {
         <h2>{message}</h2>
         <div>
           <Button size="md" variant="secondary" icon="arrow-left" onClick={onBackToQueries}>
-            Go back to Queries
+            Go back to Code
           </Button>
         </div>
       </VerticalGroup>

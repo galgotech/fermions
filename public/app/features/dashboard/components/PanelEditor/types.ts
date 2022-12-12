@@ -10,9 +10,9 @@ export interface PanelEditorTab {
 }
 
 export enum PanelEditorTabId {
-  Query = 'query',
-  Visualize = 'visualize',
-  Alert = 'alert',
+  Panel = 'panel',
+  Code = 'code',
+  Workflow = 'workflow',
 }
 
 export enum DisplayMode {
@@ -57,7 +57,6 @@ export interface OptionPaneRenderProps {
   instanceState: any;
   onPanelConfigChange: (configKey: keyof PanelModel, value: any) => void;
   onPanelOptionsChanged: (options: any) => void;
-  onFieldConfigsChange: (config: FieldConfigSource) => void;
 }
 
 export interface OptionPaneItemOverrideInfo {
@@ -70,5 +69,4 @@ export interface OptionPaneItemOverrideInfo {
 export enum VisualizationSelectPaneTab {
   Visualizations,
   LibraryPanels,
-  Suggestions,
 }

@@ -10,8 +10,6 @@ export const LS_PANEL_COPY_KEY = 'panel-copy';
 
 export const PANEL_BORDER = 2;
 
-export const EDIT_PANEL_ID = 23763571993;
-
 export const DEFAULT_PER_PAGE_PAGINATION = 40;
 
 export const LS_VISUALIZATION_SELECT_TAB_KEY = 'VisualizationSelectPane.ListMode';

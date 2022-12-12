@@ -3,7 +3,6 @@ import { AnyAction, combineReducers } from 'redux';
 import sharedReducers from 'app/core/reducers';
 import ldapReducers from 'app/features/admin/state/reducers';
 import apiKeysReducers from 'app/features/api-keys/state/reducers';
-import { publicDashboardApi } from 'app/features/dashboard/api/publicDashboardApi';
 import panelEditorReducers from 'app/features/dashboard/components/PanelEditor/state/reducers';
 import dashboardReducers from 'app/features/dashboard/state/reducers';
 import foldersReducers from 'app/features/folders/state/reducers';
@@ -35,7 +34,6 @@ const rootReducers = {
   ...panelEditorReducers,
   ...panelsReducers,
   plugins: pluginsReducer,
-  [publicDashboardApi.reducerPath]: publicDashboardApi.reducer,
 };
 
 const addedReducers = {};

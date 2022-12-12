@@ -4,14 +4,12 @@ import { renderMarkdown, LinkModelSupplier } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { locationService } from '@grafana/runtime';
 import { Tooltip, PopoverContent } from '@grafana/ui';
-import { getTimeSrv, TimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { PanelModel } from 'app/features/dashboard/state/PanelModel';
 import { InspectTab } from 'app/features/inspector/types';
 
 enum InfoMode {
   Error = 'Error',
   Info = 'Info',
-  Links = 'Links',
 }
 
 export interface Props {
@@ -23,8 +21,6 @@ export interface Props {
 }
 
 export class PanelHeaderCorner extends Component<Props> {
-  timeSrv: TimeSrv = getTimeSrv();
-
   getInfoMode = () => {
     const { panel, error } = this.props;
     if (error) {
@@ -32,9 +28,6 @@ export class PanelHeaderCorner extends Component<Props> {
     }
     if (!!panel.description) {
       return InfoMode.Info;
-    }
-    if (panel.links && panel.links.length) {
-      return InfoMode.Links;
     }
 
     return undefined;
@@ -45,25 +38,10 @@ export class PanelHeaderCorner extends Component<Props> {
     const markdown = panel.description || '';
     const interpolatedMarkdown = markdown;
     const markedInterpolatedMarkdown = renderMarkdown(interpolatedMarkdown);
-    const links = this.props.links && this.props.links.getLinks();
 
     return (
       <div className="panel-info-content markdown-html">
         <div dangerouslySetInnerHTML={{ __html: markedInterpolatedMarkdown }} />
-
-        {links && links.length > 0 && (
-          <ul className="panel-info-corner-links">
-            {links.map((link, idx) => {
-              return (
-                <li key={idx}>
-                  <a className="panel-info-corner-links__item" href={link.href} target={link.target}>
-                    {link.title}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </div>
     );
   };
@@ -105,7 +83,7 @@ export class PanelHeaderCorner extends Component<Props> {
       return this.renderCornerType(infoMode, error, this.onClickError);
     }
 
-    if (infoMode === InfoMode.Info || infoMode === InfoMode.Links) {
+    if (infoMode === InfoMode.Info) {
       return this.renderCornerType(infoMode, this.getInfoContent);
     }
 

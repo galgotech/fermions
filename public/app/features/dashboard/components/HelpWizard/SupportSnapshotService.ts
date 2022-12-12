@@ -4,7 +4,6 @@ import { dateTimeFormat, formattedValueToString, getValueFormat, SelectableValue
 import { config } from '@grafana/runtime';
 import { StateManagerBase } from 'app/core/services/StateManagerBase';
 
-import { getTimeSrv } from '../../services/TimeSrv';
 import { PanelModel } from '../../state';
 import { setDashboardToFetchFromLocalStorage } from '../../state/initDashboard';
 
@@ -71,7 +70,7 @@ export class SupportSnapshotService extends StateManagerBase<SupportSnapshotStat
 
   async buildDebugDashboard() {
     const { panel, randomize, snapshotUpdate, iframeLoading, currentTab } = this.state;
-    const snapshot = await getDebugDashboard(panel, randomize, getTimeSrv().timeRange());
+    const snapshot = await getDebugDashboard(panel, randomize);
     const snapshotText = JSON.stringify(snapshot, null, 2);
     const markdownText = getGithubMarkdown(panel);
     const snapshotSize = formattedValueToString(getValueFormat('bytes')(snapshotText?.length ?? 0));

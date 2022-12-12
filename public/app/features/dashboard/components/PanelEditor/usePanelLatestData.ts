@@ -62,6 +62,6 @@ export const usePanelLatestData = (
     data: latestData,
     error: latestData && latestData.error,
     isLoading: latestData ? latestData.state === LoadingState.Loading : true,
-    hasSeries: latestData ? !!latestData.series : false,
+    hasSeries: false,
   };
 };

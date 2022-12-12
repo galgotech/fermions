@@ -1,18 +1,15 @@
-import React, { FC, ReactNode, useContext, useEffect } from 'react';
+import React, { FC, ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import { locationUtil } from '@grafana/data';
-import { selectors as e2eSelectors } from '@grafana/e2e-selectors/src';
 import { locationService } from '@grafana/runtime';
 import {
   ModalsController,
   ToolbarButton,
   PageToolbar,
   useForceUpdate,
-  Tag,
   ToolbarButtonRow,
-  ModalsContext,
 } from '@grafana/ui';
 import { AppChromeUpdate } from 'app/core/components/AppChrome/AppChromeUpdate';
 import { NavToolbarSeparator } from 'app/core/components/AppChrome/NavToolbarSeparator';
@@ -21,7 +18,6 @@ import { useBusEvent } from 'app/core/hooks/useBusEvent';
 import { t } from 'app/core/internationalization';
 import { DashboardCommentsModal } from 'app/features/dashboard/components/DashboardComments/DashboardCommentsModal';
 import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardDrawer';
-import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { DashboardMetaChangedEvent } from 'app/types/events';
 
@@ -38,14 +34,11 @@ const mapDispatchToProps = {
 
 const connector = connect(null, mapDispatchToProps);
 
-const selectors = e2eSelectors.pages.Dashboard.DashNav;
-
 export interface OwnProps {
   dashboard: DashboardModel;
   isFullscreen: boolean;
   folderTitle?: string;
   title: string;
-  shareModalActiveTab?: string;
   onAddPanel: () => void;
 }
 
@@ -70,7 +63,6 @@ type Props = OwnProps & ConnectedProps<typeof connector>;
 
 export const DashNav = React.memo<Props>((props) => {
   const forceUpdate = useForceUpdate();
-  const { showModal, hideModal } = useContext(ModalsContext);
 
   // We don't really care about the event payload here only that it triggeres a re-render of this component
   useBusEvent(props.dashboard.events, DashboardMetaChangedEvent);
@@ -102,28 +94,9 @@ export const DashNav = React.memo<Props>((props) => {
     });
   };
 
-  // Open/Close
-  useEffect(() => {
-    const dashboard = props.dashboard;
-    const shareModalActiveTab = props.shareModalActiveTab;
-    const { canShare } = dashboard.meta;
-
-    if (canShare && shareModalActiveTab) {
-      // automagically open modal
-      showModal(ShareModal, {
-        dashboard,
-        onDismiss: hideModal,
-        activeTab: shareModalActiveTab,
-      });
-    }
-    return () => {
-      hideModal();
-    };
-  }, [showModal, hideModal, props.dashboard, props.shareModalActiveTab]);
-
   const renderLeftActions = () => {
     const { dashboard } = props;
-    const { canStar, canShare, isStarred } = dashboard.meta;
+    const { canStar, isStarred } = dashboard.meta;
     const buttons: ReactNode[] = [];
 
     if (canStar) {
@@ -139,32 +112,6 @@ export const DashNav = React.memo<Props>((props) => {
           onClick={onStarDashboard}
           key="button-star"
         />
-      );
-    }
-
-    if (canShare) {
-      buttons.push(
-        <ModalsController key="button-share">
-          {({ showModal, hideModal }) => (
-            <DashNavButton
-              tooltip={t('dashboard.toolbar.share', 'Share dashboard or panel')}
-              icon="share-alt"
-              iconSize="lg"
-              onClick={() => {
-                showModal(ShareModal, {
-                  dashboard,
-                  onDismiss: hideModal,
-                });
-              }}
-            />
-          )}
-        </ModalsController>
-      );
-    }
-
-    if (dashboard.meta.publicDashboardEnabled) {
-      buttons.push(
-        <Tag key="public-dashboard" name="Public" colorIndex={5} data-testid={selectors.publicDashboardTag}></Tag>
       );
     }
 
@@ -240,16 +187,6 @@ export const DashNav = React.memo<Props>((props) => {
 
     addCustomContent(customRightActions, buttons);
 
-    if (config.featureToggles.scenes) {
-      buttons.push(
-        <ToolbarButton
-          key="button-scenes"
-          tooltip={'View as Scene'}
-          icon="apps"
-          onClick={() => locationService.push(`/scenes/dashboard/${dashboard.uid}`)}
-        />
-      );
-    }
     return buttons;
   };
 

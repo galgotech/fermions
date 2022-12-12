@@ -136,7 +136,7 @@ export class InspectJSONTab extends PureComponent<Props, State> {
           });
 
           panel!.restoreModel(updates);
-          panel!.refresh();
+          panel!.render();
           appEvents.emit(AppEvents.alertSuccess, ['Panel model updated']);
         }
       } catch (err) {

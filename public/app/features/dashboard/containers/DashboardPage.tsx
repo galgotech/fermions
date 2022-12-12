@@ -25,9 +25,7 @@ import { DashboardPrompt } from '../components/DashboardPrompt/DashboardPrompt';
 import { DashboardSettings } from '../components/DashboardSettings';
 import { PanelInspector } from '../components/Inspector/PanelInspector';
 import { PanelEditor } from '../components/PanelEditor/PanelEditor';
-import { PublicDashboardFooter } from '../components/PublicDashboardFooter/PublicDashboardsFooter';
 import { DashboardGrid } from '../dashgrid/DashboardGrid';
-import { getTimeSrv } from '../services/TimeSrv';
 import { cleanUpDashboardAndVariables } from '../state/actions';
 import { initDashboard } from '../state/initDashboard';
 
@@ -67,9 +65,7 @@ const mapDispatchToProps = {
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
-type OwnProps = {
-  isPublic?: boolean;
-};
+type OwnProps = { };
 
 export type Props = OwnProps &
   Themeable2 &
@@ -121,7 +117,7 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
   }
 
   initDashboard() {
-    const { dashboard, isPublic, match, queryParams } = this.props;
+    const { dashboard, match, queryParams } = this.props;
 
     if (dashboard) {
       this.closeDashboard();
@@ -134,7 +130,7 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
       urlFolderUid: queryParams.folderUid,
       panelType: queryParams.panelType,
       routeName: this.props.route.routeName,
-      fixUrl: !isPublic,
+      fixUrl: true,
       accessToken: match.params.accessToken,
       keybindingSrv: this.context.keybindings,
     });
@@ -155,15 +151,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
       this.initDashboard();
       this.forceRouteReloadCounter = routeReloadCounter;
       return;
-    }
-
-    if (prevProps.location.search !== this.props.location.search) {
-      const prevUrlParams = prevProps.queryParams;
-      const urlParams = this.props.queryParams;
-
-      if (!prevUrlParams?.refresh && urlParams?.refresh) {
-        getTimeSrv().setAutoRefresh(urlParams.refresh);
-      }
     }
 
     // entering edit mode
@@ -311,7 +298,7 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
   }
 
   render() {
-    const { dashboard, initError, queryParams, isPublic } = this.props;
+    const { dashboard, initError, queryParams } = this.props;
     const { editPanel, viewPanel, updateScrollTop, pageNav, sectionNav } = this.state;
 
     if (!dashboard || !pageNav || !sectionNav) {
@@ -328,7 +315,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
           folderTitle={dashboard.meta.folderTitle}
           isFullscreen={!!viewPanel}
           onAddPanel={this.onAddPanel}
-          shareModalActiveTab={this.props.queryParams.shareView}
         />
       </header>
     );
@@ -372,10 +358,6 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
             sectionNav={sectionNav}
           />
         )}
-        {
-          // TODO: assess if there are other places where we may want a footer, which may reveal a better place to add this
-          isPublic && <PublicDashboardFooter />
-        }
       </>
     );
   }

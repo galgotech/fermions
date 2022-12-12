@@ -1,6 +1,3 @@
-import { omit } from 'lodash';
-
-import { FieldConfigSource } from '@grafana/data';
 import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT } from 'app/core/constants';
 
 import { PanelModel } from '../../state/PanelModel';
@@ -32,36 +29,7 @@ export function calculatePanelSize(mode: DisplayMode, width: number, height: num
   };
 }
 
-export const updateDefaultFieldConfigValue = (
-  config: FieldConfigSource,
-  name: string,
-  value: any,
-  isCustom?: boolean
-) => {
-  let defaults = { ...config.defaults };
-  const remove = value == null || value === '';
 
-  if (isCustom) {
-    if (defaults.custom) {
-      if (remove) {
-        defaults.custom = omit(defaults.custom, name);
-      } else {
-        defaults.custom = setOptionImmutably(defaults.custom, name, value);
-      }
-    } else if (!remove) {
-      defaults.custom = setOptionImmutably(defaults.custom, name, value);
-    }
-  } else if (remove) {
-    defaults = omit(defaults, name);
-  } else {
-    defaults = setOptionImmutably(defaults, name, value);
-  }
-
-  return {
-    ...config,
-    defaults,
-  };
-};
 
 export function setOptionImmutably<T extends object>(options: T, path: string | string[], value: any): T {
   const splat = !Array.isArray(path) ? path.split('.') : path;

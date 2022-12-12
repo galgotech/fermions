@@ -6,17 +6,14 @@ import {
   CoreApp,
   DashboardCursorSync,
   EventFilterOptions,
-  FieldConfigSource,
   LoadingState,
   PanelData,
   PanelPlugin,
   PanelPluginMeta,
   PluginContextProvider,
-  TimeRange,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { config, locationService, RefreshEvent } from '@grafana/runtime';
-import { VizLegendOptions } from '@grafana/schema';
+import { config, locationService } from '@grafana/runtime';
 import {
   ErrorBoundary,
   PanelChrome,
@@ -26,7 +23,7 @@ import {
 } from '@grafana/ui';
 import { PANEL_BORDER } from 'app/core/constants';
 import { profiler } from 'app/core/profiler';
-import { RenderEvent } from 'app/types/events';
+import { WorkflowEvent } from 'app/types/events';
 
 import { isSoloRoute } from '../../../routes/utils';
 import { DashboardModel, PanelModel } from '../state';
@@ -50,13 +47,11 @@ export interface Props {
 }
 
 export interface State {
-  isFirstLoad: boolean;
   renderCounter: number;
   errorMessage?: string;
   refreshWhenInView: boolean;
   context: PanelContext;
   data: PanelData;
-  liveTime?: TimeRange;
 }
 
 export class PanelStateWrapper extends PureComponent<Props, State> {
@@ -70,7 +65,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     const eventBus = props.dashboard.events.newScopedBus(`panel:${props.panel.id}`, this.eventFilter);
 
     this.state = {
-      isFirstLoad: true,
       renderCounter: 0,
       refreshWhenInView: false,
       context: {
@@ -78,14 +72,13 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         app: this.getPanelContextApp(),
         sync: this.getSync,
         onInstanceStateChange: this.onInstanceStateChange,
-        onToggleLegendSort: this.onToggleLegendSort,
       },
       data: this.getInitialPanelDataState(),
     };
   }
 
   // Due to a mutable panel model we get the sync settings via function that proactively reads from the model
-  getSync = () => (this.props.isEditing ? DashboardCursorSync.Off : this.props.dashboard.graphTooltip);
+  getSync = () => DashboardCursorSync.Off;
 
   onInstanceStateChange = (value: any) => {
     this.props.onInstanceStateChange(value);
@@ -109,39 +102,9 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     return CoreApp.Dashboard;
   }
 
-  onToggleLegendSort = (sortKey: string) => {
-    const legendOptions: VizLegendOptions = this.props.panel.options.legend;
-
-    // We don't want to do anything when legend options are not available
-    if (!legendOptions) {
-      return;
-    }
-
-    let sortDesc = legendOptions.sortDesc;
-    let sortBy = legendOptions.sortBy;
-    if (sortKey !== sortBy) {
-      sortDesc = undefined;
-    }
-
-    // if already sort ascending, disable sorting
-    if (sortDesc === false) {
-      sortBy = undefined;
-      sortDesc = undefined;
-    } else {
-      sortDesc = !sortDesc;
-      sortBy = sortKey;
-    }
-
-    this.onOptionsChange({
-      ...this.props.panel.options,
-      legend: { ...legendOptions, sortBy, sortDesc },
-    });
-  };
-
   getInitialPanelDataState(): PanelData {
     return {
       state: LoadingState.NotStarted,
-      series: [],
     };
   }
 
@@ -149,14 +112,9 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     const { panel, dashboard } = this.props;
 
     // Subscribe to panel events
-    this.subs.add(panel.events.subscribe(RefreshEvent, this.onRefresh));
-    this.subs.add(panel.events.subscribe(RenderEvent, this.onRender));
+    this.subs.add(panel.events.subscribe(WorkflowEvent, this.onWorkflow));
 
     dashboard.panelInitialized(this.props.panel);
-
-    if (!this.wantsQueryExecution) {
-      this.setState({ isFirstLoad: false });
-    }
 
     this.subs.add(
       panel
@@ -192,7 +150,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
       if (isInView) {
         // Check if we need a delayed refresh
         if (this.state.refreshWhenInView) {
-          this.onRefresh();
+          this.onWorkflow();
         }
       }
     }
@@ -202,7 +160,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
   // The next is outside a react synthetic event so setState is not batched
   // So in this context we can only do a single call to setState
   onDataUpdate(data: PanelData) {
-    let { isFirstLoad } = this.state;
     let errorMessage: string | undefined;
 
     switch (data.state) {
@@ -222,59 +179,33 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
         }
         break;
       case LoadingState.Done:
-        if (isFirstLoad) {
-          isFirstLoad = false;
-        }
         break;
     }
 
-    this.setState({ isFirstLoad, errorMessage, data, liveTime: undefined });
+    this.setState({ errorMessage, data });
   }
 
-  onRefresh = () => {
-    const { dashboard, panel, isInView, width } = this.props;
+  onWorkflow = () => {
+    const { panel, isInView, width } = this.props;
 
     if (!isInView) {
       this.setState({ refreshWhenInView: true });
       return;
     }
 
-    // Issue Query
-    if (this.wantsQueryExecution) {
-      if (width < 0) {
-        return;
-      }
-
-      if (this.state.refreshWhenInView) {
-        this.setState({ refreshWhenInView: false });
-      }
-      panel.runAllPanelQueries({
-        dashboardId: dashboard.id,
-        dashboardUID: dashboard.uid,
-        dashboardTimezone: dashboard.getTimezone(),
-        width,
-      });
-    } else {
-      // The panel should render on refresh as well if it doesn't have a query, like clock panel
-      this.setState({
-        data: { ...this.state.data },
-        renderCounter: this.state.renderCounter + 1,
-        liveTime: undefined,
-      });
+    if (width < 0) {
+      return;
     }
-  };
 
-  onRender = () => {
-    const stateUpdate = { renderCounter: this.state.renderCounter + 1 };
-    this.setState(stateUpdate);
+    if (this.state.refreshWhenInView) {
+      this.setState({ refreshWhenInView: false });
+    }
+
+    panel.runWorkflow();
   };
 
   onOptionsChange = (options: any) => {
     this.props.panel.updateOptions(options);
-  };
-
-  onFieldConfigChange = (config: FieldConfigSource) => {
-    this.props.panel.updateFieldConfig(config);
   };
 
   onPanelError = (error: Error) => {
@@ -288,32 +219,14 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     this.setState({ errorMessage: undefined });
   };
 
-  get wantsQueryExecution() {
-    return true;
-  }
-
   shouldSignalRenderingCompleted(loadingState: LoadingState, pluginMeta: PanelPluginMeta) {
     return loadingState === LoadingState.Done ;
-  }
-
-  skipFirstRender(loadingState: LoadingState) {
-    const { isFirstLoad } = this.state;
-    return (
-      this.wantsQueryExecution &&
-      isFirstLoad &&
-      (loadingState === LoadingState.Loading || loadingState === LoadingState.NotStarted)
-    );
   }
 
   renderPanelContent(innerWidth: number, innerHeight: number) {
     const { panel, plugin, dashboard } = this.props;
     const { renderCounter, data } = this.state;
     const { state: loadingState } = data;
-
-    // do not render component until we have first data
-    if (this.skipFirstRender(loadingState)) {
-      return null;
-    }
 
     // This is only done to increase a counter that is used by backend
     // image rendering to know when to capture image
@@ -324,10 +237,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     const PanelComponent = plugin.panel!;
     const panelOptions = panel.getOptions();
 
-    // Update the event filter (dashboard settings may have changed)
-    // Yes this is called ever render for a function that is triggered on every mouse move
-    this.eventFilter.onlyLocal = dashboard.graphTooltip === 0;
-
     return (
       <>
         <PanelContextProvider value={this.state.context}>
@@ -336,13 +245,10 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             data={data}
             title={panel.title}
             options={panelOptions}
-            fieldConfig={panel.fieldConfig}
-            transparent={panel.transparent}
             width={innerWidth}
             height={innerHeight}
             renderCounter={renderCounter}
             onOptionsChange={this.onOptionsChange}
-            onFieldConfigChange={this.onFieldConfigChange}
             eventBus={dashboard.events}
           />
         </PanelContextProvider>
@@ -355,11 +261,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     const { renderCounter, data } = this.state;
     const { theme } = config;
     const { state: loadingState } = data;
-
-    // do not render component until we have first data
-    if (this.skipFirstRender(loadingState)) {
-      return null;
-    }
 
     // This is only done to increase a counter that is used by backend
     // image rendering to know when to capture image
@@ -378,10 +279,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     });
     const panelOptions = panel.getOptions();
 
-    // Update the event filter (dashboard settings may have changed)
-    // Yes this is called ever render for a function that is triggered on every mouse move
-    this.eventFilter.onlyLocal = dashboard.graphTooltip === 0;
-
     return (
       <>
         <div className={panelContentClassNames}>
@@ -392,13 +289,10 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
                 data={data}
                 title={panel.title}
                 options={panelOptions}
-                fieldConfig={panel.fieldConfig}
-                transparent={panel.transparent}
                 width={panelWidth}
                 height={innerPanelHeight}
                 renderCounter={renderCounter}
                 onOptionsChange={this.onOptionsChange}
-                onFieldConfigChange={this.onFieldConfigChange}
                 eventBus={dashboard.events}
               />
             </PanelContextProvider>
@@ -423,12 +317,10 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
   render() {
     const { dashboard, panel, isViewing, isEditing, width, height, plugin } = this.props;
     const { errorMessage, data } = this.state;
-    const { transparent } = panel;
 
     const containerClassNames = classNames({
       'panel-container': true,
       'panel-container--absolute': isSoloRoute(locationService.getLocation().pathname),
-      'panel-container--transparent': transparent,
       'panel-container--no-title': this.hasOverlayHeader(),
     });
 
@@ -471,7 +363,6 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             dashboard={dashboard}
             title={panel.title}
             description={panel.description}
-            links={panel.links}
             error={errorMessage}
             isEditing={isEditing}
             isViewing={isViewing}

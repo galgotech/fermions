@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
-import { TimeZone } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { CollapsableSection, Field, Input, RadioButtonGroup, TagsInput } from '@grafana/ui';
+import { Field, Input, RadioButtonGroup, TagsInput } from '@grafana/ui';
 import { Page } from 'app/core/components/PageNew/Page';
 import { FolderPicker } from 'app/core/components/Select/FolderPicker';
 import { updateTimeZoneDashboard, updateWeekStartDashboard } from 'app/features/dashboard/state/actions';
@@ -11,21 +10,12 @@ import { updateTimeZoneDashboard, updateWeekStartDashboard } from 'app/features/
 import { DeleteDashboardButton } from '../DeleteDashboard/DeleteDashboardButton';
 
 import { PreviewSettings } from './PreviewSettings';
-import { TimePickerSettings } from './TimePickerSettings';
 import { SettingsPageProps } from './types';
 
 export type Props = SettingsPageProps & ConnectedProps<typeof connector>;
 
-const GRAPH_TOOLTIP_OPTIONS = [
-  { value: 0, label: 'Default' },
-  { value: 1, label: 'Shared crosshair' },
-  { value: 2, label: 'Shared Tooltip' },
-];
-
 export function GeneralSettingsUnconnected({
   dashboard,
-  updateTimeZone,
-  updateWeekStart,
   sectionNav,
 }: Props): JSX.Element {
   const [renderCounter, setRenderCounter] = useState(0);
@@ -40,36 +30,6 @@ export function GeneralSettingsUnconnected({
     if (event.currentTarget.name === 'title' || event.currentTarget.name === 'description') {
       dashboard[event.currentTarget.name] = event.currentTarget.value;
     }
-  };
-
-  const onTooltipChange = (graphTooltip: number) => {
-    dashboard.graphTooltip = graphTooltip;
-    setRenderCounter(renderCounter + 1);
-  };
-
-  const onRefreshIntervalChange = (intervals: string[]) => {
-    dashboard.timepicker.refresh_intervals = intervals.filter((i) => i.trim() !== '');
-  };
-
-  const onNowDelayChange = (nowDelay: string) => {
-    dashboard.timepicker.nowDelay = nowDelay;
-  };
-
-  const onLiveNowChange = (v: boolean) => {
-    dashboard.liveNow = v;
-    setRenderCounter(renderCounter + 1);
-  };
-
-  const onTimeZoneChange = (timeZone: TimeZone) => {
-    dashboard.timezone = timeZone;
-    setRenderCounter(renderCounter + 1);
-    updateTimeZone(timeZone);
-  };
-
-  const onWeekStartChange = (weekStart: string) => {
-    dashboard.weekStart = weekStart;
-    setRenderCounter(renderCounter + 1);
-    updateWeekStart(weekStart);
   };
 
   const onTagsChange = (tags: string[]) => {
@@ -123,33 +83,6 @@ export function GeneralSettingsUnconnected({
         {config.featureToggles.dashboardPreviews && config.featureToggles.dashboardPreviewsAdmin && (
           <PreviewSettings uid={dashboard.uid} />
         )}
-
-        <TimePickerSettings
-          onTimeZoneChange={onTimeZoneChange}
-          onWeekStartChange={onWeekStartChange}
-          onRefreshIntervalChange={onRefreshIntervalChange}
-          onNowDelayChange={onNowDelayChange}
-          onLiveNowChange={onLiveNowChange}
-          refreshIntervals={dashboard.timepicker.refresh_intervals}
-          nowDelay={dashboard.timepicker.nowDelay}
-          timezone={dashboard.timezone}
-          weekStart={dashboard.weekStart}
-          liveNow={dashboard.liveNow}
-        />
-
-        {/* @todo: Update "Graph tooltip" description to remove prompt about reloading when resolving #46581 */}
-        <CollapsableSection label="Panel options" isOpen={true}>
-          <Field
-            label="Graph tooltip"
-            description="Controls tooltip and hover highlight behavior across different panels. Reload the dashboard for changes to take effect"
-          >
-            <RadioButtonGroup
-              onChange={onTooltipChange}
-              options={GRAPH_TOOLTIP_OPTIONS}
-              value={dashboard.graphTooltip}
-            />
-          </Field>
-        </CollapsableSection>
 
         <div className="gf-form-button-row">
           {dashboard.meta.canDelete && <DeleteDashboardButton dashboard={dashboard} />}

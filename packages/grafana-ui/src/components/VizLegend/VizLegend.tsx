@@ -26,7 +26,7 @@ export function VizLegend<T>({
   itemRenderer,
   readonly,
 }: LegendProps<T>) {
-  const { eventBus, onToggleSeriesVisibility, onToggleLegendSort } = usePanelContext();
+  const { eventBus, onToggleSeriesVisibility } = usePanelContext();
 
   const onMouseOver = useCallback(
     (
@@ -91,7 +91,7 @@ export function VizLegend<T>({
           sortBy={sortKey}
           sortDesc={sortDesc}
           onLabelClick={onLegendLabelClick}
-          onToggleSort={onToggleSort || onToggleLegendSort}
+          onToggleSort={onToggleSort}
           onLabelMouseOver={onMouseOver}
           onLabelMouseOut={onMouseOut}
           itemRenderer={itemRenderer}

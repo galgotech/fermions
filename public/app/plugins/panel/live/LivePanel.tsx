@@ -12,15 +12,11 @@ import {
   isLiveChannelStatusEvent,
   isLiveChannelMessageEvent,
   LiveChannelConnectionState,
-  PanelData,
-  LoadingState,
   LiveChannelAddress,
 } from '@grafana/data';
 import { config, getGrafanaLiveSrv } from '@grafana/runtime';
 import { Alert, stylesFactory, Button, JSONFormatter, CustomScrollbar, CodeEditor } from '@grafana/ui';
 import { StreamingDataFrame } from 'app/features/live/data/StreamingDataFrame';
-
-import { TablePanel } from '../table/TablePanel';
 
 import { LivePanelOptions, MessageDisplayMode } from './types';
 
@@ -179,15 +175,7 @@ export class LivePanel extends PureComponent<Props, State> {
 
     if (options.message === MessageDisplayMode.Auto) {
       if (message instanceof StreamingDataFrame) {
-        const data: PanelData = {
-          series: [message],
-          state: LoadingState.Streaming,
-        } as PanelData;
-        const props = {
-          ...this.props,
-          options: { frameIndex: 0, showHeader: true },
-        } as PanelProps<any>;
-        return <TablePanel {...props} data={data} height={height} />;
+        return <></>;
       }
     }
 

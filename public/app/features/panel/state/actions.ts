@@ -132,7 +132,7 @@ export function changeToLibraryPanel(panel: PanelModel, libraryPanel: LibraryEle
 
     panel.configRev = 0;
     panel.hasSavedPanelEditChange = true;
-    panel.refresh();
+    panel.render();
 
     panel.events.publish(PanelQueriesChangedEvent);
     panel.events.publish(PanelOptionsChangedEvent);

@@ -1,6 +1,5 @@
 import { configureStore as reduxConfigureStore } from '@reduxjs/toolkit';
 
-import { publicDashboardApi } from 'app/features/dashboard/api/publicDashboardApi';
 import { StoreState } from 'app/types/store';
 
 import { buildInitialState } from '../core/reducers/navModel';
@@ -19,9 +18,7 @@ export function configureStore(initialState?: Partial<StoreState>) {
   const store = reduxConfigureStore({
     reducer: createRootReducer(),
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({ thunk: true, serializableCheck: false, immutableCheck: false }).concat(
-        publicDashboardApi.middleware
-      ),
+      getDefaultMiddleware({ thunk: true, serializableCheck: false, immutableCheck: false }),
     devTools: process.env.NODE_ENV !== 'production',
     preloadedState: {
       navIndex: buildInitialState(),

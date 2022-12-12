@@ -1,25 +1,24 @@
-import { cloneDeep, defaultsDeep, isArray, isEqual, keys } from 'lodash';
+import { WorkflowValidator, ValidationError, Specification } from '@severlessworkflow/sdk-typescript';
+import { cloneDeep, defaultsDeep, isEqual, keys } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
   DataConfigSource,
-  DataLink,
   DataQuery,
   EventBusSrv,
   FieldConfigSource,
   PanelPlugin,
   PanelModel as IPanelModel,
 } from '@grafana/data';
-import { RefreshEvent } from '@grafana/runtime';
 import config from 'app/core/config';
 import { safeStringifyValue } from 'app/core/utils/explore';
-import { getNextRefIdChar } from 'app/core/utils/query';
 import { SavedQueryLink } from 'app/features/query-library/types';
-import { QueryGroupOptions } from 'app/types';
+import { PanelWorkflowRunner } from 'app/features/workflow/state/PanelWorkflowRunner';
+import { WorkflowOptions } from 'app/types';
 import {
   PanelOptionsChangedEvent,
   PanelQueriesChangedEvent,
-  RenderEvent,
+  WorkflowEvent,
 } from 'app/types/events';
 
 import { LibraryElementDTO, LibraryPanelRef } from '../../library-panels/types';
@@ -46,20 +45,17 @@ type RunPanelQueryOptions = {
   dashboardUID: string;
   dashboardTimezone: string;
   width: number;
-  publicDashboardAccessToken?: string;
 };
 const notPersistedProperties: { [str: string]: boolean } = {
   events: true,
   isViewing: true,
   isEditing: true,
   isInView: true,
-  hasRefreshed: true,
   cachedPluginOptions: true,
   plugin: true,
   queryRunner: true,
   configRev: true,
   hasSavedPanelEditChange: true,
-  dataSupport: true,
   key: true,
 };
 
@@ -68,71 +64,87 @@ const notPersistedProperties: { [str: string]: boolean } = {
 // named property with different type / value expectations
 // This is not required for react panels
 const mustKeepProps: { [str: string]: boolean } = {
-  id: true,
   gridPos: true,
   type: true,
-  title: true,
   minSpan: true,
   panels: true,
   targets: true,
-  timeShift: true,
-  hideTimeOverride: true,
-  description: true,
-  links: true,
   fullscreen: true,
   isEditing: true,
-  hasRefreshed: true,
   events: true,
   cacheTimeout: true,
   cachedPluginOptions: true,
-  transparent: true,
   pluginVersion: true,
   queryRunner: true,
-  transformations: true,
   fieldConfig: true,
   libraryPanel: true,
   configRev: true,
   key: true,
+  workflow: true,
 };
 
 const defaults: any = {
   gridPos: { x: 0, y: 0, h: 3, w: 6 },
   targets: [{ refId: 'A' }],
   cachedPluginOptions: {},
-  transparent: false,
   options: {},
   fieldConfig: {
     defaults: {},
     overrides: [],
   },
-  title: '',
   savedQueryLink: null,
+  workflow: `{
+    "id": "",
+    "version": "1.0",
+    "specVersion": "0.8",
+    "name": "",
+    "description": "",
+    "start": "start",
+    "functions": [
+      {
+        "name": "start",
+        "operation": "http://fhub.dev/start"
+      }
+    ],
+    "states": [
+      {
+        "name": "start",
+        "type": "operation",
+        "actions":
+        [
+          {
+            "functionRef": "start"
+          }
+        ],
+        "end": {
+          "terminate": true,
+          "produceEvents":
+          [
+            {
+              "eventRef": "PanelRender"
+            }
+          ]
+        }
+      }
+    ]
+  }
+  `,
 };
 
 export class PanelModel implements DataConfigSource, IPanelModel {
   /* persisted id, used in URL to identify a panel */
-  id!: number;
   gridPos!: GridPos;
   type!: string;
-  title!: string;
-  alert?: any;
 
   panels?: PanelModel[];
   declare targets: DataQuery[];
-  thresholds?: any;
   pluginVersion?: string;
   savedQueryLink: SavedQueryLink | null = null; // Used by the experimental feature queryLibrary
 
-  timeShift?: any;
-  hideTimeOverride?: any;
   declare options: {
     [key: string]: any;
   };
   declare fieldConfig: FieldConfigSource;
-
-  description?: string;
-  links?: DataLink[];
-  declare transparent: boolean;
 
   libraryPanel?: LibraryPanelRef | LibraryElementDTO;
 
@@ -144,10 +156,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   isInView = false;
   configRev = 0; // increments when configs change
   hasSavedPanelEditChange?: boolean;
-  hasRefreshed?: boolean;
   cacheTimeout?: string | null;
   cachedPluginOptions: Record<string, PanelOptionsCache> = {};
-  legend?: { show: boolean; sort?: string; sortDesc?: boolean };
   plugin?: PanelPlugin;
   /**
    * Unique in application state, this is used as redux key for panel and for redux panel state
@@ -162,6 +172,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   events: EventBusSrv;
 
   private queryRunner?: PanelQueryRunner;
+
+  declare workflow: string;
 
   constructor(model: any) {
     this.events = new EventBusSrv();
@@ -197,42 +209,12 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       (this as any)[property] = model[property];
     }
 
-    switch (this.type) {
-      case 'graph':
-        if (config.featureToggles?.autoMigrateGraphPanels) {
-          this.autoMigrateFrom = this.type;
-          this.type = 'timeseries';
-        }
-        break;
-      case 'table-old':
-        this.autoMigrateFrom = this.type;
-        this.type = 'table';
-        break;
-      case 'heatmap-new':
-        this.autoMigrateFrom = this.type;
-        this.type = 'heatmap';
-        break;
-    }
-
     // defaults
     defaultsDeep(this, cloneDeep(defaults));
-
-    // queries must have refId
-    this.ensureQueryIds();
   }
 
   generateNewKey() {
     this.key = uuidv4();
-  }
-
-  ensureQueryIds() {
-    if (this.targets && isArray(this.targets)) {
-      for (const query of this.targets) {
-        if (!query.refId) {
-          query.refId = getNextRefIdChar(this.targets);
-        }
-      }
-    }
   }
 
   getOptions() {
@@ -247,15 +229,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     this.options = options;
     this.configRev++;
     this.events.publish(new PanelOptionsChangedEvent());
-    this.render();
-  }
-
-  updateFieldConfig(config: FieldConfigSource) {
-    this.fieldConfig = config;
-    this.configRev++;
-    this.events.publish(new PanelOptionsChangedEvent());
-
-    this.resendLastResult();
     this.render();
   }
 
@@ -313,17 +286,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     });
   }
 
-  refresh() {
-    this.hasRefreshed = true;
-    this.events.publish(new RefreshEvent());
-  }
-
   render() {
-    if (!this.hasRefreshed) {
-      this.refresh();
-    } else {
-      this.events.publish(new RenderEvent());
-    }
+    this.events.publish(new WorkflowEvent());
   }
 
   private getOptionsToRemember() {
@@ -451,7 +415,7 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     }
   }
 
-  updateQueries(options: QueryGroupOptions) {
+  updateQueries(options: WorkflowOptions) {
     if (options.savedQueryUid) {
       this.savedQueryLink = {
         ref: {
@@ -462,34 +426,11 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       this.savedQueryLink = null;
     }
 
+    this.workflow = options.workflow;
     this.cacheTimeout = options.cacheTimeout;
-    this.timeShift = options.timeRange?.shift;
-    this.hideTimeOverride = options.timeRange?.hide;
-    this.targets = options.queries;
     this.configRev++;
 
     this.events.publish(new PanelQueriesChangedEvent());
-  }
-
-  addQuery(query?: Partial<DataQuery>) {
-    query = query || { refId: 'A' };
-    query.refId = getNextRefIdChar(this.targets);
-    this.targets.push(query as DataQuery);
-    this.configRev++;
-  }
-
-  changeQuery(query: DataQuery, index: number) {
-    // ensure refId is maintained
-    query.refId = this.targets[index].refId;
-    this.configRev++;
-
-    // update query in array
-    this.targets = this.targets.map((item, itemIndex) => {
-      if (itemIndex === index) {
-        return query;
-      }
-      return item;
-    });
   }
 
   getEditClone() {
@@ -515,7 +456,8 @@ export class PanelModel implements DataConfigSource, IPanelModel {
   }
 
   hasTitle() {
-    return this.title && this.title.length > 0;
+    const title = this.title;
+    return this.title && title.length > 0;
   }
 
   destroy() {
@@ -557,7 +499,65 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     this.configRev++;
     this.render();
   }
+
+  set id(id: number) {
+    this.updateWorkflowSource("id", String(id));
+  }
+
+  get id(): number {
+    return parseInt(this.getWorkflowObject().id!, 10);
+  }
+
+  set title(value: string) {
+    this.updateWorkflowSource("name", value);
+  }
+
+  get title(): string {
+    return this.getWorkflowObject().name || "";
+  }
+
+  set description(value: string) {
+    this.updateWorkflowSource("description", value);
+  }
+
+  get description(): string {
+    return this.getWorkflowObject().description || "";
+  }
+
+  runWorkflow() {
+    // console.log('runWorkflow', this.getWorkflow());
+    // console.log(this.getWorkflow().start);
+    const runner = new PanelWorkflowRunner(this.getWorkflow());
+    runner.start();
+    // this.stateWorkflow(this.getWorkflow().start! as string, data);
+  }
+
+  getWorkflow(): Specification.Workflow {
+    const workflow = new Specification.Workflow(this.getWorkflowObject());
+    const workflowValidator = new WorkflowValidator(workflow);
+    if (!workflowValidator.isValid) {
+        workflowValidator.errors.forEach(error => console.error((error as ValidationError).message));
+        throw Error("Invalid workflow");
+    }
+
+    return workflow;
+  }
+
+  getWorkflowText(): string {
+    return JSON.stringify(this.getWorkflowObject(), undefined, 2);
+  }
+
+  updateWorkflowSource(name: string, value: string | number) {
+    const workflow = this.getWorkflowObject();
+    workflow[name] = value;
+    return this.workflow = JSON.stringify(workflow);
+  }
+
+  private getWorkflowObject(): any {
+    return JSON.parse(this.workflow);
+  }
 }
+
 
 function getPluginVersion(plugin: PanelPlugin): string {
   return plugin && plugin.meta.info.version ? plugin.meta.info.version : config.buildInfo.version;

@@ -3,7 +3,6 @@ import { Subscription } from 'rxjs';
 
 import {
   AppEvent,
-  DashboardCursorSync,
   dateTime,
   dateTimeFormat,
   dateTimeFormatTimeAgo,
@@ -17,9 +16,8 @@ import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT } from 'app/core
 import { contextSrv } from 'app/core/services/context_srv';
 import { sortedDeepCloneWithoutNulls } from 'app/core/utils/object';
 import { DashboardMeta } from 'app/types';
-import { DashboardMetaChangedEvent, DashboardPanelsChangedEvent, RenderEvent } from 'app/types/events';
+import { DashboardMetaChangedEvent, DashboardPanelsChangedEvent } from 'app/types/events';
 
-import { getTimeSrv } from '../services/TimeSrv';
 import { mergePanels, PanelMergeInfo } from '../utils/panelMerge';
 
 import { DashboardMigrator } from './DashboardMigrator';
@@ -57,7 +55,6 @@ export class DashboardModel implements TimeModel {
   timezone: any;
   weekStart: any;
   editable: any;
-  graphTooltip: DashboardCursorSync;
   time: any;
   liveNow: boolean;
   private originalTime: any;
@@ -114,7 +111,6 @@ export class DashboardModel implements TimeModel {
     this.timezone = data.timezone ?? '';
     this.weekStart = data.weekStart ?? '';
     this.editable = data.editable !== false;
-    this.graphTooltip = data.graphTooltip || 0;
     this.time = data.time ?? { from: 'now-6h', to: 'now' };
     this.timepicker = data.timepicker ?? {};
     this.liveNow = Boolean(data.liveNow);
@@ -141,7 +137,6 @@ export class DashboardModel implements TimeModel {
   private initMeta(meta?: DashboardMeta) {
     meta = meta || {};
 
-    meta.canShare = meta.canShare !== false;
     meta.canSave = meta.canSave !== false;
     meta.canStar = meta.canStar !== false;
     meta.canEdit = meta.canEdit !== false;
@@ -230,8 +225,7 @@ export class DashboardModel implements TimeModel {
   }
 
   render() {
-    this.events.publish(new RenderEvent());
-    for (const panel of this.panels) {
+   for (const panel of this.panels) {
       panel.render();
     }
   }
@@ -240,7 +234,7 @@ export class DashboardModel implements TimeModel {
     const lastResult = panel.getQueryRunner().getLastResult();
 
     if (!this.otherPanelInFullscreen(panel) && !lastResult) {
-      panel.refresh();
+      panel.render();
     }
   }
 
@@ -249,7 +243,6 @@ export class DashboardModel implements TimeModel {
   }
 
   initEditPanel(sourcePanel: PanelModel): PanelModel {
-    getTimeSrv().pauseAutoRefresh();
     this.panelInEdit = sourcePanel.getEditClone();
     return this.panelInEdit;
   }
@@ -267,7 +260,6 @@ export class DashboardModel implements TimeModel {
   exitPanelEditor() {
     this.panelInEdit!.destroy();
     this.panelInEdit = undefined;
-    getTimeSrv().resumeAutoRefresh();
   }
 
   private ensurePanelsHaveIds() {
@@ -394,12 +386,6 @@ export class DashboardModel implements TimeModel {
     const newPanel = panel.getSaveModel();
     newPanel.id = this.getNextPanelId();
 
-    if (newPanel.alert) {
-      delete newPanel.thresholds;
-    }
-
-    delete newPanel.alert;
-
     // does it fit to the right?
     if (panel.gridPos.x + panel.gridPos.w * 2 <= GRID_COLUMN_COUNT) {
       newPanel.gridPos.x += panel.gridPos.w;
@@ -450,18 +436,6 @@ export class DashboardModel implements TimeModel {
   off<T>(event: AppEvent<T>, callback: (payload?: T) => void) {
     console.log('DashboardModel.off is deprecated');
     this.events.off(event, callback);
-  }
-
-  cycleGraphTooltip() {
-    this.graphTooltip = (this.graphTooltip + 1) % 3;
-  }
-
-  sharedTooltipModeEnabled() {
-    return this.graphTooltip > 0;
-  }
-
-  sharedCrosshairModeOnly() {
-    return this.graphTooltip === 1;
   }
 
   getRelativeTime(date: DateTimeInput) {
@@ -524,20 +498,6 @@ export class DashboardModel implements TimeModel {
     return this.getPanelById(panelId);
   }
 
-  toggleLegendsForAll() {
-    const panelsWithLegends = this.panels.filter(isPanelWithLegend);
-
-    // determine if more panels are displaying legends or not
-    const onCount = panelsWithLegends.filter((panel) => panel.legend.show).length;
-    const offCount = panelsWithLegends.length - onCount;
-    const panelLegendsOn = onCount >= offCount;
-
-    for (const panel of panelsWithLegends) {
-      panel.legend.show = !panelLegendsOn;
-      panel.render();
-    }
-  }
-
   canEditDashboard() {
     return Boolean(this.meta.canEdit || this.meta.canMakeEditable);
   }
@@ -552,8 +512,4 @@ export class DashboardModel implements TimeModel {
   getDefaultTime() {
     return this.originalTime;
   }
-}
-
-function isPanelWithLegend(panel: PanelModel): panel is PanelModel & Pick<Required<PanelModel>, 'legend'> {
-  return Boolean(panel.legend);
 }

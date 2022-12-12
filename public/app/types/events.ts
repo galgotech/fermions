@@ -56,12 +56,6 @@ export interface DataSourceResponse<T> {
   readonly config: any;
 }
 
-export interface GraphClickedPayload {
-  pos: any;
-  panel: any;
-  item: any;
-}
-
 export interface ThresholdChangedPayload {
   threshold: any;
   handleIndex: any;
@@ -73,15 +67,9 @@ export interface DashScrollPayload {
   pos?: number;
 }
 
-export interface PanelChangeViewPayload {}
-
 /**
  * Events
  */
-
-export const dsRequestError = eventFactory<any>('ds-request-error');
-export const toggleSidemenuHidden = eventFactory('toggle-sidemenu-hidden');
-export const graphClicked = eventFactory<GraphClickedPayload>('graph-click');
 
 /**
  * @internal
@@ -114,12 +102,8 @@ export class DashboardMetaChangedEvent extends BusEventBase {
   static type = 'dashboard-meta-changed';
 }
 
-export class PanelDirectiveReadyEvent extends BusEventBase {
-  static type = 'panel-directive-ready';
-}
-
-export class RenderEvent extends BusEventBase {
-  static type = 'render';
+export class WorkflowEvent extends BusEventBase {
+  static type = 'workflow';
 }
 
 interface ZoomOutEventPayload {
