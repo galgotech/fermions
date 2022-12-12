@@ -70,7 +70,7 @@ export class PanelEditorWorkflow extends PureComponent<Props, State> {
           value={panel.getWorkflowText()}
           language="json"
           width="100%"
-          height="50vh"
+          height="80vh"
           containerStyles={styles.codeEditorContainer}
           showMiniMap={true}
           showLineNumbers={true}
