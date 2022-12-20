@@ -74,8 +74,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/quota/quotaimpl"
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchV2"
-	"github.com/grafana/grafana/pkg/services/secrets"
-	secretsDatabase "github.com/grafana/grafana/pkg/services/secrets/database"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts/database"
 	serviceaccountsmanager "github.com/grafana/grafana/pkg/services/serviceaccounts/manager"
@@ -108,8 +106,6 @@ var wireSet = wire.NewSet(
 	wire.InterfaceValue(new(routing.RouteRegister), noOpRouteRegister{}),
 	encryptionservice.ProvideEncryptionService,
 	wire.Bind(new(encryption.Internal), new(*encryptionservice.Service)),
-	secretsDatabase.ProvideSecretsStore,
-	wire.Bind(new(secrets.Store), new(*secretsDatabase.SecretsStoreImpl)),
 	hooks.ProvideService,
 	api.ProvideHTTPServer,
 	kvstore.ProvideService,

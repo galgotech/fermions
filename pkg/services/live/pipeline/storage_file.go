@@ -8,14 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/util"
 )
 
 // FileStorage can load channel rules from a file on disk.
 type FileStorage struct {
-	DataPath       string
-	SecretsService secrets.Service
+	DataPath string
 }
 
 func (f *FileStorage) ListWriteConfigs(_ context.Context, orgID int64) ([]WriteConfig, error) {
@@ -54,16 +52,10 @@ func (f *FileStorage) CreateWriteConfig(ctx context.Context, orgID int64, cmd Wr
 		cmd.UID = util.GenerateShortUID()
 	}
 
-	secureSettings, err := f.SecretsService.EncryptJsonData(ctx, cmd.SecureSettings, secrets.WithoutScope())
-	if err != nil {
-		return WriteConfig{}, fmt.Errorf("error encrypting data: %w", err)
-	}
-
 	backend := WriteConfig{
-		OrgId:          orgID,
-		UID:            cmd.UID,
-		Settings:       cmd.Settings,
-		SecureSettings: secureSettings,
+		OrgId:    orgID,
+		UID:      cmd.UID,
+		Settings: cmd.Settings,
 	}
 
 	ok, reason := backend.Valid()
@@ -86,16 +78,10 @@ func (f *FileStorage) UpdateWriteConfig(ctx context.Context, orgID int64, cmd Wr
 		return WriteConfig{}, fmt.Errorf("can't read write configs: %w", err)
 	}
 
-	secureSettings, err := f.SecretsService.EncryptJsonData(ctx, cmd.SecureSettings, secrets.WithoutScope())
-	if err != nil {
-		return WriteConfig{}, fmt.Errorf("error encrypting data: %w", err)
-	}
-
 	backend := WriteConfig{
-		OrgId:          orgID,
-		UID:            cmd.UID,
-		Settings:       cmd.Settings,
-		SecureSettings: secureSettings,
+		OrgId:    orgID,
+		UID:      cmd.UID,
+		Settings: cmd.Settings,
 	}
 
 	ok, reason := backend.Valid()

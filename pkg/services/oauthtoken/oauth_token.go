@@ -13,7 +13,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/login/social"
 	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/login"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
@@ -37,7 +36,6 @@ type Service struct {
 
 type OAuthTokenService interface {
 	GetCurrentOAuthToken(context.Context, *user.SignedInUser) *oauth2.Token
-	IsOAuthPassThruEnabled(*datasources.DataSource) bool
 	HasOAuthEntry(context.Context, *user.SignedInUser) (*models.UserAuth, bool, error)
 	TryTokenRefresh(context.Context, *models.UserAuth) error
 	InvalidateOAuthTokens(context.Context, *models.UserAuth) error
@@ -75,11 +73,6 @@ func (o *Service) GetCurrentOAuthToken(ctx context.Context, usr *user.SignedInUs
 		return nil
 	}
 	return token
-}
-
-// IsOAuthPassThruEnabled returns true if Forward OAuth Identity (oauthPassThru) is enabled for the provided data source.
-func (o *Service) IsOAuthPassThruEnabled(ds *datasources.DataSource) bool {
-	return IsOAuthPassThruEnabled(ds)
 }
 
 // HasOAuthEntry returns true and the UserAuth object when OAuth info exists for the specified User
@@ -202,11 +195,6 @@ func (o *Service) tryGetOrRefreshAccessToken(ctx context.Context, usr *models.Us
 	}
 
 	return token, nil
-}
-
-// IsOAuthPassThruEnabled returns true if Forward OAuth Identity (oauthPassThru) is enabled for the provided data source.
-func IsOAuthPassThruEnabled(ds *datasources.DataSource) bool {
-	return ds.JsonData != nil && ds.JsonData.Get("oauthPassThru").MustBool()
 }
 
 // tokensEq checks for OAuth2 token equivalence given the fields of the struct Grafana is interested in

@@ -6,7 +6,6 @@ import (
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/grafana/grafana/pkg/services/live/managedstream"
-	"github.com/grafana/grafana/pkg/services/secrets"
 )
 
 type StorageRuleBuilder struct {
@@ -15,7 +14,6 @@ type StorageRuleBuilder struct {
 	FrameStorage         *FrameStorage
 	Storage              Storage
 	ChannelHandlerGetter ChannelHandlerGetter
-	SecretsService       secrets.Service
 }
 
 func (f *StorageRuleBuilder) extractSubscriber(config *SubscriberConfig) (Subscriber, error) {
@@ -144,19 +142,12 @@ func (f *StorageRuleBuilder) constructBasicAuth(writeConfig WriteConfig) (*Basic
 		return nil, nil
 	}
 	var password string
-	hasSecurePassword := len(writeConfig.SecureSettings["basicAuthPassword"]) > 0
-	if hasSecurePassword {
-		passwordBytes, err := f.SecretsService.Decrypt(context.Background(), writeConfig.SecureSettings["basicAuthPassword"])
-		if err != nil {
-			return nil, fmt.Errorf("basicAuthPassword can't be decrypted: %w", err)
-		}
-		password = string(passwordBytes)
-	} else {
-		// Use plain text password (should be removed upon database integration).
-		if writeConfig.Settings.BasicAuth != nil {
-			password = writeConfig.Settings.BasicAuth.Password
-		}
+
+	// Use plain text password (should be removed upon database integration).
+	if writeConfig.Settings.BasicAuth != nil {
+		password = writeConfig.Settings.BasicAuth.Password
 	}
+
 	return &BasicAuth{
 		User:     writeConfig.Settings.BasicAuth.User,
 		Password: password,

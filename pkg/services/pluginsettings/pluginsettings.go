@@ -13,7 +13,4 @@ type Service interface {
 	UpdatePluginSetting(ctx context.Context, args *UpdateArgs) error
 	// UpdatePluginSettingPluginVersion updates a Plugin Setting's plugin version
 	UpdatePluginSettingPluginVersion(ctx context.Context, args *UpdatePluginVersionArgs) error
-	// DecryptedValues decrypts the encrypted secureJSONData of the provided plugin setting and
-	// returns the decrypted values.
-	DecryptedValues(ps *DTO) map[string]string
 }

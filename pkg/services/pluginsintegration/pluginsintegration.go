@@ -3,8 +3,6 @@ package pluginsintegration
 import (
 	"github.com/google/wire"
 	"github.com/grafana/grafana/pkg/plugins"
-	"github.com/grafana/grafana/pkg/plugins/backendplugin/coreplugin"
-	"github.com/grafana/grafana/pkg/plugins/backendplugin/provider"
 	"github.com/grafana/grafana/pkg/plugins/config"
 	"github.com/grafana/grafana/pkg/plugins/manager"
 	"github.com/grafana/grafana/pkg/plugins/manager/loader"
@@ -22,7 +20,6 @@ var WireSet = wire.NewSet(
 	wire.Bind(new(plugins.Store), new(*store.Service)),
 	wire.Bind(new(plugins.SecretsPluginManager), new(*store.Service)),
 	wire.Bind(new(plugins.StaticRouteResolver), new(*store.Service)),
-	coreplugin.ProvideCoreRegistry,
 	loader.ProvideService,
 	wire.Bind(new(loader.Service), new(*loader.Loader)),
 	wire.Bind(new(plugins.ErrorResolver), new(*loader.Loader)),
@@ -38,8 +35,6 @@ var WireSet = wire.NewSet(
 // WireExtensionSet provides a wire.ProviderSet of plugin providers that can be
 // extended.
 var WireExtensionSet = wire.NewSet(
-	provider.ProvideService,
-	wire.Bind(new(plugins.BackendFactoryProvider), new(*provider.Service)),
 	signature.ProvideOSSAuthorizer,
 	wire.Bind(new(plugins.PluginLoaderAuthorizer), new(*signature.UnsignedPluginAuthorizer)),
 )

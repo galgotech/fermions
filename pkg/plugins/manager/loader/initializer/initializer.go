@@ -16,18 +16,16 @@ import (
 )
 
 type Initializer struct {
-	cfg             *config.Cfg
-	license         models.Licensing
-	backendProvider plugins.BackendFactoryProvider
-	log             log.Logger
+	cfg     *config.Cfg
+	license models.Licensing
+	log     log.Logger
 }
 
-func New(cfg *config.Cfg, backendProvider plugins.BackendFactoryProvider, license models.Licensing) Initializer {
+func New(cfg *config.Cfg, license models.Licensing) Initializer {
 	return Initializer{
-		cfg:             cfg,
-		license:         license,
-		backendProvider: backendProvider,
-		log:             log.New("plugin.initializer"),
+		cfg:     cfg,
+		license: license,
+		log:     log.New("plugin.initializer"),
 	}
 }
 

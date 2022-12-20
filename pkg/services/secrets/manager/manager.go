@@ -20,7 +20,6 @@ import (
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
 	"github.com/prometheus/client_golang/prometheus"
-	"golang.org/x/sync/errgroup"
 	"xorm.io/xorm"
 )
 
@@ -511,39 +510,4 @@ func (s *SecretsService) ReEncryptDataKeys(ctx context.Context) error {
 	s.log.Info("Data keys re-encryption finished successfully")
 
 	return nil
-}
-
-func (s *SecretsService) Run(ctx context.Context) error {
-	gc := time.NewTicker(
-		s.settings.KeyValue("security.encryption", "data_keys_cache_cleanup_interval").
-			MustDuration(time.Minute),
-	)
-
-	grp, gCtx := errgroup.WithContext(ctx)
-
-	for _, p := range s.providers {
-		if svc, ok := p.(secrets.BackgroundProvider); ok {
-			grp.Go(func() error {
-				return svc.Run(gCtx)
-			})
-		}
-	}
-
-	for {
-		select {
-		case <-gc.C:
-			s.log.Debug("Removing expired data keys from cache...")
-			s.dataKeyCache.removeExpired()
-			s.log.Debug("Removing expired data keys from cache finished successfully")
-		case <-gCtx.Done():
-			s.log.Debug("Grafana is shutting down; stopping...")
-			gc.Stop()
-
-			if err := grp.Wait(); err != nil && !errors.Is(err, context.Canceled) {
-				return err
-			}
-
-			return nil
-		}
-	}
 }

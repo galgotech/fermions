@@ -57,19 +57,6 @@ func (ap *PluginProvisioner) apply(ctx context.Context, cfg *pluginsAsConfig) er
 		} else {
 			app.PluginVersion = ps.PluginVersion
 		}
-
-		ap.log.Info("Updating app from configuration ", "type", app.PluginID, "enabled", app.Enabled)
-		if err := ap.pluginSettings.UpdatePluginSetting(ctx, &pluginsettings.UpdateArgs{
-			OrgID:          app.OrgID,
-			PluginID:       app.PluginID,
-			Enabled:        app.Enabled,
-			Pinned:         app.Pinned,
-			JSONData:       app.JSONData,
-			SecureJSONData: app.SecureJSONData,
-			PluginVersion:  app.PluginVersion,
-		}); err != nil {
-			return err
-		}
 	}
 
 	return nil

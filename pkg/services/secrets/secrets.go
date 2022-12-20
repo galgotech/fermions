@@ -64,22 +64,3 @@ func (id ProviderID) Kind() (string, error) {
 func KeyLabel(scope string, providerID ProviderID) string {
 	return fmt.Sprintf("%s/%s@%s", time.Now().Format("2006-01-02"), scope, providerID)
 }
-
-// BackgroundProvider should be implemented for a provider that has a task that needs to be run in the background.
-type BackgroundProvider interface {
-	Run(ctx context.Context) error
-}
-
-// Migrator is responsible for secrets migrations like re-encrypting or rolling back secrets.
-type Migrator interface {
-	// ReEncryptSecrets decrypts and re-encrypts the secrets with most recent
-	// available data key. If a secret-specific decryption / re-encryption fails,
-	// it does not stop, but returns false as the first return (success or not)
-	// at the end of the process.
-	ReEncryptSecrets(ctx context.Context) (bool, error)
-	// RollBackSecrets decrypts and re-encrypts the secrets using the legacy
-	// encryption. If a secret-specific decryption / re-encryption fails, it
-	// does not stop, but returns false as the first return (success or not)
-	// at the end of the process.
-	RollBackSecrets(ctx context.Context) (bool, error)
-}

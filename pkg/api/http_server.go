@@ -68,7 +68,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/quota"
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchusers"
-	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
 	"github.com/grafana/grafana/pkg/services/shorturls"
 	"github.com/grafana/grafana/pkg/services/sqlstore"
@@ -129,7 +128,6 @@ type HTTPServer struct {
 	SocialService                social.Service
 	Listener                     net.Listener
 	EncryptionService            encryption.Internal
-	SecretsService               secrets.Service
 	cleanUpService               *cleanup.CleanUpService
 	tracer                       tracing.Tracer
 	grafanaUpdateChecker         *updatechecker.GrafanaService
@@ -200,7 +198,7 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 	dashboardPermissionsService accesscontrol.DashboardPermissionsService, dashboardVersionService dashver.Service,
 	starService star.Service, csrfService csrf.Service, basekinds *corekind.Base,
 	apiKeyService apikey.Service, kvStore kvstore.KVStore,
-	secretsPluginManager plugins.SecretsPluginManager, secretsService secrets.Service,
+	secretsPluginManager plugins.SecretsPluginManager,
 	userService user.Service, tempUserService tempUser.Service,
 	loginAttemptService loginAttempt.Service, orgService org.Service, teamService team.Service,
 	accesscontrolService accesscontrol.Service, navTreeService navtree.Service,
@@ -252,7 +250,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		Listener:                     opts.Listener,
 		SocialService:                socialService,
 		EncryptionService:            encryptionService,
-		SecretsService:               secretsService,
 		searchUsersService:           searchUsersService,
 		ldapGroups:                   ldapGroups,
 		teamGuardian:                 teamGuardian,

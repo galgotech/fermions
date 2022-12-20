@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,7 +17,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/auth"
 	loginService "github.com/grafana/grafana/pkg/services/login"
-	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/web"
@@ -88,17 +86,6 @@ func (hs *HTTPServer) LoginView(c *models.ReqContext) {
 	urlParams := c.Req.URL.Query()
 	if _, disableAutoLogin := urlParams["disableAutoLogin"]; disableAutoLogin {
 		hs.log.Debug("Auto login manually disabled")
-		c.HTML(http.StatusOK, getViewIndex(), viewData)
-		return
-	}
-
-	if loginError, ok := hs.tryGetEncryptedCookie(c, loginErrorCookieName); ok {
-		// this cookie is only set whenever an OAuth login fails
-		// therefore the loginError should be passed to the view data
-		// and the view should return immediately before attempting
-		// to login again via OAuth and enter to a redirect loop
-		cookies.DeleteCookie(c.Resp, loginErrorCookieName, hs.CookieOptionsFromCfg)
-		viewData.Settings["loginError"] = loginError
 		c.HTML(http.StatusOK, getViewIndex(), viewData)
 		return
 	}
@@ -314,46 +301,14 @@ func (hs *HTTPServer) Logout(c *models.ReqContext) {
 	}
 }
 
-func (hs *HTTPServer) tryGetEncryptedCookie(ctx *models.ReqContext, cookieName string) (string, bool) {
-	cookie := ctx.GetCookie(cookieName)
-	if cookie == "" {
-		return "", false
-	}
-
-	decoded, err := hex.DecodeString(cookie)
-	if err != nil {
-		return "", false
-	}
-
-	decryptedError, err := hs.SecretsService.Decrypt(ctx.Req.Context(), decoded)
-	return string(decryptedError), err == nil
-}
-
-func (hs *HTTPServer) trySetEncryptedCookie(ctx *models.ReqContext, cookieName string, value string, maxAge int) error {
-	encryptedError, err := hs.SecretsService.Encrypt(ctx.Req.Context(), []byte(value), secrets.WithoutScope())
-	if err != nil {
-		return err
-	}
-
-	cookies.WriteCookie(ctx.Resp, cookieName, hex.EncodeToString(encryptedError), 60, hs.CookieOptionsFromCfg)
-
-	return nil
-}
-
 func (hs *HTTPServer) redirectWithError(ctx *models.ReqContext, err error, v ...interface{}) {
 	ctx.Logger.Warn(err.Error(), v...)
-	if err := hs.trySetEncryptedCookie(ctx, loginErrorCookieName, getLoginExternalError(err), 60); err != nil {
-		hs.log.Error("Failed to set encrypted cookie", "err", err)
-	}
 
 	ctx.Redirect(hs.Cfg.AppSubURL + "/login")
 }
 
 func (hs *HTTPServer) RedirectResponseWithError(ctx *models.ReqContext, err error, v ...interface{}) *response.RedirectResponse {
 	ctx.Logger.Error(err.Error(), v...)
-	if err := hs.trySetEncryptedCookie(ctx, loginErrorCookieName, getLoginExternalError(err), 60); err != nil {
-		hs.log.Error("Failed to set encrypted cookie", "err", err)
-	}
 
 	return response.Redirect(hs.Cfg.AppSubURL + "/login")
 }

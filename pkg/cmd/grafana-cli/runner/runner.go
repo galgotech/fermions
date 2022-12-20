@@ -4,7 +4,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/services/encryption"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
-	"github.com/grafana/grafana/pkg/services/secrets/manager"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 )
@@ -15,7 +14,6 @@ type Runner struct {
 	SettingsProvider  setting.Provider
 	Features          featuremgmt.FeatureToggles
 	EncryptionService encryption.Internal
-	SecretsService    *manager.SecretsService
 	UserService       user.Service
 }
 

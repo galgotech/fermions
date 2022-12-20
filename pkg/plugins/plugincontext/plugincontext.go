@@ -52,7 +52,6 @@ func (p *Provider) pluginContext(ctx context.Context, pluginID string, user *use
 	}
 
 	jsonData := json.RawMessage{}
-	decryptedSecureJSONData := map[string]string{}
 	var updated time.Time
 
 	ps, err := p.getCachedPluginSettings(ctx, pluginID, user)
@@ -67,7 +66,6 @@ func (p *Provider) pluginContext(ctx context.Context, pluginID string, user *use
 		if err != nil {
 			return backend.PluginContext{}, false, fmt.Errorf("%v: %w", "Failed to unmarshal plugin json data", err)
 		}
-		decryptedSecureJSONData = p.pluginSettingsService.DecryptedValues(ps)
 		updated = ps.Updated
 	}
 
@@ -76,9 +74,8 @@ func (p *Provider) pluginContext(ctx context.Context, pluginID string, user *use
 		PluginID: plugin.ID,
 		User:     adapters.BackendUserFromSignedInUser(user),
 		AppInstanceSettings: &backend.AppInstanceSettings{
-			JSONData:                jsonData,
-			DecryptedSecureJSONData: decryptedSecureJSONData,
-			Updated:                 updated,
+			JSONData: jsonData,
+			Updated:  updated,
 		},
 	}, true, nil
 }

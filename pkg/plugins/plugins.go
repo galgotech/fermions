@@ -11,7 +11,6 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/plugins/backendplugin/secretsmanagerplugin"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/util"
 )
@@ -41,8 +40,7 @@ type Plugin struct {
 	Module  string
 	BaseURL string
 
-	SecretsManager secretsmanagerplugin.SecretsManagerPlugin
-	log            log.Logger
+	log log.Logger
 }
 
 type PluginDTO struct {

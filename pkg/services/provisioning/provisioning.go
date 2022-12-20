@@ -22,7 +22,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/provisioning/plugins"
 	"github.com/grafana/grafana/pkg/services/quota"
 	"github.com/grafana/grafana/pkg/services/searchV2"
-	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/setting"
 )
 
@@ -39,7 +38,6 @@ func ProvideService(
 	pluginSettings pluginsettings.Service,
 	searchService searchV2.SearchService,
 	quotaService quota.Service,
-	secrectService secrets.Service,
 	orgService org.Service,
 ) (*ProvisioningServiceImpl, error) {
 	s := &ProvisioningServiceImpl{
@@ -57,7 +55,6 @@ func ProvideService(
 		pluginsSettings:              pluginSettings,
 		searchService:                searchService,
 		quotaService:                 quotaService,
-		secretService:                secrectService,
 		log:                          log.New("provisioning"),
 		orgService:                   orgService,
 	}
@@ -119,7 +116,6 @@ type ProvisioningServiceImpl struct {
 	pluginsSettings              pluginsettings.Service
 	searchService                searchV2.SearchService
 	quotaService                 quota.Service
-	secretService                secrets.Service
 }
 
 func (ps *ProvisioningServiceImpl) RunInitProvisioners(ctx context.Context) error {

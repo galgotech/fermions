@@ -51,21 +51,15 @@ func typeRegistered(entityType string, registry []EntityInfo) bool {
 }
 
 func WriteConfigToDto(b WriteConfig) WriteConfigDto {
-	secureFields := make(map[string]bool, len(b.SecureSettings))
-	for k := range b.SecureSettings {
-		secureFields[k] = true
-	}
 	return WriteConfigDto{
-		UID:          b.UID,
-		Settings:     b.Settings,
-		SecureFields: secureFields,
+		UID:      b.UID,
+		Settings: b.Settings,
 	}
 }
 
 type WriteConfigDto struct {
-	UID          string          `json:"uid"`
-	Settings     WriteSettings   `json:"settings"`
-	SecureFields map[string]bool `json:"secureFields"`
+	UID      string        `json:"uid"`
+	Settings WriteSettings `json:"settings"`
 }
 
 type WriteConfigGetCmd struct {
@@ -73,16 +67,14 @@ type WriteConfigGetCmd struct {
 }
 
 type WriteConfigCreateCmd struct {
-	UID            string            `json:"uid"`
-	Settings       WriteSettings     `json:"settings"`
-	SecureSettings map[string]string `json:"secureSettings"`
+	UID      string        `json:"uid"`
+	Settings WriteSettings `json:"settings"`
 }
 
 // TODO: add version field later.
 type WriteConfigUpdateCmd struct {
-	UID            string            `json:"uid"`
-	Settings       WriteSettings     `json:"settings"`
-	SecureSettings map[string]string `json:"secureSettings"`
+	UID      string        `json:"uid"`
+	Settings WriteSettings `json:"settings"`
 }
 
 type WriteConfigDeleteCmd struct {
@@ -90,10 +82,9 @@ type WriteConfigDeleteCmd struct {
 }
 
 type WriteConfig struct {
-	OrgId          int64             `json:"-"`
-	UID            string            `json:"uid"`
-	Settings       WriteSettings     `json:"settings"`
-	SecureSettings map[string][]byte `json:"secureSettings,omitempty"`
+	OrgId    int64         `json:"-"`
+	UID      string        `json:"uid"`
+	Settings WriteSettings `json:"settings"`
 }
 
 func (r WriteConfig) Valid() (bool, string) {

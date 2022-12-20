@@ -9,17 +9,15 @@ import (
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
-	"github.com/grafana/grafana/pkg/services/secrets"
 )
 
-func ProvideService(db db.DB, secretsService secrets.Service) *Service {
+func ProvideService(db db.DB) *Service {
 	s := &Service{
 		db: db,
 		decryptionCache: secureJSONDecryptionCache{
 			cache: make(map[int64]cachedDecryptedJSON),
 		},
-		secretsService: secretsService,
-		logger:         log.New("pluginsettings"),
+		logger: log.New("pluginsettings"),
 	}
 
 	return s
@@ -28,7 +26,6 @@ func ProvideService(db db.DB, secretsService secrets.Service) *Service {
 type Service struct {
 	db              db.DB
 	decryptionCache secureJSONDecryptionCache
-	secretsService  secrets.Service
 
 	logger log.Logger
 }
@@ -88,20 +85,14 @@ func (s *Service) GetPluginSettingByPluginID(ctx context.Context, args *pluginse
 }
 
 func (s *Service) UpdatePluginSetting(ctx context.Context, args *pluginsettings.UpdateArgs) error {
-	encryptedSecureJsonData, err := s.secretsService.EncryptJsonData(ctx, args.SecureJSONData, secrets.WithoutScope())
-	if err != nil {
-		return err
-	}
-
 	return s.updatePluginSetting(ctx, &models.UpdatePluginSettingCmd{
-		Enabled:                 args.Enabled,
-		Pinned:                  args.Pinned,
-		JsonData:                args.JSONData,
-		SecureJsonData:          args.SecureJSONData,
-		PluginVersion:           args.PluginVersion,
-		PluginId:                args.PluginID,
-		OrgId:                   args.OrgID,
-		EncryptedSecureJsonData: encryptedSecureJsonData,
+		Enabled:        args.Enabled,
+		Pinned:         args.Pinned,
+		JsonData:       args.JSONData,
+		SecureJsonData: args.SecureJSONData,
+		PluginVersion:  args.PluginVersion,
+		PluginId:       args.PluginID,
+		OrgId:          args.OrgID,
 	})
 }
 
@@ -111,28 +102,6 @@ func (s *Service) UpdatePluginSettingPluginVersion(ctx context.Context, args *pl
 		PluginId:      args.PluginID,
 		OrgId:         args.OrgID,
 	})
-}
-
-func (s *Service) DecryptedValues(ps *pluginsettings.DTO) map[string]string {
-	s.decryptionCache.Lock()
-	defer s.decryptionCache.Unlock()
-
-	if item, present := s.decryptionCache.cache[ps.ID]; present && ps.Updated.Equal(item.updated) {
-		return item.json
-	}
-
-	json, err := s.secretsService.DecryptJsonData(context.Background(), ps.SecureJSONData)
-	if err != nil {
-		s.logger.Error("Failed to decrypt secure json data", "error", err)
-		return map[string]string{}
-	}
-
-	s.decryptionCache.cache[ps.ID] = cachedDecryptedJSON{
-		updated: ps.Updated,
-		json:    json,
-	}
-
-	return json
 }
 
 func (s *Service) getPluginSettingsInfo(ctx context.Context, orgID int64) ([]*models.PluginSettingInfo, error) {

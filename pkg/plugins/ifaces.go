@@ -2,8 +2,6 @@ package plugins
 
 import (
 	"context"
-
-	"github.com/grafana/grafana/pkg/plugins/backendplugin"
 )
 
 // Store is the publicly accessible storage for plugins.
@@ -34,11 +32,6 @@ type CompatOpts struct {
 
 type UpdateInfo struct {
 	PluginZipURL string
-}
-
-// BackendFactoryProvider provides a backend factory for a provided plugin.
-type BackendFactoryProvider interface {
-	BackendFactory(ctx context.Context, p *Plugin) backendplugin.PluginFactoryFunc
 }
 
 type SecretsPluginManager interface {

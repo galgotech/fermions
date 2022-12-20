@@ -40,7 +40,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/live/runstream"
 	"github.com/grafana/grafana/pkg/services/live/survey"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -70,7 +69,7 @@ type CoreGrafanaScope struct {
 
 func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, routeRegister routing.RouteRegister,
 	pluginStore plugins.Store, cacheService *localcache.CacheService,
-	sqlStore db.DB, secretsService secrets.Service,
+	sqlStore db.DB,
 	usageStatsService usagestats.Service, toggles featuremgmt.FeatureToggles,
 	accessControl accesscontrol.AccessControl, dashboardService dashboards.DashboardService,
 	orgService org.Service) (*GrafanaLive, error) {
@@ -82,7 +81,6 @@ func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, r
 		pluginStore:           pluginStore,
 		CacheService:          cacheService,
 		SQLStore:              sqlStore,
-		SecretsService:        secretsService,
 		channels:              make(map[string]models.ChannelHandler),
 		GrafanaScope: CoreGrafanaScope{
 			Features: make(map[string]models.ChannelHandlerFactory),
@@ -186,8 +184,7 @@ func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, r
 			}
 		} else {
 			storage := &pipeline.FileStorage{
-				DataPath:       cfg.DataPath,
-				SecretsService: g.SecretsService,
+				DataPath: cfg.DataPath,
 			}
 			g.pipelineStorage = storage
 			builder = &pipeline.StorageRuleBuilder{
@@ -196,7 +193,6 @@ func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, r
 				FrameStorage:         pipeline.NewFrameStorage(),
 				Storage:              storage,
 				ChannelHandlerGetter: g,
-				SecretsService:       g.SecretsService,
 			}
 		}
 		channelRuleGetter := pipeline.NewCacheSegmentedTree(builder)
@@ -398,7 +394,6 @@ type GrafanaLive struct {
 	RouteRegister         routing.RouteRegister
 	CacheService          *localcache.CacheService
 	SQLStore              db.DB
-	SecretsService        secrets.Service
 	pluginStore           plugins.Store
 	orgService            org.Service
 
@@ -1209,27 +1204,6 @@ func (g *GrafanaLive) HandleWriteConfigsPutHTTP(c *models.ReqContext) response.R
 	}
 	if cmd.UID == "" {
 		return response.Error(http.StatusBadRequest, "UID required", nil)
-	}
-	existingBackend, ok, err := g.pipelineStorage.GetWriteConfig(c.Req.Context(), c.OrgID, pipeline.WriteConfigGetCmd{
-		UID: cmd.UID,
-	})
-	if err != nil {
-		return response.Error(http.StatusInternalServerError, "Failed to get write config", err)
-	}
-	if ok {
-		if cmd.SecureSettings == nil {
-			cmd.SecureSettings = map[string]string{}
-		}
-		secureJSONData, err := g.SecretsService.DecryptJsonData(c.Req.Context(), existingBackend.SecureSettings)
-		if err != nil {
-			logger.Error("Error decrypting secure settings", "error", err)
-			return response.Error(http.StatusInternalServerError, "Error decrypting secure settings", err)
-		}
-		for k, v := range secureJSONData {
-			if _, ok := cmd.SecureSettings[k]; !ok {
-				cmd.SecureSettings[k] = v
-			}
-		}
 	}
 	result, err := g.pipelineStorage.UpdateWriteConfig(c.Req.Context(), c.OrgID, cmd)
 	if err != nil {
