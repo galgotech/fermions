@@ -78,7 +78,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/preference/prefimpl"
 	"github.com/grafana/grafana/pkg/services/querylibrary/querylibraryimpl"
 	"github.com/grafana/grafana/pkg/services/quota/quotaimpl"
-	"github.com/grafana/grafana/pkg/services/rendering"
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchV2"
 	"github.com/grafana/grafana/pkg/services/secrets"
@@ -92,8 +91,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/star/starimpl"
 	"github.com/grafana/grafana/pkg/services/stats/statsimpl"
 	"github.com/grafana/grafana/pkg/services/store"
-	"github.com/grafana/grafana/pkg/services/store/kind"
-	"github.com/grafana/grafana/pkg/services/store/sanitizer"
 	"github.com/grafana/grafana/pkg/services/tag"
 	"github.com/grafana/grafana/pkg/services/tag/tagimpl"
 	"github.com/grafana/grafana/pkg/services/team/teamimpl"
@@ -113,8 +110,6 @@ var wireBasicSet = wire.NewSet(
 	api.ProvideHTTPServer,
 	bus.ProvideBus,
 	wire.Bind(new(bus.Bus), new(*bus.InProcBus)),
-	rendering.ProvideService,
-	wire.Bind(new(rendering.Service), new(*rendering.RenderingService)),
 	routing.ProvideRegister,
 	wire.Bind(new(routing.RouteRegister), new(*routing.RouteRegisterImpl)),
 	hooks.ProvideService,
@@ -198,7 +193,6 @@ var wireBasicSet = wire.NewSet(
 	plugindashboardsservice.ProvideDashboardUpdater,
 	comments.ProvideService,
 	guardian.ProvideService,
-	sanitizer.ProvideService,
 	avatar.ProvideAvatarCacheServer,
 	authproxy.ProvideAuthProxy,
 	statscollector.ProvideService,
@@ -223,7 +217,6 @@ var wireBasicSet = wire.NewSet(
 	grpcserver.ProvideHealthService,
 	grpcserver.ProvideReflectionService,
 	interceptors.ProvideAuthenticator,
-	kind.ProvideService, // The registry of known kinds
 	teamimpl.ProvideService,
 	tempuserimpl.ProvideService,
 	loginattemptimpl.ProvideService,

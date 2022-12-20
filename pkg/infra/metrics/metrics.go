@@ -66,12 +66,6 @@ var (
 	// LDAPUsersSyncExecutionTime is a metric summary for LDAP users sync execution duration
 	LDAPUsersSyncExecutionTime prometheus.Summary
 
-	// MRenderingRequestTotal is a metric counter for image rendering requests
-	MRenderingRequestTotal *prometheus.CounterVec
-
-	// MRenderingQueue is a metric gauge for image rendering queue size
-	MRenderingQueue prometheus.Gauge
-
 	// MAccessEvaluationCount is a metric gauge for total number of evaluation requests
 	MAccessEvaluationCount prometheus.Counter
 )
@@ -80,9 +74,6 @@ var (
 var (
 	// MAlertingExecutionTime is a metric summary of alert execution duration
 	MAlertingExecutionTime prometheus.Summary
-
-	// MRenderingSummary is a metric summary for image rendering request duration
-	MRenderingSummary *prometheus.SummaryVec
 
 	// MAccessPermissionsSummary is a metric summary for loading permissions request duration when evaluating access
 	MAccessPermissionsSummary prometheus.Histogram
@@ -261,31 +252,6 @@ func init() {
 		Help:       "summary for LDAP users sync execution duration",
 		Objectives: objectiveMap,
 		Namespace:  ExporterName,
-	})
-
-	MRenderingRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name:      "rendering_request_total",
-			Help:      "counter for rendering requests",
-			Namespace: ExporterName,
-		},
-		[]string{"status", "type"},
-	)
-
-	MRenderingSummary = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Name:       "rendering_request_duration_milliseconds",
-			Help:       "summary of rendering request duration",
-			Objectives: objectiveMap,
-			Namespace:  ExporterName,
-		},
-		[]string{"status", "type"},
-	)
-
-	MRenderingQueue = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "rendering_queue_size",
-		Help:      "size of rendering queue",
-		Namespace: ExporterName,
 	})
 
 	MAlertingExecutionTime = prometheus.NewSummary(prometheus.SummaryOpts{
@@ -486,9 +452,6 @@ func initMetricVars() {
 		MApiDashboardInsert,
 		MDBDataSourceQueryByID,
 		LDAPUsersSyncExecutionTime,
-		MRenderingRequestTotal,
-		MRenderingSummary,
-		MRenderingQueue,
 		MAccessPermissionsSummary,
 		MAccessEvaluationsSummary,
 		MStatTotalDashboards,

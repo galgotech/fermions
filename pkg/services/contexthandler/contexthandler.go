@@ -30,7 +30,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/login"
 	"github.com/grafana/grafana/pkg/services/oauthtoken"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/rendering"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -46,7 +45,7 @@ const (
 const ServiceName = "ContextHandler"
 
 func ProvideService(cfg *setting.Cfg, tokenService auth.UserTokenService, jwtService models.JWTService,
-	remoteCache *remotecache.RemoteCache, renderService rendering.Service, sqlStore db.DB,
+	remoteCache *remotecache.RemoteCache, sqlStore db.DB,
 	tracer tracing.Tracer, authProxy *authproxy.AuthProxy, loginService login.Service,
 	apiKeyService apikey.Service, authenticator loginpkg.Authenticator, userService user.Service,
 	orgService org.Service, oauthTokenService oauthtoken.OAuthTokenService, features *featuremgmt.FeatureManager,
@@ -57,7 +56,6 @@ func ProvideService(cfg *setting.Cfg, tokenService auth.UserTokenService, jwtSer
 		AuthTokenService:  tokenService,
 		JWTAuthService:    jwtService,
 		RemoteCache:       remoteCache,
-		RenderService:     renderService,
 		SQLStore:          sqlStore,
 		tracer:            tracer,
 		authProxy:         authProxy,
@@ -77,7 +75,6 @@ type ContextHandler struct {
 	AuthTokenService  auth.UserTokenService
 	JWTAuthService    models.JWTService
 	RemoteCache       *remotecache.RemoteCache
-	RenderService     rendering.Service
 	SQLStore          db.DB
 	tracer            tracing.Tracer
 	authProxy         *authproxy.AuthProxy
@@ -160,7 +157,6 @@ func (h *ContextHandler) Middleware(next http.Handler) http.Handler {
 		// then look for api key in session (special case for render calls via api)
 		// then test if anonymous access is enabled
 		switch {
-		case h.initContextWithRenderAuth(reqContext):
 		case h.initContextWithJWT(reqContext, orgID):
 		case h.initContextWithAPIKey(reqContext):
 		case h.initContextWithBasicAuth(reqContext, orgID):
@@ -545,42 +541,6 @@ func (h *ContextHandler) rotateEndOfRequestFunc(reqContext *models.ReqContext, a
 			cookies.WriteSessionCookie(reqContext, h.Cfg, token.UnhashedToken, h.Cfg.LoginMaxLifetime)
 		}
 	}
-}
-
-func (h *ContextHandler) initContextWithRenderAuth(reqContext *models.ReqContext) bool {
-	key := reqContext.GetCookie("renderKey")
-	if key == "" {
-		return false
-	}
-
-	ctx, span := h.tracer.Start(reqContext.Req.Context(), "initContextWithRenderAuth")
-	defer span.End()
-
-	renderUser, exists := h.RenderService.GetRenderUser(reqContext.Req.Context(), key)
-	if !exists {
-		reqContext.JsonApiErr(401, "Invalid Render Key", nil)
-		return true
-	}
-
-	reqContext.SignedInUser = &user.SignedInUser{
-		OrgID:   renderUser.OrgID,
-		UserID:  renderUser.UserID,
-		OrgRole: org.RoleType(renderUser.OrgRole),
-	}
-
-	// UserID can be 0 for background tasks and, in this case, there is no user info to retrieve
-	if renderUser.UserID != 0 {
-		query := user.GetSignedInUserQuery{UserID: renderUser.UserID, OrgID: renderUser.OrgID}
-		queryResult, err := h.userService.GetSignedInUserWithCacheCtx(ctx, &query)
-		if err == nil {
-			reqContext.SignedInUser = queryResult
-		}
-	}
-
-	reqContext.IsSignedIn = true
-	reqContext.IsRenderCall = true
-	reqContext.LastSeenAt = time.Now()
-	return true
 }
 
 func logUserIn(reqContext *models.ReqContext, auth *authproxy.AuthProxy, username string, logger log.Logger, ignoreCache bool) (int64, error) {

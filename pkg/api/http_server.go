@@ -66,7 +66,6 @@ import (
 	pref "github.com/grafana/grafana/pkg/services/preference"
 	"github.com/grafana/grafana/pkg/services/provisioning"
 	"github.com/grafana/grafana/pkg/services/quota"
-	"github.com/grafana/grafana/pkg/services/rendering"
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchusers"
 	"github.com/grafana/grafana/pkg/services/secrets"
@@ -96,7 +95,6 @@ type HTTPServer struct {
 
 	PluginContextProvider        *plugincontext.Provider
 	RouteRegister                routing.RouteRegister
-	RenderService                rendering.Service
 	Cfg                          *setting.Cfg
 	Features                     *featuremgmt.FeatureManager
 	SettingsProvider             setting.Provider
@@ -176,7 +174,7 @@ type ServerOptions struct {
 }
 
 func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routing.RouteRegister, bus bus.Bus,
-	renderService rendering.Service, licensing models.Licensing, hooksService *hooks.HooksService,
+	licensing models.Licensing, hooksService *hooks.HooksService,
 	cacheService *localcache.CacheService, sqlStore *sqlstore.SQLStore,
 	pluginRequestValidator models.PluginRequestValidator, pluginStaticRouteResolver plugins.StaticRouteResolver,
 	pluginDashboardService plugindashboards.Service, pluginStore plugins.Store,
@@ -217,7 +215,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		Cfg:                          cfg,
 		RouteRegister:                routeRegister,
 		bus:                          bus,
-		RenderService:                renderService,
 		License:                      licensing,
 		HooksService:                 hooksService,
 		CacheService:                 cacheService,
@@ -524,10 +521,6 @@ func (hs *HTTPServer) addMiddlewaresAndStaticRoutes() {
 	hs.mapStatic(m, hs.Cfg.StaticRootPath, "build", "public/build")
 	hs.mapStatic(m, hs.Cfg.StaticRootPath, "", "public", "/public/views/swagger.html")
 	hs.mapStatic(m, hs.Cfg.StaticRootPath, "robots.txt", "robots.txt")
-
-	if hs.Cfg.ImageUploadProvider == "local" {
-		hs.mapStatic(m, hs.Cfg.ImagesDir, "", "/public/img/attachments")
-	}
 
 	if len(hs.Cfg.CustomResponseHeaders) > 0 {
 		m.Use(middleware.AddCustomResponseHeaders(hs.Cfg))

@@ -71,10 +71,6 @@ const (
 	// Lock database during migrations
 	FlagMigrationLocking = "migrationLocking"
 
-	// FlagStorage
-	// Configurable storage for dashboards, datasources, and resources
-	FlagStorage = "storage"
-
 	// FlagDashboardsFromStorage
 	// Load dashboards from the generic storage interface
 	FlagDashboardsFromStorage = "dashboardsFromStorage"

@@ -22,7 +22,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/store"
-	kdash "github.com/grafana/grafana/pkg/services/store/kind/dashboard"
 	"github.com/grafana/grafana/pkg/setting"
 )
 
@@ -920,62 +919,8 @@ func (l sqlDashboardLoader) LoadDashboards(ctx context.Context, orgID int64, das
 		})
 	}
 
-	loadDatasourceCtx, loadDatasourceSpan := l.tracer.Start(ctx, "sqlDashboardLoader LoadDatasourceLookup")
-	loadDatasourceSpan.SetAttributes("orgID", orgID, attribute.Key("orgID").Int64(orgID))
+	return dashboards, nil
 
-	// key will allow name or uid
-	lookup, err := kdash.LoadDatasourceLookup(loadDatasourceCtx, orgID, l.sql)
-	if err != nil {
-		loadDatasourceSpan.End()
-		return dashboards, err
-	}
-	loadDatasourceSpan.End()
-
-	loadingDashboardCtx, cancelLoadingDashboardCtx := context.WithCancel(ctx)
-	defer cancelLoadingDashboardCtx()
-
-	dashboardsChannel := l.loadAllDashboards(loadingDashboardCtx, limit, orgID, dashboardUID)
-
-	for {
-		res, ok := <-dashboardsChannel
-		if res != nil && res.err != nil {
-			l.logger.Error("Error when loading dashboards", "error", err, "orgID", orgID, "dashboardUID", dashboardUID)
-			break
-		}
-
-		if res == nil || !ok {
-			break
-		}
-
-		rows := res.dashboards
-
-		_, readDashboardSpan := l.tracer.Start(ctx, "sqlDashboardLoader readDashboard")
-		readDashboardSpan.SetAttributes("orgID", orgID, attribute.Key("orgID").Int64(orgID))
-		readDashboardSpan.SetAttributes("dashboardCount", len(rows), attribute.Key("dashboardCount").Int(len(rows)))
-
-		reader := kdash.NewStaticDashboardSummaryBuilder(lookup, false)
-
-		for _, row := range rows {
-			summary, _, err := reader(ctx, row.Uid, row.Data)
-			if err != nil {
-				l.logger.Warn("Error indexing dashboard data", "error", err, "dashboardId", row.Id, "dashboardSlug", row.Slug)
-				// But append info anyway for now, since we possibly extracted useful information.
-			}
-			dashboards = append(dashboards, dashboard{
-				id:       row.Id,
-				uid:      row.Uid,
-				isFolder: row.IsFolder,
-				folderID: row.FolderID,
-				slug:     row.Slug,
-				created:  row.Created,
-				updated:  row.Updated,
-				summary:  summary,
-			})
-		}
-		readDashboardSpan.End()
-	}
-
-	return dashboards, err
 }
 
 func newFolderIDLookup(sql db.DB) folderUIDLookup {

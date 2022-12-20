@@ -164,7 +164,7 @@ func (l *Loader) loadPlugins(ctx context.Context, class plugins.Class, pluginJSO
 		delete(l.errs, plugin.ID)
 
 		// verify module.js exists for SystemJS to load
-		if !plugin.IsRenderer() && !plugin.IsCorePlugin() {
+		if !plugin.IsCorePlugin() {
 			module := filepath.Join(plugin.PluginDir, "module.js")
 			if exists, err := fs.Exists(module); err != nil {
 				return nil, err

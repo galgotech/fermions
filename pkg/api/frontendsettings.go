@@ -143,8 +143,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 			"enabledFeatures": hs.License.EnabledFeatures(),
 		},
 		"featureToggles":                   hs.Features.GetEnabled(c.Req.Context()),
-		"rendererAvailable":                hs.RenderService.IsAvailable(c.Req.Context()),
-		"rendererVersion":                  hs.RenderService.Version(),
 		"http2Enabled":                     hs.Cfg.Protocol == setting.HTTP2Scheme,
 		"sentry":                           hs.Cfg.Sentry,
 		"grafanaJavascriptAgent":           hs.Cfg.GrafanaJavascriptAgent,

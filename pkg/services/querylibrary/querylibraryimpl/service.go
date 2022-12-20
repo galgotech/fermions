@@ -11,7 +11,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/querylibrary"
-	"github.com/grafana/grafana/pkg/services/store/kind/dashboard"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -107,18 +106,11 @@ func (s *service) updateQueriesRecursively(loader queryLoader, parent *simplejso
 		}
 		panelAsJSON.Set("targets", queriesAsMap)
 
-		isMixed, firstDsRef := isQueryWithMixedDataSource(query)
-		if isMixed {
-			panelAsJSON.Set("datasource", map[string]interface{}{
-				"uid":  "-- Mixed --",
-				"type": "datasource",
-			})
-		} else {
-			panelAsJSON.Set("datasource", map[string]interface{}{
-				"uid":  firstDsRef.UID,
-				"type": firstDsRef.Type,
-			})
-		}
+		panelAsJSON.Set("datasource", map[string]interface{}{
+			"uid":  "-- Mixed --",
+			"type": "datasource",
+		})
+
 	}
 
 	return nil
@@ -150,23 +142,6 @@ func (s *service) Search(ctx context.Context, user *user.SignedInUser, options q
 			}
 		}
 
-		if len(options.DatasourceUID) > 0 || len(options.DatasourceType) > 0 {
-			dsUids := make(map[string]bool)
-			dsTypes := make(map[string]bool)
-			for _, ds := range q.Datasource {
-				dsUids[ds.UID] = true
-				dsTypes[ds.Type] = true
-			}
-
-			if len(options.DatasourceType) > 0 && !dsTypes[options.DatasourceType] {
-				continue
-			}
-
-			if len(options.DatasourceUID) > 0 && !dsUids[options.DatasourceUID] {
-				continue
-			}
-		}
-
 		filteredQueryInfo = append(filteredQueryInfo, q)
 	}
 
@@ -184,7 +159,6 @@ func asQueryInfo(queries []*querylibrary.Query) []querylibrary.QueryInfo {
 			TimeFrom:      query.Time.From,
 			TimeTo:        query.Time.To,
 			SchemaVersion: query.SchemaVersion,
-			Datasource:    extractDataSources(query),
 		})
 	}
 	return res
@@ -198,39 +172,6 @@ func getDatasourceUID(q *simplejson.Json) string {
 	}
 
 	return uid
-}
-
-func isQueryWithMixedDataSource(q *querylibrary.Query) (isMixed bool, firstDsRef dashboard.DataSourceRef) {
-	dsRefs := extractDataSources(q)
-
-	for _, dsRef := range dsRefs {
-		if firstDsRef.UID == "" {
-			firstDsRef = dsRef
-			continue
-		}
-
-		if firstDsRef.UID != dsRef.UID || firstDsRef.Type != dsRef.Type {
-			return true, firstDsRef
-		}
-	}
-
-	return false, firstDsRef
-}
-
-func extractDataSources(query *querylibrary.Query) []dashboard.DataSourceRef {
-	ds := make([]dashboard.DataSourceRef, 0)
-
-	for _, q := range query.Queries {
-		dsUid := getDatasourceUID(q)
-		dsType := q.Get("datasource").Get("type").MustString()
-
-		ds = append(ds, dashboard.DataSourceRef{
-			UID:  dsUid,
-			Type: dsType,
-		})
-	}
-
-	return ds
 }
 
 func (s *service) GetBatch(ctx context.Context, user *user.SignedInUser, uids []string) ([]*querylibrary.Query, error) {

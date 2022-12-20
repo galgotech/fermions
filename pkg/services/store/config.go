@@ -74,11 +74,6 @@ func LoadStorageConfig(cfg *setting.Cfg, features featuremgmt.FeatureToggles) (*
 
 	g.filepath = fpath
 
-	// Also configured from ini files
-	if cfg.Storage.AllowUnsanitizedSvgUpload {
-		g.AllowUnsanitizedSvgUpload = true
-	}
-
 	// Save a template version in config
 	if changed && setting.Env != setting.Prod {
 		return g, g.save()

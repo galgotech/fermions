@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -62,13 +61,6 @@ func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewDat
 
 	appURL := setting.AppUrl
 	appSubURL := hs.Cfg.AppSubURL
-
-	// special case when doing localhost call from image renderer
-	if c.IsRenderCall && !hs.Cfg.ServeFromSubPath {
-		appURL = fmt.Sprintf("%s://localhost:%s", hs.Cfg.Protocol, hs.Cfg.HTTPPort)
-		appSubURL = ""
-		settings["appSubUrl"] = ""
-	}
 
 	navTree, err := hs.navTreeService.GetNavTree(c, hasEditPerm, prefs)
 	if err != nil {

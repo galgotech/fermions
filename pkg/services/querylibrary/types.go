@@ -7,7 +7,6 @@ import (
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/registry"
-	"github.com/grafana/grafana/pkg/services/store/kind/dashboard"
 	"github.com/grafana/grafana/pkg/services/user"
 )
 
@@ -63,8 +62,6 @@ type QueryInfo struct {
 	TimeFrom      string   `json:"timeFrom"`
 	TimeTo        string   `json:"timeTo"`
 	SchemaVersion int64    `json:"schemaVersion"`
-
-	Datasource []dashboard.DataSourceRef `json:"datasource,omitempty"` // UIDs
 }
 
 type QuerySearchOptions struct {

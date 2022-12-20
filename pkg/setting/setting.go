@@ -217,15 +217,6 @@ type Cfg struct {
 	// SMTP email settings
 	Smtp SmtpSettings
 
-	// Rendering
-	ImagesDir                      string
-	CSVsDir                        string
-	RendererUrl                    string
-	RendererCallbackUrl            string
-	RendererAuthToken              string
-	RendererConcurrentRequestLimit int
-	RendererRenderKeyLifeTime      time.Duration
-
 	// Security
 	DisableInitAdminCreation          bool
 	DisableBruteForceLoginProtection  bool
@@ -438,8 +429,6 @@ type Cfg struct {
 
 	// Query history
 	QueryHistoryEnabled bool
-
-	Storage StorageSettings
 
 	Search SearchSettings
 
@@ -920,9 +909,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 		return err
 	}
 	readAccessControlSettings(iniFile, cfg)
-	if err := cfg.readRenderingSettings(iniFile); err != nil {
-		return err
-	}
 
 	cfg.TempDataLifetime = iniFile.Section("paths").Key("temp_data_lifetime").MustDuration(time.Second * 3600 * 24)
 	cfg.MetricsEndpointEnabled = iniFile.Section("metrics").Key("enabled").MustBool(true)
@@ -994,7 +980,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 
 	cfg.readDataSourcesSettings()
 
-	cfg.Storage = readStorageSettings(iniFile)
 	cfg.Search = readSearchSettings(iniFile)
 
 	cfg.SecureSocksDSProxy, err = readSecureSocksDSProxySettings(iniFile)
@@ -1417,34 +1402,6 @@ func readUserSettings(iniFile *ini.File, cfg *Cfg) error {
 func readServiceAccountSettings(iniFile *ini.File, cfg *Cfg) error {
 	serviceAccount := iniFile.Section("service_accounts")
 	cfg.SATokenExpirationDayLimit = serviceAccount.Key("token_expiration_day_limit").MustInt(-1)
-	return nil
-}
-
-func (cfg *Cfg) readRenderingSettings(iniFile *ini.File) error {
-	renderSec := iniFile.Section("rendering")
-	cfg.RendererUrl = valueAsString(renderSec, "server_url", "")
-	cfg.RendererCallbackUrl = valueAsString(renderSec, "callback_url", "")
-	cfg.RendererAuthToken = valueAsString(renderSec, "renderer_token", "-")
-
-	if cfg.RendererCallbackUrl == "" {
-		cfg.RendererCallbackUrl = AppUrl
-	} else {
-		if cfg.RendererCallbackUrl[len(cfg.RendererCallbackUrl)-1] != '/' {
-			cfg.RendererCallbackUrl += "/"
-		}
-		_, err := url.Parse(cfg.RendererCallbackUrl)
-		if err != nil {
-			// XXX: Should return an error?
-			cfg.Logger.Error("Invalid callback_url.", "url", cfg.RendererCallbackUrl, "error", err)
-			os.Exit(1)
-		}
-	}
-
-	cfg.RendererConcurrentRequestLimit = renderSec.Key("concurrent_render_request_limit").MustInt(30)
-	cfg.RendererRenderKeyLifeTime = renderSec.Key("render_key_lifetime").MustDuration(5 * time.Minute)
-	cfg.ImagesDir = filepath.Join(cfg.DataPath, "png")
-	cfg.CSVsDir = filepath.Join(cfg.DataPath, "csv")
-
 	return nil
 }
 

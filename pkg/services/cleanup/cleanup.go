@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"go.opentelemetry.io/otel/attribute"
-
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/infra/serverlock"
@@ -60,8 +58,6 @@ func (j cleanUpJob) String() string {
 }
 
 func (srv *CleanUpService) Run(ctx context.Context) error {
-	srv.cleanUpTmpFiles(ctx)
-
 	ticker := time.NewTicker(time.Minute * 10)
 	for {
 		select {
@@ -82,7 +78,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 	defer cancelFn()
 
 	cleanupJobs := []cleanUpJob{
-		{"clean up temporary files", srv.cleanUpTmpFiles},
 		{"delete expired dashboard versions", srv.deleteExpiredDashboardVersions},
 		{"expire old user invites", srv.expireOldUserInvites},
 		{"delete stale short URLs", srv.deleteStaleShortURLs},
@@ -102,20 +97,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 	}
 
 	logger.Info("Completed cleanup jobs", "duration", time.Since(start))
-}
-
-func (srv *CleanUpService) cleanUpTmpFiles(ctx context.Context) {
-	folders := []string{
-		srv.Cfg.ImagesDir,
-		srv.Cfg.CSVsDir,
-	}
-
-	for _, f := range folders {
-		ctx, span := srv.tracer.Start(ctx, "delete stale files in temporary directory")
-		span.SetAttributes("directory", f, attribute.Key("directory").String(f))
-		srv.cleanUpTmpFolder(ctx, f)
-		span.End()
-	}
 }
 
 func (srv *CleanUpService) cleanUpTmpFolder(ctx context.Context, folder string) {

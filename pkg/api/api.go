@@ -238,11 +238,6 @@ func (hs *HTTPServer) registerRoutes() {
 			orgRoute.Get("/quotas", authorize(reqSignedIn, ac.EvalPermission(ac.ActionOrgsQuotasRead)), routing.Wrap(hs.GetCurrentOrgQuotas))
 		})
 
-		if hs.Features.IsEnabled(featuremgmt.FlagStorage) {
-			// Will eventually be replaced with the 'object' route
-			apiRoute.Group("/storage", hs.StorageService.RegisterHTTPRoutes)
-		}
-
 		if hs.Features.IsEnabled(featuremgmt.FlagPanelTitleSearch) {
 			apiRoute.Group("/search-v2", hs.SearchV2HTTPService.RegisterHTTPRoutes)
 		}
@@ -488,9 +483,6 @@ func (hs *HTTPServer) registerRoutes() {
 		adminUserRoute.Get("/:id/auth-tokens", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionUsersAuthTokenList, userIDScope)), routing.Wrap(hs.AdminGetUserAuthTokens))
 		adminUserRoute.Post("/:id/revoke-auth-token", authorize(reqGrafanaAdmin, ac.EvalPermission(ac.ActionUsersAuthTokenUpdate, userIDScope)), routing.Wrap(hs.AdminRevokeUserAuthToken))
 	})
-
-	// rendering
-	r.Get("/render/*", reqSignedIn, hs.RenderToPng)
 
 	// grafana.net proxy
 	r.Any("/api/gnet/*", reqSignedIn, hs.ProxyGnetRequest)

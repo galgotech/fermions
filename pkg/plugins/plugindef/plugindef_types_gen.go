@@ -32,11 +32,7 @@ const (
 const (
 	TypeApp Type = "app"
 
-	TypeDatasource Type = "datasource"
-
 	TypePanel Type = "panel"
-
-	TypeRenderer Type = "renderer"
 
 	TypeSecretsmanager Type = "secretsmanager"
 )
@@ -76,13 +72,9 @@ const (
 
 	IncludeTypeDashboard IncludeType = "dashboard"
 
-	IncludeTypeDatasource IncludeType = "datasource"
-
 	IncludeTypePage IncludeType = "page"
 
 	IncludeTypePanel IncludeType = "panel"
-
-	IncludeTypeRenderer IncludeType = "renderer"
 
 	IncludeTypeSecretsmanager IncludeType = "secretsmanager"
 )

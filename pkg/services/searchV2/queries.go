@@ -18,9 +18,7 @@ func (s *StandardSearchService) searchQueries(ctx context.Context, user *user.Si
 		queryText = ""
 	}
 	queryInfo, err := s.queries.Search(ctx, user, querylibrary.QuerySearchOptions{
-		Query:          queryText,
-		DatasourceUID:  q.Datasource,
-		DatasourceType: q.DatasourceType,
+		Query: queryText,
 	})
 	if err != nil {
 		return &backend.DataResponse{Error: err}
@@ -39,7 +37,6 @@ func (s *StandardSearchService) searchQueries(ctx context.Context, user *user.Si
 	fURL := data.NewFieldFromFieldType(data.FieldTypeString, 0)
 	fLocation := data.NewFieldFromFieldType(data.FieldTypeString, 0)
 	fTags := data.NewFieldFromFieldType(data.FieldTypeNullableJSON, 0)
-	fDSUIDs := data.NewFieldFromFieldType(data.FieldTypeJSON, 0)
 	fExplain := data.NewFieldFromFieldType(data.FieldTypeNullableJSON, 0)
 
 	fScore.Name = "score"
@@ -54,11 +51,10 @@ func (s *StandardSearchService) searchQueries(ctx context.Context, user *user.Si
 		},
 	}
 	fPType.Name = "panel_type"
-	fDSUIDs.Name = "ds_uid"
 	fTags.Name = "tags"
 	fExplain.Name = "explain"
 
-	frame := data.NewFrame("Query results", fKind, fUID, fName, fPType, fURL, fTags, fDSUIDs, fLocation)
+	frame := data.NewFrame("Query results", fKind, fUID, fName, fPType, fURL, fTags, fLocation)
 	if q.Explain {
 		frame.Fields = append(frame.Fields, fScore, fExplain)
 	}
@@ -84,13 +80,6 @@ func (s *StandardSearchService) searchQueries(ctx context.Context, user *user.Si
 
 		tagsJson := mustJsonRawMessage(tags)
 		fTags.Append(&tagsJson)
-
-		dsUids := make([]string, 0)
-		for _, dsRef := range q.Datasource {
-			dsUids = append(dsUids, dsRef.UID)
-		}
-
-		fDSUIDs.Append(mustJsonRawMessage(dsUids))
 
 		// extend fields to match the longest field
 		fieldLen++

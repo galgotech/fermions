@@ -10,11 +10,6 @@ import (
 
 func ValidateHostHeader(cfg *setting.Cfg) web.Handler {
 	return func(c *models.ReqContext) {
-		// ignore local render calls
-		if c.IsRenderCall {
-			return
-		}
-
 		h := c.Req.Host
 		if i := strings.Index(h, ":"); i >= 0 {
 			h = h[:i]

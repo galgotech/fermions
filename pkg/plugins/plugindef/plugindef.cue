@@ -20,7 +20,7 @@ seqs: [
 
 				// The set of all plugin types. This hidden field exists solely
 				// so that the set can be string-interpolated into other fields.
-				_types: ["app", "datasource", "panel", "renderer", "secretsmanager"]
+				_types: ["app", "panel", "secretsmanager"]
 
 				// type indicates which type of Grafana plugin this is, of the defined
 				// set of Grafana plugin types.

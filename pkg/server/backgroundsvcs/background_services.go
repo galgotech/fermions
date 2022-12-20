@@ -19,19 +19,17 @@ import (
 	"github.com/grafana/grafana/pkg/services/notifications"
 	plugindashboardsservice "github.com/grafana/grafana/pkg/services/plugindashboards/service"
 	"github.com/grafana/grafana/pkg/services/provisioning"
-	"github.com/grafana/grafana/pkg/services/rendering"
 	"github.com/grafana/grafana/pkg/services/searchV2"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
 	samanager "github.com/grafana/grafana/pkg/services/serviceaccounts/manager"
 	"github.com/grafana/grafana/pkg/services/store"
-	"github.com/grafana/grafana/pkg/services/store/sanitizer"
 	"github.com/grafana/grafana/pkg/services/updatechecker"
 )
 
 func ProvideBackgroundServiceRegistry(
 	httpServer *api.HTTPServer, cleanup *cleanup.CleanUpService, live *live.GrafanaLive,
 	pushGateway *pushhttp.Gateway, notifications *notifications.NotificationService,
-	rendering *rendering.RenderingService, tokenService auth.UserTokenBackgroundService, tracing tracing.Tracer,
+	tokenService auth.UserTokenBackgroundService, tracing tracing.Tracer,
 	provisioning *provisioning.ProvisioningServiceImpl, usageStats *uss.UsageStats,
 	statsCollector *statscollector.Service, grafanaUpdateChecker *updatechecker.GrafanaService,
 	pluginsUpdateChecker *updatechecker.PluginsService, metrics *metrics.InternalMetricsService,
@@ -42,7 +40,7 @@ func ProvideBackgroundServiceRegistry(
 	loginAttemptService *loginattemptimpl.Service,
 	// Need to make sure these are initialized, is there a better place to put them?
 	_ serviceaccounts.Service, _ *guardian.Provider,
-	_ *plugindashboardsservice.DashboardUpdater, _ *sanitizer.Provider,
+	_ *plugindashboardsservice.DashboardUpdater,
 	_ *grpcserver.HealthService, _ *grpcserver.ReflectionService,
 ) *BackgroundServiceRegistry {
 	return NewBackgroundServiceRegistry(
@@ -51,7 +49,6 @@ func ProvideBackgroundServiceRegistry(
 		live,
 		pushGateway,
 		notifications,
-		rendering,
 		tokenService,
 		provisioning,
 		grafanaUpdateChecker,

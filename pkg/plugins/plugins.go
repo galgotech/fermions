@@ -11,7 +11,6 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/plugins/backendplugin/pluginextensionv2"
 	"github.com/grafana/grafana/pkg/plugins/backendplugin/secretsmanagerplugin"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/util"
@@ -42,7 +41,6 @@ type Plugin struct {
 	Module  string
 	BaseURL string
 
-	Renderer       pluginextensionv2.RendererPlugin
 	SecretsManager secretsmanagerplugin.SecretsManagerPlugin
 	log            log.Logger
 }
@@ -155,7 +153,7 @@ type JSONData struct {
 	Streaming    bool            `json:"streaming"`
 	SDK          bool            `json:"sdk,omitempty"`
 
-	// Backend (Datasource + Renderer + SecretsManager)
+	// Backend (SecretsManager)
 	Executable string `json:"executable,omitempty"`
 }
 
@@ -227,9 +225,6 @@ func (p *Plugin) ExecutablePath() string {
 	if os == "windows" {
 		extension = ".exe"
 	}
-	if p.IsRenderer() {
-		return filepath.Join(p.PluginDir, fmt.Sprintf("%s_%s_%s%s", "plugin_start", os, strings.ToLower(arch), extension))
-	}
 
 	if p.IsSecretsManager() {
 		return filepath.Join(p.PluginDir, fmt.Sprintf("%s_%s_%s%s", "secrets_plugin_start", os, strings.ToLower(arch), extension))
@@ -273,16 +268,8 @@ func (p *Plugin) StaticRoute() *StaticRoute {
 	return &StaticRoute{Directory: p.PluginDir, PluginID: p.ID}
 }
 
-func (p *Plugin) IsRenderer() bool {
-	return p.Type == "renderer"
-}
-
 func (p *Plugin) IsSecretsManager() bool {
 	return p.Type == "secretsmanager"
-}
-
-func (p *Plugin) IsDataSource() bool {
-	return p.Type == "datasource"
 }
 
 func (p *Plugin) IsPanel() bool {
@@ -326,7 +313,6 @@ var PluginTypes = []Type{
 	DataSource,
 	Panel,
 	App,
-	Renderer,
 	SecretsManager,
 }
 
@@ -336,13 +322,12 @@ const (
 	DataSource     Type = "datasource"
 	Panel          Type = "panel"
 	App            Type = "app"
-	Renderer       Type = "renderer"
 	SecretsManager Type = "secretsmanager"
 )
 
 func (pt Type) IsValid() bool {
 	switch pt {
-	case DataSource, Panel, App, Renderer, SecretsManager:
+	case DataSource, Panel, App, SecretsManager:
 		return true
 	}
 	return false

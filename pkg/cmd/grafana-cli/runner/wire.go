@@ -72,7 +72,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/pluginsintegration"
 	"github.com/grafana/grafana/pkg/services/preference/prefimpl"
 	"github.com/grafana/grafana/pkg/services/quota/quotaimpl"
-	"github.com/grafana/grafana/pkg/services/rendering"
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchV2"
 	"github.com/grafana/grafana/pkg/services/secrets"
@@ -84,7 +83,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/services/star/starimpl"
 	"github.com/grafana/grafana/pkg/services/store"
-	"github.com/grafana/grafana/pkg/services/store/sanitizer"
 	"github.com/grafana/grafana/pkg/services/tag"
 	"github.com/grafana/grafana/pkg/services/tag/tagimpl"
 	"github.com/grafana/grafana/pkg/services/team/teamimpl"
@@ -114,8 +112,6 @@ var wireSet = wire.NewSet(
 	wire.Bind(new(secrets.Store), new(*secretsDatabase.SecretsStoreImpl)),
 	hooks.ProvideService,
 	api.ProvideHTTPServer,
-	rendering.ProvideService,
-	wire.Bind(new(rendering.Service), new(*rendering.RenderingService)),
 	kvstore.ProvideService,
 	updatechecker.ProvideGrafanaService,
 	updatechecker.ProvidePluginsService,
@@ -184,7 +180,6 @@ var wireSet = wire.NewSet(
 	plugindashboardsservice.ProvideDashboardUpdater,
 	comments.ProvideService,
 	guardian.ProvideService,
-	sanitizer.ProvideService,
 	avatar.ProvideAvatarCacheServer,
 	authproxy.ProvideAuthProxy,
 	statscollector.ProvideService,

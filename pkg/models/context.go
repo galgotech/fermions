@@ -19,7 +19,6 @@ type ReqContext struct {
 	UserToken *usertoken.UserToken
 
 	IsSignedIn     bool
-	IsRenderCall   bool
 	AllowAnonymous bool
 	SkipCache      bool
 	Logger         log.Logger
