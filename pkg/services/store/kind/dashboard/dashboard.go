@@ -259,7 +259,6 @@ func readDashboard(stream io.Reader, lookup DatasourceLookup) (*dashboardInfo, e
 	for _, panel := range dash.Panels {
 		targets.addPanel(panel)
 	}
-	dash.Datasource = targets.GetDatasourceInfo()
 
 	return dash, iter.Error
 }
@@ -431,8 +430,6 @@ func readpanelInfo(iter *jsoniter.Iterator, lookup DatasourceLookup) panelInfo {
 			logf("[PANEL] support key: %s / %v\n", l1Field, v)
 		}
 	}
-
-	panel.Datasource = targets.GetDatasourceInfo()
 
 	return panel
 }

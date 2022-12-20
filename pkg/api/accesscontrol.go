@@ -1,16 +1,11 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	ac "github.com/grafana/grafana/pkg/services/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/dashboards"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/setting"
-	"github.com/grafana/grafana/pkg/tsdb/grafanads"
 )
 
 // API related actions
@@ -50,110 +45,6 @@ func (hs *HTTPServer) declareFixedRoles() error {
 			},
 		},
 		Grants: []string{ac.RoleGrafanaAdmin},
-	}
-
-	datasourcesExplorerRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:datasources:explorer",
-			DisplayName: "Data source explorer",
-			Description: "Enable the Explore feature. Data source permissions still apply; you can only query data sources for which you have query permissions.",
-			Group:       "Data sources",
-			Permissions: []ac.Permission{
-				{
-					Action: ac.ActionDatasourcesExplore,
-				},
-			},
-		},
-		Grants: []string{string(org.RoleEditor)},
-	}
-
-	if setting.ViewersCanEdit {
-		datasourcesExplorerRole.Grants = append(datasourcesExplorerRole.Grants, string(org.RoleViewer))
-	}
-
-	datasourcesReaderRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:datasources:reader",
-			DisplayName: "Data source reader",
-			Description: "Read and query all data sources.",
-			Group:       "Data sources",
-			Permissions: []ac.Permission{
-				{
-					Action: datasources.ActionRead,
-					Scope:  datasources.ScopeAll,
-				},
-				{
-					Action: datasources.ActionQuery,
-					Scope:  datasources.ScopeAll,
-				},
-			},
-		},
-		Grants: []string{string(org.RoleAdmin)},
-	}
-
-	builtInDatasourceReader := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:datasources.builtin:reader",
-			DisplayName: "Built in data source reader",
-			Description: "Read and query Grafana's built in test data sources.",
-			Group:       "Data sources",
-			Permissions: []ac.Permission{
-				{
-					Action: datasources.ActionRead,
-					Scope:  fmt.Sprintf("%s%s", datasources.ScopePrefix, grafanads.DatasourceUID),
-				},
-				{
-					Action: datasources.ActionQuery,
-					Scope:  fmt.Sprintf("%s%s", datasources.ScopePrefix, grafanads.DatasourceUID),
-				},
-			},
-			Hidden: true,
-		},
-		Grants: []string{string(org.RoleViewer)},
-	}
-
-	// when running oss or enterprise without a license all users should be able to query data sources
-	if !hs.License.FeatureEnabled("dspermissions.enforcement") {
-		datasourcesReaderRole.Grants = []string{string(org.RoleViewer)}
-	}
-
-	datasourcesWriterRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:datasources:writer",
-			DisplayName: "Data source writer",
-			Description: "Create, update, delete, read, or query data sources.",
-			Group:       "Data sources",
-			Permissions: ac.ConcatPermissions(datasourcesReaderRole.Role.Permissions, []ac.Permission{
-				{
-					Action: datasources.ActionWrite,
-					Scope:  datasources.ScopeAll,
-				},
-				{
-					Action: datasources.ActionCreate,
-				},
-				{
-					Action: datasources.ActionDelete,
-					Scope:  datasources.ScopeAll,
-				},
-			}),
-		},
-		Grants: []string{string(org.RoleAdmin)},
-	}
-
-	datasourcesIdReaderRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:datasources.id:reader",
-			DisplayName: "Data source ID reader",
-			Description: "Read the ID of a data source based on its name.",
-			Group:       "Infrequently used",
-			Permissions: []ac.Permission{
-				{
-					Action: datasources.ActionIDRead,
-					Scope:  datasources.ScopeAll,
-				},
-			},
-		},
-		Grants: []string{string(org.RoleViewer)},
 	}
 
 	apikeyReaderRole := ac.RoleRegistration{
@@ -365,26 +256,11 @@ func (hs *HTTPServer) declareFixedRoles() error {
 		Grants: []string{"Admin"},
 	}
 
-	publicDashboardsWriterRole := ac.RoleRegistration{
-		Role: ac.RoleDTO{
-			Name:        "fixed:dashboards.public:writer",
-			DisplayName: "Public Dashboard writer",
-			Description: "Create, write or disable a public dashboard.",
-			Group:       "Dashboards",
-			Permissions: []ac.Permission{
-				{Action: dashboards.ActionDashboardsPublicWrite, Scope: dashboards.ScopeDashboardsAll},
-			},
-		},
-		Grants: []string{"Admin"},
-	}
-
 	return hs.accesscontrolService.DeclareFixedRoles(
-		provisioningWriterRole, datasourcesReaderRole, builtInDatasourceReader, datasourcesWriterRole,
-		datasourcesIdReaderRole, orgReaderRole, orgWriterRole,
-		orgMaintainerRole, teamsCreatorRole, teamsWriterRole, datasourcesExplorerRole,
+		provisioningWriterRole, orgReaderRole, orgWriterRole,
+		orgMaintainerRole, teamsCreatorRole, teamsWriterRole,
 		dashboardsCreatorRole, dashboardsReaderRole, dashboardsWriterRole,
 		foldersCreatorRole, foldersReaderRole, foldersWriterRole, apikeyReaderRole, apikeyWriterRole,
-		publicDashboardsWriterRole,
 	)
 }
 

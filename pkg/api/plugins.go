@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -14,7 +13,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana/pkg/api/dtos"
 	"github.com/grafana/grafana/pkg/api/response"
 	"github.com/grafana/grafana/pkg/models"
@@ -23,7 +21,6 @@ import (
 	"github.com/grafana/grafana/pkg/plugins/repo"
 	"github.com/grafana/grafana/pkg/plugins/storage"
 	ac "github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	"github.com/grafana/grafana/pkg/setting"
@@ -48,7 +45,6 @@ func (hs *HTTPServer) GetPluginList(c *models.ReqContext) response.Response {
 	reqOrgAdmin := ac.ReqHasRole(org.RoleAdmin)
 	hasAccess := ac.HasAccess(hs.AccessControl, c)
 	canListNonCorePlugins := reqOrgAdmin(c) || hasAccess(reqOrgAdmin, ac.EvalAny(
-		ac.EvalPermission(datasources.ActionCreate),
 		ac.EvalPermission(plugins.ActionInstall),
 	))
 
@@ -277,22 +273,6 @@ func (hs *HTTPServer) GetPluginMarkdown(c *models.ReqContext) response.Response 
 	return resp
 }
 
-// CollectPluginMetrics collect metrics from a plugin.
-//
-// /api/plugins/:pluginId/metrics
-func (hs *HTTPServer) CollectPluginMetrics(c *models.ReqContext) response.Response {
-	pluginID := web.Params(c.Req)[":pluginId"]
-	resp, err := hs.pluginClient.CollectMetrics(c.Req.Context(), &backend.CollectMetricsRequest{PluginContext: backend.PluginContext{PluginID: pluginID}})
-	if err != nil {
-		return translatePluginRequestErrorToAPIError(err)
-	}
-
-	headers := make(http.Header)
-	headers.Set("Content-Type", "text/plain")
-
-	return response.CreateNormalResponse(headers, resp.PrometheusMetrics, http.StatusOK)
-}
-
 // getPluginAssets returns public plugin assets (images, JS, etc.)
 //
 // /public/plugins/:pluginId/*
@@ -349,50 +329,6 @@ func (hs *HTTPServer) getPluginAssets(c *models.ReqContext) {
 		}
 		http.ServeContent(c.Resp, c.Req, requestedFile, fi.ModTime(), bytes.NewReader(b))
 	}
-}
-
-// CheckHealth returns the health of a plugin.
-// /api/plugins/:pluginId/health
-func (hs *HTTPServer) CheckHealth(c *models.ReqContext) response.Response {
-	pluginID := web.Params(c.Req)[":pluginId"]
-
-	pCtx, found, err := hs.PluginContextProvider.Get(c.Req.Context(), pluginID, c.SignedInUser)
-	if err != nil {
-		return response.Error(500, "Failed to get plugin settings", err)
-	}
-	if !found {
-		return response.Error(404, "Plugin not found", nil)
-	}
-
-	resp, err := hs.pluginClient.CheckHealth(c.Req.Context(), &backend.CheckHealthRequest{
-		PluginContext: pCtx,
-		Headers:       map[string]string{},
-	})
-	if err != nil {
-		return translatePluginRequestErrorToAPIError(err)
-	}
-
-	payload := map[string]interface{}{
-		"status":  resp.Status.String(),
-		"message": resp.Message,
-	}
-
-	// Unmarshal JSONDetails if it's not empty.
-	if len(resp.JSONDetails) > 0 {
-		var jsonDetails map[string]interface{}
-		err = json.Unmarshal(resp.JSONDetails, &jsonDetails)
-		if err != nil {
-			return response.Error(500, "Failed to unmarshal detailed response from backend plugin", err)
-		}
-
-		payload["details"] = jsonDetails
-	}
-
-	if resp.Status != backend.HealthStatusOk {
-		return response.JSON(503, payload)
-	}
-
-	return response.JSON(http.StatusOK, payload)
 }
 
 func (hs *HTTPServer) GetPluginErrorsList(_ *models.ReqContext) response.Response {

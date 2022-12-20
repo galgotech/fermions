@@ -50,9 +50,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagLiveConfig) {
 			addLiveChannelMigrations(mg)
 		}
-		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagDashboardPreviews) {
-			addDashboardThumbsMigrations(mg)
-		}
 	}
 
 	addSecretsMigration(mg)
@@ -65,22 +62,15 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 
 	addQueryHistoryStarMigrations(mg)
 
-	addCorrelationsMigrations(mg)
-
 	if mg.Cfg != nil && mg.Cfg.IsFeatureToggleEnabled != nil {
 		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagDashboardComments) || mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagAnnotationComments) {
 			addCommentGroupMigrations(mg)
 			addCommentMigrations(mg)
 		}
-
-		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagEntityStore) {
-			addEntityStoreMigrations(mg)
-		}
 	}
 
 	addEntityEventsTableMigration(mg)
 
-	addPublicDashboardMigration(mg)
 	addDbFileStorageMigration(mg)
 
 	accesscontrol.AddManagedPermissionsMigration(mg, accesscontrol.ManagedPermissionsMigrationID)

@@ -228,38 +228,6 @@ func ProvideFolderPermissions(
 	return &FolderPermissionsService{srv}, nil
 }
 
-func ProvideDatasourcePermissionsService() *DatasourcePermissionsService {
-	return &DatasourcePermissionsService{}
-}
-
-var _ accesscontrol.DatasourcePermissionsService = new(DatasourcePermissionsService)
-
-type DatasourcePermissionsService struct{}
-
-func (e DatasourcePermissionsService) GetPermissions(ctx context.Context, user *user.SignedInUser, resourceID string) ([]accesscontrol.ResourcePermission, error) {
-	return nil, nil
-}
-
-func (e DatasourcePermissionsService) SetUserPermission(ctx context.Context, orgID int64, user accesscontrol.User, resourceID, permission string) (*accesscontrol.ResourcePermission, error) {
-	return nil, nil
-}
-
-func (e DatasourcePermissionsService) SetTeamPermission(ctx context.Context, orgID, teamID int64, resourceID, permission string) (*accesscontrol.ResourcePermission, error) {
-	return nil, nil
-}
-
-func (e DatasourcePermissionsService) SetBuiltInRolePermission(ctx context.Context, orgID int64, builtInRole string, resourceID string, permission string) (*accesscontrol.ResourcePermission, error) {
-	return nil, nil
-}
-
-func (e DatasourcePermissionsService) SetPermissions(ctx context.Context, orgID int64, resourceID string, commands ...accesscontrol.SetResourcePermissionCommand) ([]accesscontrol.ResourcePermission, error) {
-	return nil, nil
-}
-
-func (e DatasourcePermissionsService) MapActions(permission accesscontrol.ResourcePermission) string {
-	return ""
-}
-
 var (
 	ServiceAccountEditActions = []string{
 		serviceaccounts.ActionRead,

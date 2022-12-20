@@ -8,7 +8,6 @@ import (
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/plugins/backendplugin"
-	"github.com/grafana/grafana/pkg/tsdb/grafanads"
 )
 
 const (
@@ -31,10 +30,8 @@ func NewRegistry(store map[string]backendplugin.PluginFactoryFunc) *Registry {
 	}
 }
 
-func ProvideCoreRegistry(graf *grafanads.Service) *Registry {
-	return NewRegistry(map[string]backendplugin.PluginFactoryFunc{
-		Grafana: asBackendPlugin(graf),
-	})
+func ProvideCoreRegistry() *Registry {
+	return NewRegistry(map[string]backendplugin.PluginFactoryFunc{})
 }
 
 func (cr *Registry) Get(pluginID string) backendplugin.PluginFactoryFunc {

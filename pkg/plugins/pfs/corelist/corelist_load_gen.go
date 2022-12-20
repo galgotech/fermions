@@ -32,16 +32,10 @@ func makeTreeOrPanic(path string, pkgname string, rt *thema.Runtime) *pfs.Tree {
 
 func coreTreeList(rt *thema.Runtime) pfs.TreeList {
 	return pfs.TreeList{
-		makeTreeOrPanic("public/app/plugins/datasource/dashboard", "dashboard", rt),
-		makeTreeOrPanic("public/app/plugins/datasource/grafana", "grafana", rt),
-		makeTreeOrPanic("public/app/plugins/panel/bargauge", "bargauge", rt),
 		makeTreeOrPanic("public/app/plugins/panel/dashlist", "dashlist", rt),
-		makeTreeOrPanic("public/app/plugins/panel/gauge", "gauge", rt),
 		makeTreeOrPanic("public/app/plugins/panel/gettingstarted", "gettingstarted", rt),
-		makeTreeOrPanic("public/app/plugins/panel/icon", "icon", rt),
 		makeTreeOrPanic("public/app/plugins/panel/live", "live", rt),
 		makeTreeOrPanic("public/app/plugins/panel/news", "news", rt),
-		makeTreeOrPanic("public/app/plugins/panel/stat", "stat", rt),
 		makeTreeOrPanic("public/app/plugins/panel/text", "text", rt),
 		makeTreeOrPanic("public/app/plugins/panel/welcome", "welcome", rt),
 	}

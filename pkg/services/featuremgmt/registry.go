@@ -37,11 +37,6 @@ var (
 			State:       FeatureStateStable,
 		},
 		{
-			Name:        "dashboardPreviews",
-			Description: "Create and show thumbnails for dashboard search results",
-			State:       FeatureStateAlpha,
-		},
-		{
 			Name:            "dashboardPreviewsAdmin",
 			Description:     "Manage the dashboard previews crawler process from the UI",
 			State:           FeatureStateAlpha,
@@ -74,11 +69,6 @@ var (
 			Description:     "Show feature flags in the settings UI",
 			State:           FeatureStateAlpha,
 			RequiresDevMode: true,
-		},
-		{
-			Name:        "publicDashboards",
-			Description: "Enables public access to dashboards",
-			State:       FeatureStateAlpha,
 		},
 		{
 			Name:        "lokiLive",
@@ -157,16 +147,6 @@ var (
 			State:        FeatureStateStable,
 			Expression:   "true", // enabled by default
 			FrontendOnly: true,
-		},
-		{
-			Name:        "correlations",
-			Description: "Correlations page",
-			State:       FeatureStateAlpha,
-		},
-		{
-			Name:        "datasourceQueryMultiStatus",
-			Description: "Introduce HTTP 207 Multi Status for api/ds/query",
-			State:       FeatureStateAlpha,
 		},
 		{
 			Name:         "traceToMetrics",
@@ -326,11 +306,6 @@ var (
 		{
 			Name:        "elasticsearchBackendMigration",
 			Description: "Use Elasticsearch as backend data source",
-			State:       FeatureStateAlpha,
-		},
-		{
-			Name:        "secureSocksDatasourceProxy",
-			Description: "Enable secure socks tunneling for supported core datasources",
 			State:       FeatureStateAlpha,
 		},
 		{

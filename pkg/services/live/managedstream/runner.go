@@ -196,7 +196,7 @@ func (s *NamespaceStream) Push(ctx context.Context, path string, frame *data.Fra
 
 	logger.Debug("Publish data to channel", "channel", channel, "dataLength", len(frameJSON))
 	s.incRate(path, time.Now().Unix())
-	if s.scope == live.ScopeDatasource || s.scope == live.ScopePlugin {
+	if s.scope == live.ScopePlugin {
 		return s.localPublisher.PublishLocal(orgchannel.PrependOrgID(s.orgID, channel), frameJSON)
 	}
 	return s.publisher(s.orgID, channel, frameJSON)

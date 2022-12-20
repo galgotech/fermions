@@ -68,10 +68,6 @@ type DashboardPermissionsService interface {
 	PermissionsService
 }
 
-type DatasourcePermissionsService interface {
-	PermissionsService
-}
-
 type ServiceAccountPermissionsService interface {
 	PermissionsService
 }

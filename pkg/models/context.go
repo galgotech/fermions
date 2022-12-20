@@ -24,8 +24,7 @@ type ReqContext struct {
 	SkipCache      bool
 	Logger         log.Logger
 	// RequestNonce is a cryptographic request identifier for use with Content Security Policy.
-	RequestNonce          string
-	IsPublicDashboardView bool
+	RequestNonce string
 
 	PerfmonTimer   prometheus.Summary
 	LookupTokenErr error

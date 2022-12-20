@@ -9,7 +9,6 @@ import (
 
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/cmd/grafana-cli/commands/datamigrations"
-	"github.com/grafana/grafana/pkg/cmd/grafana-cli/commands/secretsmigrations"
 	"github.com/grafana/grafana/pkg/cmd/grafana-cli/logger"
 	"github.com/grafana/grafana/pkg/cmd/grafana-cli/runner"
 	"github.com/grafana/grafana/pkg/cmd/grafana-cli/services"
@@ -170,27 +169,6 @@ var adminCommands = []*cli.Command{
 				Name:   "encrypt-datasource-passwords",
 				Usage:  "Migrates passwords from unsecured fields to secure_json_data field. Return ok unless there is an error. Safe to execute multiple times.",
 				Action: runDbCommand(datamigrations.EncryptDatasourcePasswords),
-			},
-		},
-	},
-	{
-		Name:  "secrets-migration",
-		Usage: "Runs a script that migrates secrets in your database",
-		Subcommands: []*cli.Command{
-			{
-				Name:   "re-encrypt",
-				Usage:  "Re-encrypts secrets by decrypting and re-encrypting them with the currently configured encryption. Returns ok unless there is an error. Safe to execute multiple times.",
-				Action: runRunnerCommand(secretsmigrations.ReEncryptSecrets),
-			},
-			{
-				Name:   "rollback",
-				Usage:  "Rolls back secrets to legacy encryption. Returns ok unless there is an error. Safe to execute multiple times.",
-				Action: runRunnerCommand(secretsmigrations.RollBackSecrets),
-			},
-			{
-				Name:   "re-encrypt-data-keys",
-				Usage:  "Rotates persisted data encryption keys. Returns ok unless there is an error. Safe to execute multiple times.",
-				Action: runRunnerCommand(secretsmigrations.ReEncryptDEKS),
 			},
 		},
 	},

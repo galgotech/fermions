@@ -3,19 +3,14 @@ package api
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/licensing"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
-	"github.com/grafana/grafana/pkg/services/secrets/kvstore"
 	"github.com/grafana/grafana/pkg/setting"
-	"github.com/grafana/grafana/pkg/tsdb/grafanads"
-	"github.com/grafana/grafana/pkg/util"
 )
 
 func (hs *HTTPServer) GetFrontendSettings(c *models.ReqContext) {
@@ -42,18 +37,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 				Path:    app.Module,
 				Version: app.Info.Version,
 			})
-		}
-	}
-
-	dataSources, err := hs.getFSDataSources(c, enabledPlugins)
-	if err != nil {
-		return nil, err
-	}
-
-	defaultDS := "-- Grafana --"
-	for n, ds := range dataSources {
-		if ds.IsDefault {
-			defaultDS = n
 		}
 	}
 
@@ -94,11 +77,8 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 	}
 
 	hasAccess := accesscontrol.HasAccess(hs.AccessControl, c)
-	secretsManagerPluginEnabled := kvstore.EvaluateRemoteSecretsPlugin(c.Req.Context(), hs.secretsPluginManager, hs.Cfg) == nil
 
 	jsonObj := map[string]interface{}{
-		"defaultDatasource":                   defaultDS,
-		"datasources":                         dataSources,
 		"minRefreshInterval":                  setting.MinRefreshInterval,
 		"panels":                              panels,
 		"appUrl":                              hs.Cfg.AppURL,
@@ -165,7 +145,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		"featureToggles":                   hs.Features.GetEnabled(c.Req.Context()),
 		"rendererAvailable":                hs.RenderService.IsAvailable(c.Req.Context()),
 		"rendererVersion":                  hs.RenderService.Version(),
-		"secretsManagerPluginEnabled":      secretsManagerPluginEnabled,
 		"http2Enabled":                     hs.Cfg.Protocol == setting.HTTP2Scheme,
 		"sentry":                           hs.Cfg.Sentry,
 		"grafanaJavascriptAgent":           hs.Cfg.GrafanaJavascriptAgent,
@@ -195,10 +174,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		"tokenExpirationDayLimit": hs.Cfg.SATokenExpirationDayLimit,
 	}
 
-	if hs.ThumbService != nil {
-		jsonObj["dashboardPreviews"] = hs.ThumbService.GetDashboardPreviewsSetupSettings(c)
-	}
-
 	if hs.Cfg.GeomapDefaultBaseLayerConfig != nil {
 		jsonObj["geomapDefaultBaseLayerConfig"] = hs.Cfg.GeomapDefaultBaseLayerConfig
 	}
@@ -207,113 +182,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 	}
 
 	return jsonObj, nil
-}
-
-func (hs *HTTPServer) getFSDataSources(c *models.ReqContext, enabledPlugins EnabledPlugins) (map[string]plugins.DataSourceDTO, error) {
-	orgDataSources := make([]*datasources.DataSource, 0)
-	if c.OrgID != 0 {
-		query := datasources.GetDataSourcesQuery{OrgId: c.OrgID, DataSourceLimit: hs.Cfg.DataSourceLimit}
-		err := hs.DataSourcesService.GetDataSources(c.Req.Context(), &query)
-		if err != nil {
-			return nil, err
-		}
-
-		if c.IsPublicDashboardView {
-			// If RBAC is enabled, it will filter out all datasources for a public user, so we need to skip it
-			orgDataSources = query.Result
-		} else {
-			filtered, err := hs.filterDatasourcesByQueryPermission(c.Req.Context(), c.SignedInUser, query.Result)
-			if err != nil {
-				return nil, err
-			}
-			orgDataSources = filtered
-		}
-	}
-
-	dataSources := make(map[string]plugins.DataSourceDTO)
-
-	for _, ds := range orgDataSources {
-		url := ds.Url
-
-		if ds.Access == datasources.DS_ACCESS_PROXY {
-			url = "/api/datasources/proxy/" + strconv.FormatInt(ds.Id, 10)
-		}
-
-		dsDTO := plugins.DataSourceDTO{
-			ID:        ds.Id,
-			UID:       ds.Uid,
-			Type:      ds.Type,
-			Name:      ds.Name,
-			URL:       url,
-			IsDefault: ds.IsDefault,
-			Access:    string(ds.Access),
-			ReadOnly:  ds.ReadOnly,
-		}
-
-		plugin, exists := enabledPlugins.Get(plugins.DataSource, ds.Type)
-		if !exists {
-			c.Logger.Error("Could not find plugin definition for data source", "datasource_type", ds.Type)
-			continue
-		}
-		dsDTO.Preload = plugin.Preload
-		dsDTO.Module = plugin.Module
-		dsDTO.PluginMeta = &plugins.PluginMetaDTO{
-			JSONData:  plugin.JSONData,
-			Signature: plugin.Signature,
-			Module:    plugin.Module,
-			BaseURL:   plugin.BaseURL,
-		}
-
-		if ds.JsonData == nil {
-			dsDTO.JSONData = make(map[string]interface{})
-		} else {
-			dsDTO.JSONData = ds.JsonData.MustMap()
-		}
-
-		if ds.Access == datasources.DS_ACCESS_DIRECT {
-			if ds.BasicAuth {
-				password, err := hs.DataSourcesService.DecryptedBasicAuthPassword(c.Req.Context(), ds)
-				if err != nil {
-					return nil, err
-				}
-
-				dsDTO.BasicAuth = util.GetBasicAuthHeader(
-					ds.BasicAuthUser,
-					password,
-				)
-			}
-			if ds.WithCredentials {
-				dsDTO.WithCredentials = ds.WithCredentials
-			}
-		}
-
-		dataSources[ds.Name] = dsDTO
-	}
-
-	// add data sources that are built in (meaning they are not added via data sources page, nor have any entry in
-	// the datasource table)
-	for _, ds := range hs.pluginStore.Plugins(c.Req.Context(), plugins.DataSource) {
-		if ds.BuiltIn {
-			dto := plugins.DataSourceDTO{
-				Type:     string(ds.Type),
-				Name:     ds.Name,
-				JSONData: make(map[string]interface{}),
-				PluginMeta: &plugins.PluginMetaDTO{
-					JSONData:  ds.JSONData,
-					Signature: ds.Signature,
-					Module:    ds.Module,
-					BaseURL:   ds.BaseURL,
-				},
-			}
-			if ds.Name == grafanads.DatasourceName {
-				dto.ID = grafanads.DatasourceID
-				dto.UID = grafanads.DatasourceUID
-			}
-			dataSources[ds.Name] = dto
-		}
-	}
-
-	return dataSources, nil
 }
 
 func getPanelSort(id string) int {
@@ -385,14 +253,6 @@ func (hs *HTTPServer) enabledPlugins(ctx context.Context, orgID int64) (EnabledP
 		}
 	}
 	ep[plugins.App] = apps
-
-	dataSources := make(map[string]plugins.PluginDTO)
-	for _, ds := range hs.pluginStore.Plugins(ctx, plugins.DataSource) {
-		if _, exists := pluginSettingMap[ds.ID]; exists {
-			dataSources[ds.ID] = ds
-		}
-	}
-	ep[plugins.DataSource] = dataSources
 
 	panels := make(map[string]plugins.PluginDTO)
 	for _, p := range hs.pluginStore.Plugins(ctx, plugins.Panel) {

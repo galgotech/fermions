@@ -4,7 +4,6 @@ import (
 	"runtime"
 
 	"github.com/grafana/grafana/pkg/infra/metrics/metricutil"
-	pubdash "github.com/grafana/grafana/pkg/services/publicdashboards/models"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -75,19 +74,10 @@ var (
 
 	// MAccessEvaluationCount is a metric gauge for total number of evaluation requests
 	MAccessEvaluationCount prometheus.Counter
-
-	// MPublicDashboardRequestCount is a metric counter for public dashboards requests
-	MPublicDashboardRequestCount prometheus.Counter
-
-	// MPublicDashboardDatasourceQuerySuccess is a metric counter for successful queries labelled by datasource
-	MPublicDashboardDatasourceQuerySuccess *prometheus.CounterVec
 )
 
 // Timers
 var (
-	// MDataSourceProxyReqTimer is a metric summary for dataproxy request duration
-	MDataSourceProxyReqTimer prometheus.Summary
-
 	// MAlertingExecutionTime is a metric summary of alert execution duration
 	MAlertingExecutionTime prometheus.Summary
 
@@ -139,9 +129,6 @@ var (
 	// StatsTotalActiveAdmins is a metric total amount of active admins
 	StatsTotalActiveAdmins prometheus.Gauge
 
-	// StatsTotalDataSources is a metric total number of defined datasources, labeled by pluginId
-	StatsTotalDataSources *prometheus.GaugeVec
-
 	// StatsTotalDashboardVersions is a metric of total number of dashboard versions stored in Grafana.
 	StatsTotalDashboardVersions prometheus.Gauge
 
@@ -155,9 +142,6 @@ var (
 
 	// StatsTotalDataKeys is a metric of total number of data keys stored in Grafana.
 	StatsTotalDataKeys *prometheus.GaugeVec
-
-	// MStatTotalPublicDashboards is a metric total amount of public dashboards
-	MStatTotalPublicDashboards prometheus.Gauge
 )
 
 func init() {
@@ -304,13 +288,6 @@ func init() {
 		Namespace: ExporterName,
 	})
 
-	MDataSourceProxyReqTimer = prometheus.NewSummary(prometheus.SummaryOpts{
-		Name:       "api_dataproxy_request_all_milliseconds",
-		Help:       "summary for dataproxy request duration",
-		Objectives: objectiveMap,
-		Namespace:  ExporterName,
-	})
-
 	MAlertingExecutionTime = prometheus.NewSummary(prometheus.SummaryOpts{
 		Name:       "alerting_execution_time_milliseconds",
 		Help:       "summary of alert execution duration",
@@ -323,18 +300,6 @@ func init() {
 		Help:      "amount of active alerts",
 		Namespace: ExporterName,
 	})
-
-	MPublicDashboardRequestCount = metricutil.NewCounterStartingAtZero(prometheus.CounterOpts{
-		Name:      "public_dashboard_request_count",
-		Help:      "counter for public dashboards requests",
-		Namespace: ExporterName,
-	})
-
-	MPublicDashboardDatasourceQuerySuccess = metricutil.NewCounterVecStartingAtZero(prometheus.CounterOpts{
-		Name:      "public_dashboard_datasource_query_success",
-		Help:      "counter for queries to public dashboard datasources labelled by datasource type and success status success/failed",
-		Namespace: ExporterName,
-	}, []string{"datasource", "status"}, map[string][]string{"status": pubdash.QueryResultStatuses})
 
 	MStatTotalDashboards = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name:      "stat_totals_dashboard",
@@ -402,12 +367,6 @@ func init() {
 		Namespace: ExporterName,
 	})
 
-	StatsTotalDataSources = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name:      "stat_totals_datasource",
-		Help:      "total number of defined datasources, labeled by pluginId",
-		Namespace: ExporterName,
-	}, []string{"plugin_id"})
-
 	grafanaPluginBuildInfoDesc = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name:      "plugin_build_info",
 		Help:      "A metric with a constant '1' value labeled by pluginId, pluginType and version from which Grafana plugin was built",
@@ -456,11 +415,6 @@ func init() {
 		Namespace: ExporterName,
 	}, []string{"active"})
 
-	MStatTotalPublicDashboards = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "stat_totals_public_dashboard",
-		Help:      "total amount of public dashboards",
-		Namespace: ExporterName,
-	})
 }
 
 // SetBuildInformation sets the build information for this binary
@@ -524,7 +478,6 @@ func initMetricVars() {
 		MApiDashboardSave,
 		MApiDashboardGet,
 		MApiDashboardSearch,
-		MDataSourceProxyReqTimer,
 		MApiAdminUserCreate,
 		MApiLoginPost,
 		MApiLoginOAuth,
@@ -549,15 +502,11 @@ func initMetricVars() {
 		StatsTotalActiveViewers,
 		StatsTotalActiveEditors,
 		StatsTotalActiveAdmins,
-		StatsTotalDataSources,
 		grafanaPluginBuildInfoDesc,
 		StatsTotalDashboardVersions,
 		MAccessEvaluationCount,
 		StatsTotalLibraryPanels,
 		StatsTotalLibraryVariables,
 		StatsTotalDataKeys,
-		MStatTotalPublicDashboards,
-		MPublicDashboardRequestCount,
-		MPublicDashboardDatasourceQuerySuccess,
 	)
 }

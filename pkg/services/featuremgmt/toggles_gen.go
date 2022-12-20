@@ -27,14 +27,6 @@ const (
 	// Add Prometheus metrics for database tables
 	FlagDatabaseMetrics = "database_metrics"
 
-	// FlagDashboardPreviews
-	// Create and show thumbnails for dashboard search results
-	FlagDashboardPreviews = "dashboardPreviews"
-
-	// FlagDashboardPreviewsAdmin
-	// Manage the dashboard previews crawler process from the UI
-	FlagDashboardPreviewsAdmin = "dashboardPreviewsAdmin"
-
 	// FlagLiveConfig
 	// Save Grafana Live configuration in SQL tables
 	FlagLiveConfig = "live-config"
@@ -58,10 +50,6 @@ const (
 	// FlagShowFeatureFlagsInUI
 	// Show feature flags in the settings UI
 	FlagShowFeatureFlagsInUI = "showFeatureFlagsInUI"
-
-	// FlagPublicDashboards
-	// Enables public access to dashboards
-	FlagPublicDashboards = "publicDashboards"
 
 	// FlagSwaggerUi
 	// Serves swagger UI
@@ -91,10 +79,6 @@ const (
 	// Load dashboards from the generic storage interface
 	FlagDashboardsFromStorage = "dashboardsFromStorage"
 
-	// FlagExport
-	// Export grafana instance (to git, etc)
-	FlagExport = "export"
-
 	// FlagExploreMixedDatasource
 	// Enable mixed datasource in Explore
 	FlagExploreMixedDatasource = "exploreMixedDatasource"
@@ -106,10 +90,6 @@ const (
 	// FlagCommandPalette
 	// Enable command palette
 	FlagCommandPalette = "commandPalette"
-
-	// FlagCorrelations
-	// Correlations page
-	FlagCorrelations = "correlations"
 
 	// FlagDatasourceQueryMultiStatus
 	// Introduce HTTP 207 Multi Status for api/ds/query
@@ -171,10 +151,6 @@ const (
 	// Run GRPC server
 	FlagGrpcServer = "grpcServer"
 
-	// FlagEntityStore
-	// SQL-based entity store (requires storage flag also)
-	FlagEntityStore = "entityStore"
-
 	// FlagTraceqlEditor
 	// Show the TraceQL editor in the explore page
 	FlagTraceqlEditor = "traceqlEditor"
@@ -231,9 +207,7 @@ const (
 	// Use Elasticsearch as backend data source
 	FlagElasticsearchBackendMigration = "elasticsearchBackendMigration"
 
-	// FlagSecureSocksDatasourceProxy
-	// Enable secure socks tunneling for supported core datasources
-	FlagSecureSocksDatasourceProxy = "secureSocksDatasourceProxy"
+
 
 	// FlagAuthnService
 	// Use new auth service to perform authentication

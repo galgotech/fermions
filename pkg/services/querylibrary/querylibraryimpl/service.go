@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/expr"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/infra/x/persistentcollection"
 	"github.com/grafana/grafana/pkg/models"
@@ -198,10 +197,6 @@ func getDatasourceUID(q *simplejson.Json) string {
 		uid = q.Get("datasource").MustString()
 	}
 
-	if expr.IsDataSource(uid) {
-		return expr.DatasourceUID
-	}
-
 	return uid
 }
 
@@ -209,10 +204,6 @@ func isQueryWithMixedDataSource(q *querylibrary.Query) (isMixed bool, firstDsRef
 	dsRefs := extractDataSources(q)
 
 	for _, dsRef := range dsRefs {
-		if dsRef.Type == expr.DatasourceType {
-			continue
-		}
-
 		if firstDsRef.UID == "" {
 			firstDsRef = dsRef
 			continue
@@ -232,9 +223,6 @@ func extractDataSources(query *querylibrary.Query) []dashboard.DataSourceRef {
 	for _, q := range query.Queries {
 		dsUid := getDatasourceUID(q)
 		dsType := q.Get("datasource").Get("type").MustString()
-		if expr.IsDataSource(dsUid) {
-			dsType = expr.DatasourceType
-		}
 
 		ds = append(ds, dashboard.DataSourceRef{
 			UID:  dsUid,

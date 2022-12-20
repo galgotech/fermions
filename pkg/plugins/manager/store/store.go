@@ -88,10 +88,6 @@ func (s *Service) plugin(ctx context.Context, pluginID string) (*plugins.Plugin,
 		return nil, false
 	}
 
-	if p.IsDecommissioned() {
-		return nil, false
-	}
-
 	return p, true
 }
 
@@ -99,9 +95,7 @@ func (s *Service) plugin(ctx context.Context, pluginID string) (*plugins.Plugin,
 func (s *Service) availablePlugins(ctx context.Context) []*plugins.Plugin {
 	var res []*plugins.Plugin
 	for _, p := range s.pluginRegistry.Plugins(ctx) {
-		if !p.IsDecommissioned() {
-			res = append(res, p)
-		}
+		res = append(res, p)
 	}
 	sort.SliceStable(res, func(i, j int) bool {
 		return res[i].ID < res[j].ID

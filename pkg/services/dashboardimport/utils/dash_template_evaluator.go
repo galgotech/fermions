@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/expr"
 	"github.com/grafana/grafana/pkg/services/dashboardimport"
 )
 
@@ -54,13 +53,6 @@ func (e *DashTemplateEvaluator) Eval() (*simplejson.Json, error) {
 		inputName := inputDefJson.Get("name").MustString()
 		inputType := inputDefJson.Get("type").MustString()
 		input := e.findInput(inputName, inputType)
-
-		// force expressions value to `__expr__`
-		if inputDefJson.Get("pluginId").MustString() == expr.DatasourceType {
-			input = &dashboardimport.ImportDashboardInput{
-				Value: expr.DatasourceType,
-			}
-		}
 
 		if input == nil {
 			return nil, &DashboardInputMissingError{VariableName: inputName}

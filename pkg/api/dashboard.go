@@ -26,7 +26,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/guardian"
 	"github.com/grafana/grafana/pkg/services/org"
 	pref "github.com/grafana/grafana/pkg/services/preference"
-	publicdashboardModels "github.com/grafana/grafana/pkg/services/publicdashboards/models"
 	"github.com/grafana/grafana/pkg/services/star"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/util"
@@ -99,24 +98,8 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 	}
 
 	var (
-		hasPublicDashboard     = false
-		publicDashboardEnabled = false
-		err                    error
+		err error
 	)
-
-	// If public dashboards is enabled and we have a public dashboard, update meta
-	// values
-	if hs.Features.IsEnabled(featuremgmt.FlagPublicDashboards) {
-		publicDashboard, err := hs.PublicDashboardsApi.PublicDashboardService.FindByDashboardUid(c.Req.Context(), c.OrgID, dash.Uid)
-		if err != nil && !errors.Is(err, publicdashboardModels.ErrPublicDashboardNotFound) {
-			return response.Error(500, "Error while retrieving public dashboards", err)
-		}
-
-		if publicDashboard != nil {
-			hasPublicDashboard = true
-			publicDashboardEnabled = publicDashboard.IsEnabled
-		}
-	}
 
 	// When dash contains only keys id, uid that means dashboard data is not valid and json decode failed.
 	if dash.Data != nil {
@@ -154,26 +137,24 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 	}
 
 	meta := dtos.DashboardMeta{
-		IsStarred:              isStarred,
-		Slug:                   dash.Slug,
-		Type:                   models.DashTypeDB,
-		CanStar:                c.IsSignedIn,
-		CanSave:                canSave,
-		CanEdit:                canEdit,
-		CanAdmin:               canAdmin,
-		CanDelete:              canDelete,
-		Created:                dash.Created,
-		Updated:                dash.Updated,
-		UpdatedBy:              updater,
-		CreatedBy:              creator,
-		Version:                dash.Version,
-		HasACL:                 dash.HasACL,
-		IsFolder:               dash.IsFolder,
-		FolderId:               dash.FolderId,
-		Url:                    dash.GetUrl(),
-		FolderTitle:            "General",
-		PublicDashboardEnabled: publicDashboardEnabled,
-		HasPublicDashboard:     hasPublicDashboard,
+		IsStarred:   isStarred,
+		Slug:        dash.Slug,
+		Type:        models.DashTypeDB,
+		CanStar:     c.IsSignedIn,
+		CanSave:     canSave,
+		CanEdit:     canEdit,
+		CanAdmin:    canAdmin,
+		CanDelete:   canDelete,
+		Created:     dash.Created,
+		Updated:     dash.Updated,
+		UpdatedBy:   updater,
+		CreatedBy:   creator,
+		Version:     dash.Version,
+		HasACL:      dash.HasACL,
+		IsFolder:    dash.IsFolder,
+		FolderId:    dash.FolderId,
+		Url:         dash.GetUrl(),
+		FolderTitle: "General",
 	}
 
 	// lookup folder title

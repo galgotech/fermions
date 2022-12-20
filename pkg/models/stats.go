@@ -2,7 +2,6 @@ package models
 
 type SystemStats struct {
 	Dashboards                int64
-	Datasources               int64
 	Users                     int64
 	ActiveUsers               int64
 	DailyActiveUsers          int64
@@ -36,30 +35,10 @@ type SystemStats struct {
 	DailyActiveSessions       int64
 	DataKeys                  int64
 	ActiveDataKeys            int64
-	PublicDashboards          int64
-}
-
-type DataSourceStats struct {
-	Count int
-	Type  string
 }
 
 type GetSystemStatsQuery struct {
 	Result *SystemStats
-}
-
-type GetDataSourceStatsQuery struct {
-	Result []*DataSourceStats
-}
-
-type DataSourceAccessStats struct {
-	Type   string
-	Access string
-	Count  int64
-}
-
-type GetDataSourceAccessStatsQuery struct {
-	Result []*DataSourceAccessStats
 }
 
 type NotifierUsageStats struct {
@@ -75,7 +54,6 @@ type AdminStats struct {
 	Orgs                int64 `json:"orgs"`
 	Dashboards          int64 `json:"dashboards"`
 	Tags                int64 `json:"tags"`
-	Datasources         int64 `json:"datasources"`
 	Stars               int64 `json:"stars"`
 	Alerts              int64 `json:"alerts"`
 	Users               int64 `json:"users"`

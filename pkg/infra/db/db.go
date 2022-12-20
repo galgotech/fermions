@@ -25,7 +25,5 @@ type Session = sqlstore.DBSession
 type SQLBuilder = sqlstore.SQLBuilder
 type InitTestDBOpt = sqlstore.InitTestDBOpt
 
-var InitTestDB = sqlstore.InitTestDB
-var InitTestDBwithCfg = sqlstore.InitTestDBWithCfg
 var ProvideService = sqlstore.ProvideService
 var NewSqlBuilder = sqlstore.NewSqlBuilder

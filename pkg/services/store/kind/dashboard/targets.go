@@ -16,16 +16,6 @@ func newTargetInfo(lookup DatasourceLookup) targetInfo {
 	}
 }
 
-func (s *targetInfo) GetDatasourceInfo() []DataSourceRef {
-	keys := make([]DataSourceRef, len(s.uids))
-	i := 0
-	for _, v := range s.uids {
-		keys[i] = *v
-		i++
-	}
-	return keys
-}
-
 // the node will either be string (name|uid) OR ref
 func (s *targetInfo) addDatasource(iter *jsoniter.Iterator) {
 	switch iter.WhatIsNext() {

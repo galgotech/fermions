@@ -14,19 +14,15 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/plugins/adapters"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	"github.com/grafana/grafana/pkg/services/user"
 )
 
 func ProvideService(cacheService *localcache.CacheService, pluginStore plugins.Store,
-	dataSourceCache datasources.CacheService, dataSourceService datasources.DataSourceService,
 	pluginSettingsService pluginsettings.Service) *Provider {
 	return &Provider{
 		cacheService:          cacheService,
 		pluginStore:           pluginStore,
-		dataSourceCache:       dataSourceCache,
-		dataSourceService:     dataSourceService,
 		pluginSettingsService: pluginSettingsService,
 		logger:                log.New("plugincontext"),
 	}
@@ -35,8 +31,6 @@ func ProvideService(cacheService *localcache.CacheService, pluginStore plugins.S
 type Provider struct {
 	cacheService          *localcache.CacheService
 	pluginStore           plugins.Store
-	dataSourceCache       datasources.CacheService
-	dataSourceService     datasources.DataSourceService
 	pluginSettingsService pluginsettings.Service
 	logger                log.Logger
 }
@@ -46,23 +40,6 @@ type Provider struct {
 // returned context.
 func (p *Provider) Get(ctx context.Context, pluginID string, user *user.SignedInUser) (backend.PluginContext, bool, error) {
 	return p.pluginContext(ctx, pluginID, user)
-}
-
-// GetWithDataSource allows getting plugin context by its ID and PluginContext.DataSourceInstanceSettings will be
-// resolved and appended to the returned context.
-func (p *Provider) GetWithDataSource(ctx context.Context, pluginID string, user *user.SignedInUser, ds *datasources.DataSource) (backend.PluginContext, bool, error) {
-	pCtx, exists, err := p.pluginContext(ctx, pluginID, user)
-	if err != nil {
-		return pCtx, exists, err
-	}
-
-	datasourceSettings, err := adapters.ModelToInstanceSettings(ds, p.decryptSecureJsonDataFn(ctx))
-	if err != nil {
-		return pCtx, exists, fmt.Errorf("%v: %w", "Failed to convert datasource", err)
-	}
-	pCtx.DataSourceInstanceSettings = datasourceSettings
-
-	return pCtx, true, nil
 }
 
 const pluginSettingsCacheTTL = 5 * time.Second
@@ -126,10 +103,4 @@ func (p *Provider) getCachedPluginSettings(ctx context.Context, pluginID string,
 
 	p.cacheService.Set(cacheKey, ps, pluginSettingsCacheTTL)
 	return ps, nil
-}
-
-func (p *Provider) decryptSecureJsonDataFn(ctx context.Context) func(ds *datasources.DataSource) (map[string]string, error) {
-	return func(ds *datasources.DataSource) (map[string]string, error) {
-		return p.dataSourceService.DecryptedValues(ctx, ds)
-	}
 }

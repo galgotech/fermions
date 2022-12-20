@@ -7,7 +7,6 @@ import (
 	"math"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -154,33 +153,6 @@ func (rs *RenderingService) Run(ctx context.Context) error {
 				return nil
 			}
 		}
-	}
-
-	if rs.pluginAvailable(ctx) {
-		rs.log = rs.log.New("renderer", "plugin")
-		rs.pluginInfo = rs.RendererPluginManager.Renderer(ctx)
-
-		if err := rs.startPlugin(ctx); err != nil {
-			return err
-		}
-
-		rs.version = rs.pluginInfo.Info.Version
-		rs.renderAction = rs.renderViaPlugin
-		rs.renderCSVAction = rs.renderCSVViaPlugin
-		rs.sanitizeSVGAction = rs.sanitizeSVGViaPlugin
-		<-ctx.Done()
-
-		// On Windows, Chromium is generating a debug.log file that breaks signature check on next restart
-		debugFilePath := path.Join(rs.pluginInfo.PluginDir, "chrome-win/debug.log")
-		if _, err := os.Stat(debugFilePath); err == nil {
-			err = os.Remove(debugFilePath)
-			if err != nil {
-				rs.log.Warn("Couldn't remove debug.log file, the renderer plugin will not be able to pass the signature check until this file is deleted",
-					"err", err)
-			}
-		}
-
-		return nil
 	}
 
 	rs.log.Debug("No image renderer found/installed. " +

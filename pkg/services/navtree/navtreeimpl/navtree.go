@@ -91,7 +91,7 @@ func (s *ServiceImpl) GetNavTree(c *models.ReqContext, hasEditPerm bool, prefs *
 		})
 	}
 
-	if c.IsPublicDashboardView || hasAccess(ac.ReqSignedIn, ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsRead), ac.EvalPermission(dashboards.ActionDashboardsCreate))) {
+	if hasAccess(ac.ReqSignedIn, ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsRead), ac.EvalPermission(dashboards.ActionDashboardsCreate))) {
 		dashboardChildLinks := s.buildDashboardNavLinks(c, hasEditPerm)
 
 		dashboardLink := &navtree.NavLink{
@@ -344,15 +344,6 @@ func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm b
 			Url:      s.cfg.AppSubURL + "/library-panels",
 			Icon:     "library-panel",
 		})
-
-		if s.features.IsEnabled(featuremgmt.FlagPublicDashboards) {
-			dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
-				Text: "Public dashboards",
-				Id:   "dashboards/public",
-				Url:  s.cfg.AppSubURL + "/dashboard/public",
-				Icon: "library-panel",
-			})
-		}
 	}
 
 	if s.features.IsEnabled(featuremgmt.FlagScenes) {
@@ -402,21 +393,6 @@ func (s *ServiceImpl) buildDataConnectionsNavLink(c *models.ReqContext) *navtree
 	var navLink *navtree.NavLink
 
 	baseUrl := s.cfg.AppSubURL + "/connections"
-
-	// Your connections
-	children = append(children, &navtree.NavLink{
-		Id:       "connections-your-connections",
-		Text:     "Your connections",
-		SubTitle: "Manage your existing connections",
-		Url:      baseUrl + "/your-connections",
-		// Datasources
-		Children: []*navtree.NavLink{{
-			Id:       "connections-your-connections-datasources",
-			Text:     "Data sources",
-			SubTitle: "View and manage your connected data source connections",
-			Url:      baseUrl + "/your-connections/datasources",
-		}},
-	})
 
 	// Connect data
 	children = append(children, &navtree.NavLink{

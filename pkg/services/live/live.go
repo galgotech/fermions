@@ -28,7 +28,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/comments/commentmodel"
 	"github.com/grafana/grafana/pkg/services/dashboards"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/live/database"
 	"github.com/grafana/grafana/pkg/services/live/features"
@@ -41,12 +40,10 @@ import (
 	"github.com/grafana/grafana/pkg/services/live/runstream"
 	"github.com/grafana/grafana/pkg/services/live/survey"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/query"
 	"github.com/grafana/grafana/pkg/services/secrets"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
-	"github.com/grafana/grafana/pkg/util/errutil"
 	"github.com/grafana/grafana/pkg/web"
 
 	"github.com/centrifugal/centrifuge"
@@ -73,8 +70,8 @@ type CoreGrafanaScope struct {
 
 func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, routeRegister routing.RouteRegister,
 	pluginStore plugins.Store, cacheService *localcache.CacheService,
-	dataSourceCache datasources.CacheService, sqlStore db.DB, secretsService secrets.Service,
-	usageStatsService usagestats.Service, queryDataService *query.Service, toggles featuremgmt.FeatureToggles,
+	sqlStore db.DB, secretsService secrets.Service,
+	usageStatsService usagestats.Service, toggles featuremgmt.FeatureToggles,
 	accessControl accesscontrol.AccessControl, dashboardService dashboards.DashboardService,
 	orgService org.Service) (*GrafanaLive, error) {
 	g := &GrafanaLive{
@@ -84,10 +81,8 @@ func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, r
 		RouteRegister:         routeRegister,
 		pluginStore:           pluginStore,
 		CacheService:          cacheService,
-		DataSourceCache:       dataSourceCache,
 		SQLStore:              sqlStore,
 		SecretsService:        secretsService,
-		queryDataService:      queryDataService,
 		channels:              make(map[string]models.ChannelHandler),
 		GrafanaScope: CoreGrafanaScope{
 			Features: make(map[string]models.ChannelHandlerFactory),
@@ -228,7 +223,7 @@ func ProvideService(plugCtxProvider *plugincontext.Provider, cfg *setting.Cfg, r
 		}
 	}
 
-	g.contextGetter = liveplugin.NewContextGetter(g.PluginContextProvider, g.DataSourceCache)
+	g.contextGetter = liveplugin.NewContextGetter(g.PluginContextProvider)
 	pipelinedChannelLocalPublisher := liveplugin.NewChannelLocalPublisher(node, g.Pipeline)
 	numLocalSubscribersGetter := liveplugin.NewNumLocalSubscribersGetter(node)
 	g.runStreamManager = runstream.NewManager(pipelinedChannelLocalPublisher, numLocalSubscribersGetter, g.contextGetter)
@@ -402,11 +397,9 @@ type GrafanaLive struct {
 	Features              featuremgmt.FeatureToggles
 	RouteRegister         routing.RouteRegister
 	CacheService          *localcache.CacheService
-	DataSourceCache       datasources.CacheService
 	SQLStore              db.DB
 	SecretsService        secrets.Service
 	pluginStore           plugins.Store
-	queryDataService      *query.Service
 	orgService            org.Service
 
 	node         *centrifuge.Node
@@ -549,26 +542,6 @@ func runConcurrentlyIfNeeded(ctx context.Context, semaphore chan struct{}, fn fu
 	return nil
 }
 
-func (g *GrafanaLive) HandleDatasourceDelete(orgID int64, dsUID string) {
-	if g.runStreamManager == nil {
-		return
-	}
-	err := g.runStreamManager.HandleDatasourceDelete(orgID, dsUID)
-	if err != nil {
-		logger.Error("Error handling datasource delete", "error", err)
-	}
-}
-
-func (g *GrafanaLive) HandleDatasourceUpdate(orgID int64, dsUID string) {
-	if g.runStreamManager == nil {
-		return
-	}
-	err := g.runStreamManager.HandleDatasourceUpdate(orgID, dsUID)
-	if err != nil {
-		logger.Error("Error handling datasource update", "error", err)
-	}
-}
-
 // Use a configuration that's compatible with the standard library
 // to minimize the risk of introducing bugs. This will make sure
 // that map keys is ordered.
@@ -576,39 +549,8 @@ var jsonStd = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func (g *GrafanaLive) handleOnRPC(client *centrifuge.Client, e centrifuge.RPCEvent) (centrifuge.RPCReply, error) {
 	logger.Debug("Client calls RPC", "user", client.UserID(), "client", client.ID(), "method", e.Method)
-	if e.Method != "grafana.query" {
-		return centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound
-	}
-	user, ok := livecontext.GetContextSignedUser(client.Context())
-	if !ok {
-		logger.Error("No user found in context", "user", client.UserID(), "client", client.ID(), "method", e.Method)
-		return centrifuge.RPCReply{}, centrifuge.ErrorInternal
-	}
-	var req dtos.MetricRequest
-	err := json.Unmarshal(e.Data, &req)
-	if err != nil {
-		return centrifuge.RPCReply{}, centrifuge.ErrorBadRequest
-	}
-	resp, err := g.queryDataService.QueryData(client.Context(), user, false, req)
-	if err != nil {
-		logger.Error("Error query data", "user", client.UserID(), "client", client.ID(), "method", e.Method, "error", err)
-		if errors.Is(err, datasources.ErrDataSourceAccessDenied) {
-			return centrifuge.RPCReply{}, &centrifuge.Error{Code: uint32(http.StatusForbidden), Message: http.StatusText(http.StatusForbidden)}
-		}
-		var gfErr *errutil.Error
-		if errors.As(err, &gfErr) && gfErr.Reason.Status() == errutil.StatusBadRequest {
-			return centrifuge.RPCReply{}, &centrifuge.Error{Code: uint32(http.StatusBadRequest), Message: http.StatusText(http.StatusBadRequest)}
-		}
-		return centrifuge.RPCReply{}, centrifuge.ErrorInternal
-	}
-	data, err := jsonStd.Marshal(resp)
-	if err != nil {
-		logger.Error("Error marshaling query response", "user", client.UserID(), "client", client.ID(), "method", e.Method, "error", err)
-		return centrifuge.RPCReply{}, centrifuge.ErrorInternal
-	}
-	return centrifuge.RPCReply{
-		Data: data,
-	}, nil
+	return centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound
+
 }
 
 func (g *GrafanaLive) handleOnSubscribe(ctx context.Context, client *centrifuge.Client, e centrifuge.SubscribeEvent) (centrifuge.SubscribeReply, error) {
@@ -886,8 +828,6 @@ func (g *GrafanaLive) GetChannelHandlerFactory(ctx context.Context, user *user.S
 		return g.handleGrafanaScope(user, namespace)
 	case live.ScopePlugin:
 		return g.handlePluginScope(ctx, user, namespace)
-	case live.ScopeDatasource:
-		return g.handleDatasourceScope(ctx, user, namespace)
 	case live.ScopeStream:
 		return g.handleStreamScope(user, namespace)
 	default:
@@ -909,7 +849,6 @@ func (g *GrafanaLive) handlePluginScope(ctx context.Context, _ *user.SignedInUse
 	}
 	return features.NewPluginRunner(
 		namespace,
-		"", // No instance uid for non-datasource plugins.
 		g.runStreamManager,
 		g.contextGetter,
 		streamHandler,
@@ -918,24 +857,6 @@ func (g *GrafanaLive) handlePluginScope(ctx context.Context, _ *user.SignedInUse
 
 func (g *GrafanaLive) handleStreamScope(u *user.SignedInUser, namespace string) (models.ChannelHandlerFactory, error) {
 	return g.ManagedStreamRunner.GetOrCreateStream(u.OrgID, live.ScopeStream, namespace)
-}
-
-func (g *GrafanaLive) handleDatasourceScope(ctx context.Context, user *user.SignedInUser, namespace string) (models.ChannelHandlerFactory, error) {
-	ds, err := g.DataSourceCache.GetDatasourceByUID(ctx, namespace, user, false)
-	if err != nil {
-		return nil, fmt.Errorf("error getting datasource: %w", err)
-	}
-	streamHandler, err := g.getStreamPlugin(ctx, ds.Type)
-	if err != nil {
-		return nil, fmt.Errorf("can't find stream plugin: %s", ds.Type)
-	}
-	return features.NewPluginRunner(
-		ds.Type,
-		ds.Uid,
-		g.runStreamManager,
-		g.contextGetter,
-		streamHandler,
-	), nil
 }
 
 // Publish sends the data to the channel without checking permissions etc.

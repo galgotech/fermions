@@ -22,7 +22,6 @@ import (
 	"github.com/grafana/grafana/pkg/plugins/logger"
 	"github.com/grafana/grafana/pkg/plugins/manager/loader/finder"
 	"github.com/grafana/grafana/pkg/plugins/manager/loader/initializer"
-	"github.com/grafana/grafana/pkg/plugins/manager/process"
 	"github.com/grafana/grafana/pkg/plugins/manager/registry"
 	"github.com/grafana/grafana/pkg/plugins/manager/signature"
 	"github.com/grafana/grafana/pkg/plugins/storage"
@@ -39,7 +38,6 @@ var _ plugins.ErrorResolver = (*Loader)(nil)
 
 type Loader struct {
 	pluginFinder       finder.Finder
-	processManager     process.Service
 	pluginRegistry     registry.Service
 	roleRegistry       plugins.RoleRegistry
 	pluginInitializer  initializer.Initializer
@@ -53,19 +51,18 @@ type Loader struct {
 func ProvideService(cfg *config.Cfg, license models.Licensing, authorizer plugins.PluginLoaderAuthorizer,
 	pluginRegistry registry.Service, backendProvider plugins.BackendFactoryProvider,
 	roleRegistry plugins.RoleRegistry) *Loader {
-	return New(cfg, license, authorizer, pluginRegistry, backendProvider, process.NewManager(pluginRegistry),
+	return New(cfg, license, authorizer, pluginRegistry, backendProvider,
 		storage.FileSystem(logger.NewLogger("loader.fs"), cfg.PluginsPath), roleRegistry)
 }
 
 func New(cfg *config.Cfg, license models.Licensing, authorizer plugins.PluginLoaderAuthorizer,
 	pluginRegistry registry.Service, backendProvider plugins.BackendFactoryProvider,
-	processManager process.Service, pluginStorage storage.Manager, roleRegistry plugins.RoleRegistry) *Loader {
+	pluginStorage storage.Manager, roleRegistry plugins.RoleRegistry) *Loader {
 	return &Loader{
 		pluginFinder:       finder.New(),
 		pluginRegistry:     pluginRegistry,
 		pluginInitializer:  initializer.New(cfg, backendProvider, license),
 		signatureValidator: signature.NewValidator(authorizer),
-		processManager:     processManager,
 		pluginStorage:      pluginStorage,
 		errs:               make(map[string]*plugins.SignatureError),
 		log:                log.New("plugin.loader"),
@@ -242,16 +239,11 @@ func (l *Loader) load(ctx context.Context, p *plugins.Plugin) error {
 		}
 	}
 
-	return l.processManager.Start(ctx, p.ID)
+	return nil
 }
 
 func (l *Loader) unload(ctx context.Context, p *plugins.Plugin) error {
 	l.log.Debug("Stopping plugin process", "pluginId", p.ID)
-
-	// TODO confirm the sequence of events is safe
-	if err := l.processManager.Stop(ctx, p.ID); err != nil {
-		return err
-	}
 
 	if err := l.pluginRegistry.Remove(ctx, p.ID); err != nil {
 		return err

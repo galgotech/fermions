@@ -31,24 +31,6 @@ func (ss *sqlStatsService) GetAlertNotifiersUsageStats(ctx context.Context, quer
 	})
 }
 
-func (ss *sqlStatsService) GetDataSourceStats(ctx context.Context, query *models.GetDataSourceStatsQuery) error {
-	return ss.db.WithDbSession(ctx, func(dbSession *db.Session) error {
-		var rawSQL = `SELECT COUNT(*) AS count, type FROM ` + ss.db.GetDialect().Quote("data_source") + ` GROUP BY type`
-		query.Result = make([]*models.DataSourceStats, 0)
-		err := dbSession.SQL(rawSQL).Find(&query.Result)
-		return err
-	})
-}
-
-func (ss *sqlStatsService) GetDataSourceAccessStats(ctx context.Context, query *models.GetDataSourceAccessStatsQuery) error {
-	return ss.db.WithDbSession(ctx, func(dbSession *db.Session) error {
-		var rawSQL = `SELECT COUNT(*) AS count, type, access FROM ` + ss.db.GetDialect().Quote("data_source") + ` GROUP BY type, access`
-		query.Result = make([]*models.DataSourceAccessStats, 0)
-		err := dbSession.SQL(rawSQL).Find(&query.Result)
-		return err
-	})
-}
-
 func notServiceAccount(dialect migrator.Dialect) string {
 	return `is_service_account = ` +
 		dialect.BooleanStr(false)
@@ -61,7 +43,6 @@ func (ss *sqlStatsService) GetSystemStats(ctx context.Context, query *models.Get
 		dialect := ss.db.GetDialect()
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("user") + ` WHERE ` + notServiceAccount(dialect) + `) AS users,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("org") + `) AS orgs,`)
-		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("data_source") + `) AS datasources,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("star") + `) AS stars,`)
 		sb.Write(`(SELECT COUNT(*) FROM ` + dialect.Quote("alert") + `) AS alerts,`)
 
@@ -182,10 +163,6 @@ func (ss *sqlStatsService) GetAdminStats(ctx context.Context, query *models.GetA
 			SELECT COUNT( DISTINCT ( ` + dialect.Quote("term") + ` ))
 			FROM ` + dialect.Quote("dashboard_tag") + `
 		) AS tags,
-		(
-			SELECT COUNT(*)
-			FROM ` + dialect.Quote("data_source") + `
-		) AS datasources,
 		(
 			SELECT COUNT(*)
 			FROM ` + dialect.Quote("star") + `

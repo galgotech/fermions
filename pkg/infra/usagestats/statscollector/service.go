@@ -2,7 +2,6 @@ package statscollector
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,7 +14,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/registry"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/services/stats"
@@ -30,7 +28,6 @@ type Service struct {
 	usageStats         usagestats.Service
 	statsService       stats.Service
 	features           *featuremgmt.FeatureManager
-	datasources        datasources.DataSourceService
 	httpClientProvider httpclient.Provider
 
 	log log.Logger
@@ -48,7 +45,6 @@ func ProvideService(
 	social social.Service,
 	plugins plugins.Store,
 	features *featuremgmt.FeatureManager,
-	datasourceService datasources.DataSourceService,
 	httpClientProvider httpclient.Provider,
 ) *Service {
 	s := &Service{
@@ -59,7 +55,6 @@ func ProvideService(
 		usageStats:         us,
 		statsService:       statsService,
 		features:           features,
-		datasources:        datasourceService,
 		httpClientProvider: httpClientProvider,
 
 		startTime: time.Now(),
@@ -69,8 +64,6 @@ func ProvideService(
 	collectors := []usagestats.MetricsFunc{
 		s.collectSystemStats,
 		s.collectConcurrentUsers,
-		s.collectDatasourceStats,
-		s.collectDatasourceAccess,
 		s.collectAdditionalMetrics,
 	}
 	for _, c := range collectors {
@@ -118,7 +111,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.orgs.count"] = statsQuery.Result.Orgs
 	m["stats.plugins.apps.count"] = s.appCount(ctx)
 	m["stats.plugins.panels.count"] = s.panelCount(ctx)
-	m["stats.plugins.datasources.count"] = s.dataSourceCount(ctx)
 	m["stats.active_users.count"] = statsQuery.Result.ActiveUsers
 	m["stats.active_admins.count"] = statsQuery.Result.ActiveAdmins
 	m["stats.active_editors.count"] = statsQuery.Result.ActiveEditors
@@ -130,7 +122,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.daily_active_editors.count"] = statsQuery.Result.DailyActiveEditors
 	m["stats.daily_active_viewers.count"] = statsQuery.Result.DailyActiveViewers
 	m["stats.daily_active_sessions.count"] = statsQuery.Result.DailyActiveSessions
-	m["stats.datasources.count"] = statsQuery.Result.Datasources
 	m["stats.stars.count"] = statsQuery.Result.Stars
 	m["stats.folders.count"] = statsQuery.Result.Folders
 	m["stats.dashboard_permissions.count"] = statsQuery.Result.DashboardPermissions
@@ -148,7 +139,6 @@ func (s *Service) collectSystemStats(ctx context.Context) (map[string]interface{
 	m["stats.api_keys.count"] = statsQuery.Result.APIKeys
 	m["stats.data_keys.count"] = statsQuery.Result.DataKeys
 	m["stats.active_data_keys.count"] = statsQuery.Result.ActiveDataKeys
-	m["stats.public_dashboards.count"] = statsQuery.Result.PublicDashboards
 
 	ossEditionCount := 1
 	enterpriseEditionCount := 0
@@ -209,65 +199,6 @@ func (s *Service) collectAdditionalMetrics(ctx context.Context) (map[string]inte
 	return m, nil
 }
 
-func (s *Service) collectDatasourceStats(ctx context.Context) (map[string]interface{}, error) {
-	m := map[string]interface{}{}
-	dsStats := models.GetDataSourceStatsQuery{}
-	if err := s.statsService.GetDataSourceStats(ctx, &dsStats); err != nil {
-		s.log.Error("Failed to get datasource stats", "error", err)
-		return nil, err
-	}
-
-	// send counters for each data source
-	// but ignore any custom data sources
-	// as sending that name could be sensitive information
-	dsOtherCount := 0
-	for _, dsStat := range dsStats.Result {
-		if s.usageStats.ShouldBeReported(ctx, dsStat.Type) {
-			m["stats.ds."+dsStat.Type+".count"] = dsStat.Count
-		} else {
-			dsOtherCount += dsStat.Count
-		}
-	}
-	m["stats.ds.other.count"] = dsOtherCount
-
-	return m, nil
-}
-
-func (s *Service) collectDatasourceAccess(ctx context.Context) (map[string]interface{}, error) {
-	m := map[string]interface{}{}
-
-	// fetch datasource access stats
-	dsAccessStats := models.GetDataSourceAccessStatsQuery{}
-	if err := s.statsService.GetDataSourceAccessStats(ctx, &dsAccessStats); err != nil {
-		s.log.Error("Failed to get datasource access stats", "error", err)
-		return nil, err
-	}
-
-	// send access counters for each data source
-	// but ignore any custom data sources
-	// as sending that name could be sensitive information
-	dsAccessOtherCount := make(map[string]int64)
-	for _, dsAccessStat := range dsAccessStats.Result {
-		if dsAccessStat.Access == "" {
-			continue
-		}
-
-		access := strings.ToLower(dsAccessStat.Access)
-
-		if s.usageStats.ShouldBeReported(ctx, dsAccessStat.Type) {
-			m["stats.ds_access."+dsAccessStat.Type+"."+access+".count"] = dsAccessStat.Count
-		} else {
-			old := dsAccessOtherCount[access]
-			dsAccessOtherCount[access] = old + dsAccessStat.Count
-		}
-	}
-
-	for access, count := range dsAccessOtherCount {
-		m["stats.ds_access.other."+access+".count"] = count
-	}
-	return m, nil
-}
-
 func (s *Service) updateTotalStats(ctx context.Context) bool {
 	if !s.cfg.MetricsEndpointEnabled || s.cfg.MetricsEndpointDisableTotalStats {
 		return false
@@ -303,17 +234,6 @@ func (s *Service) updateTotalStats(ctx context.Context) bool {
 	inactiveDataKeys := statsQuery.Result.DataKeys - statsQuery.Result.ActiveDataKeys
 	metrics.StatsTotalDataKeys.With(prometheus.Labels{"active": "false"}).Set(float64(inactiveDataKeys))
 
-	metrics.MStatTotalPublicDashboards.Set(float64(statsQuery.Result.PublicDashboards))
-
-	dsStats := models.GetDataSourceStatsQuery{}
-	if err := s.statsService.GetDataSourceStats(ctx, &dsStats); err != nil {
-		s.log.Error("Failed to get datasource stats", "error", err)
-		return true
-	}
-
-	for _, dsStat := range dsStats.Result {
-		metrics.StatsTotalDataSources.WithLabelValues(dsStat.Type).Set(float64(dsStat.Count))
-	}
 	return true
 }
 
@@ -323,8 +243,4 @@ func (s *Service) appCount(ctx context.Context) int {
 
 func (s *Service) panelCount(ctx context.Context) int {
 	return len(s.plugins.Plugins(ctx, plugins.Panel))
-}
-
-func (s *Service) dataSourceCount(ctx context.Context) int {
-	return len(s.plugins.Plugins(ctx, plugins.DataSource))
 }

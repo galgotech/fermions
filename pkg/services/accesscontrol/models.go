@@ -337,9 +337,6 @@ const (
 	// Settings actions
 	ActionSettingsRead = "settings:read"
 
-	// Datasources actions
-	ActionDatasourcesExplore = "datasources:explore"
-
 	// Global Scopes
 	ScopeGlobalUsersAll = "global.users:*"
 

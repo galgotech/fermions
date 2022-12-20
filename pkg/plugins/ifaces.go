@@ -3,8 +3,6 @@ package plugins
 import (
 	"context"
 
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
-
 	"github.com/grafana/grafana/pkg/plugins/backendplugin"
 )
 
@@ -38,15 +36,6 @@ type UpdateInfo struct {
 	PluginZipURL string
 }
 
-// Client is used to communicate with backend plugin implementations.
-type Client interface {
-	backend.QueryDataHandler
-	backend.CheckHealthHandler
-	backend.StreamHandler
-	backend.CallResourceHandler
-	backend.CollectMetricsHandler
-}
-
 // BackendFactoryProvider provides a backend factory for a provided plugin.
 type BackendFactoryProvider interface {
 	BackendFactory(ctx context.Context, p *Plugin) backendplugin.PluginFactoryFunc
@@ -78,21 +67,4 @@ type PluginLoaderAuthorizer interface {
 // RoleRegistry handles the plugin RBAC roles and their assignments
 type RoleRegistry interface {
 	DeclarePluginRoles(ctx context.Context, ID, name string, registrations []RoleRegistration) error
-}
-
-// ClientMiddleware is an interface representing the ability to create a middleware
-// that implements the Client interface.
-type ClientMiddleware interface {
-	// CreateClientMiddleware creates a new client middleware.
-	CreateClientMiddleware(next Client) Client
-}
-
-// The ClientMiddlewareFunc type is an adapter to allow the use of ordinary
-// functions as ClientMiddleware's. If f is a function with the appropriate
-// signature, ClientMiddlewareFunc(f) is a ClientMiddleware that calls f.
-type ClientMiddlewareFunc func(next Client) Client
-
-// CreateClientMiddleware implements the ClientMiddleware interface.
-func (fn ClientMiddlewareFunc) CreateClientMiddleware(next Client) Client {
-	return fn(next)
 }

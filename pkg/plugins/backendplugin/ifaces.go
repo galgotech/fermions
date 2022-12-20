@@ -16,7 +16,6 @@ type Plugin interface {
 	IsManaged() bool
 	Exited() bool
 	Decommission() error
-	IsDecommissioned() bool
 	backend.CollectMetricsHandler
 	backend.CheckHealthHandler
 	backend.QueryDataHandler

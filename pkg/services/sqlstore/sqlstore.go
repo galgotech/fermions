@@ -27,10 +27,8 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
-	"github.com/grafana/grafana/pkg/services/sqlstore/migrations"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrator"
 	"github.com/grafana/grafana/pkg/services/sqlstore/session"
-	"github.com/grafana/grafana/pkg/services/sqlstore/sqlutil"
 	"github.com/grafana/grafana/pkg/services/user"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -88,10 +86,6 @@ func ProvideService(cfg *setting.Cfg, cacheService *localcache.CacheService, mig
 	prometheus.MustRegister(newSQLStoreMetrics(db))
 
 	return s, nil
-}
-
-func ProvideServiceForTests(migrations registry.DatabaseMigrator) (*SQLStore, error) {
-	return initTestDB(migrations, InitTestDBOpt{EnsureDefaultOrgAndUser: true})
 }
 
 func newSQLStore(cfg *setting.Cfg, cacheService *localcache.CacheService, engine *xorm.Engine,
@@ -483,178 +477,6 @@ type InitTestDBOpt struct {
 	// EnsureDefaultOrgAndUser flags whether to ensure that default org and user exist.
 	EnsureDefaultOrgAndUser bool
 	FeatureFlags            []string
-}
-
-var featuresEnabledDuringTests = []string{
-	featuremgmt.FlagDashboardPreviews,
-	featuremgmt.FlagDashboardComments,
-	featuremgmt.FlagPanelTitleSearch,
-	featuremgmt.FlagEntityStore,
-}
-
-// InitTestDBWithMigration initializes the test DB given custom migrations.
-func InitTestDBWithMigration(t ITestDB, migration registry.DatabaseMigrator, opts ...InitTestDBOpt) *SQLStore {
-	t.Helper()
-	store, err := initTestDB(migration, opts...)
-	if err != nil {
-		t.Fatalf("failed to initialize sql store: %s", err)
-	}
-	return store
-}
-
-// InitTestDB initializes the test DB.
-func InitTestDB(t ITestDB, opts ...InitTestDBOpt) *SQLStore {
-	t.Helper()
-	store, err := initTestDB(&migrations.OSSMigrations{}, opts...)
-	if err != nil {
-		t.Fatalf("failed to initialize sql store: %s", err)
-	}
-	return store
-}
-
-func InitTestDBWithCfg(t ITestDB, opts ...InitTestDBOpt) (*SQLStore, *setting.Cfg) {
-	store := InitTestDB(t, opts...)
-	return store, store.Cfg
-}
-
-func initTestDB(migration registry.DatabaseMigrator, opts ...InitTestDBOpt) (*SQLStore, error) {
-	testSQLStoreMutex.Lock()
-	defer testSQLStoreMutex.Unlock()
-
-	if len(opts) == 0 {
-		opts = []InitTestDBOpt{{EnsureDefaultOrgAndUser: false, FeatureFlags: []string{}}}
-	}
-
-	features := make([]string, len(featuresEnabledDuringTests))
-	copy(features, featuresEnabledDuringTests)
-	for _, opt := range opts {
-		if len(opt.FeatureFlags) > 0 {
-			features = append(features, opt.FeatureFlags...)
-		}
-	}
-
-	if testSQLStore == nil {
-		dbType := migrator.SQLite
-
-		// environment variable present for test db?
-		if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-			dbType = db
-		}
-
-		// set test db config
-		cfg := setting.NewCfg()
-		cfg.IsFeatureToggleEnabled = func(key string) bool {
-			for _, enabledFeature := range features {
-				if enabledFeature == key {
-					return true
-				}
-			}
-			return false
-		}
-		sec, err := cfg.Raw.NewSection("database")
-		if err != nil {
-			return nil, err
-		}
-		if _, err := sec.NewKey("type", dbType); err != nil {
-			return nil, err
-		}
-		switch dbType {
-		case "mysql":
-			if _, err := sec.NewKey("connection_string", sqlutil.MySQLTestDB().ConnStr); err != nil {
-				return nil, err
-			}
-		case "postgres":
-			if _, err := sec.NewKey("connection_string", sqlutil.PostgresTestDB().ConnStr); err != nil {
-				return nil, err
-			}
-		default:
-			if _, err := sec.NewKey("connection_string", sqlutil.SQLite3TestDB().ConnStr); err != nil {
-				return nil, err
-			}
-		}
-
-		// useful if you already have a database that you want to use for tests.
-		// cannot just set it on testSQLStore as it overrides the config in Init
-		if _, present := os.LookupEnv("SKIP_MIGRATIONS"); present {
-			if _, err := sec.NewKey("skip_migrations", "true"); err != nil {
-				return nil, err
-			}
-		}
-
-		// need to get engine to clean db before we init
-		engine, err := xorm.NewEngine(dbType, sec.Key("connection_string").String())
-		if err != nil {
-			return nil, err
-		}
-
-		engine.DatabaseTZ = time.UTC
-		engine.TZLocation = time.UTC
-
-		tracer := tracing.InitializeTracerForTest()
-		bus := bus.ProvideBus(tracer)
-		testSQLStore, err = newSQLStore(cfg, localcache.New(5*time.Minute, 10*time.Minute), engine, migration, bus, tracer, opts...)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := testSQLStore.Migrate(false); err != nil {
-			return nil, err
-		}
-
-		if err := dialect.TruncateDBTables(); err != nil {
-			return nil, err
-		}
-
-		if err := testSQLStore.Reset(); err != nil {
-			return nil, err
-		}
-
-		// Make sure the changes are synced, so they get shared with eventual other DB connections
-		// XXX: Why is this only relevant when not skipping migrations?
-		if !testSQLStore.dbCfg.SkipMigrations {
-			if err := testSQLStore.Sync(); err != nil {
-				return nil, err
-			}
-		}
-
-		// temp global var until we get rid of global vars
-		dialect = testSQLStore.Dialect
-		return testSQLStore, nil
-	}
-
-	testSQLStore.Cfg.IsFeatureToggleEnabled = func(key string) bool {
-		for _, enabledFeature := range features {
-			if enabledFeature == key {
-				return true
-			}
-		}
-		return false
-	}
-
-	if err := dialect.TruncateDBTables(); err != nil {
-		return nil, err
-	}
-	if err := testSQLStore.Reset(); err != nil {
-		return nil, err
-	}
-
-	return testSQLStore, nil
-}
-
-func IsTestDbMySQL() bool {
-	if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-		return db == migrator.MySQL
-	}
-
-	return false
-}
-
-func IsTestDbPostgres() bool {
-	if db, present := os.LookupEnv("GRAFANA_TEST_DB"); present {
-		return db == migrator.Postgres
-	}
-
-	return false
 }
 
 type DatabaseConfig struct {

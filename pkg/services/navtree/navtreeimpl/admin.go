@@ -4,8 +4,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	ac "github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/correlations"
-	"github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/navtree"
 	"github.com/grafana/grafana/pkg/services/org"
@@ -16,25 +14,6 @@ func (s *ServiceImpl) getOrgAdminNode(c *models.ReqContext) (*navtree.NavLink, e
 	var configNodes []*navtree.NavLink
 
 	hasAccess := ac.HasAccess(s.accessControl, c)
-	if hasAccess(ac.ReqOrgAdmin, datasources.ConfigurationPageAccess) {
-		configNodes = append(configNodes, &navtree.NavLink{
-			Text:     "Data sources",
-			Icon:     "database",
-			SubTitle: "Add and configure data sources",
-			Id:       "datasources",
-			Url:      s.cfg.AppSubURL + "/datasources",
-		})
-	}
-
-	if s.features.IsEnabled(featuremgmt.FlagCorrelations) && hasAccess(ac.ReqOrgAdmin, correlations.ConfigurationPageAccess) {
-		configNodes = append(configNodes, &navtree.NavLink{
-			Text:     "Correlations",
-			Icon:     "gf-glue",
-			SubTitle: "Add and configure correlations",
-			Id:       "correlations",
-			Url:      s.cfg.AppSubURL + "/datasources/correlations",
-		})
-	}
 
 	if !s.features.IsEnabled(featuremgmt.FlagTopnav) {
 		if hasAccess(ac.ReqOrgAdmin, ac.EvalPermission(ac.ActionOrgUsersRead)) {

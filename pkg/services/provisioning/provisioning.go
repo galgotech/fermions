@@ -11,16 +11,13 @@ import (
 	plugifaces "github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/services/accesscontrol"
-	"github.com/grafana/grafana/pkg/services/correlations"
 	dashboardservice "github.com/grafana/grafana/pkg/services/dashboards"
-	datasourceservice "github.com/grafana/grafana/pkg/services/datasources"
 	"github.com/grafana/grafana/pkg/services/encryption"
 	"github.com/grafana/grafana/pkg/services/folder"
 	"github.com/grafana/grafana/pkg/services/notifications"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	"github.com/grafana/grafana/pkg/services/provisioning/dashboards"
-	"github.com/grafana/grafana/pkg/services/provisioning/datasources"
 	"github.com/grafana/grafana/pkg/services/provisioning/notifiers"
 	"github.com/grafana/grafana/pkg/services/provisioning/plugins"
 	"github.com/grafana/grafana/pkg/services/quota"
@@ -37,8 +34,6 @@ func ProvideService(
 	encryptionService encryption.Internal,
 	notificatonService *notifications.NotificationService,
 	dashboardProvisioningService dashboardservice.DashboardProvisioningService,
-	datasourceService datasourceservice.DataSourceService,
-	correlationsService correlations.Service,
 	dashboardService dashboardservice.DashboardService,
 	folderService folder.Service,
 	pluginSettings pluginsettings.Service,
@@ -56,12 +51,9 @@ func ProvideService(
 		NotificationService:          notificatonService,
 		newDashboardProvisioner:      dashboards.New,
 		provisionNotifiers:           notifiers.Provision,
-		provisionDatasources:         datasources.Provision,
 		provisionPlugins:             plugins.Provision,
 		dashboardProvisioningService: dashboardProvisioningService,
 		dashboardService:             dashboardService,
-		datasourceService:            datasourceService,
-		correlationsService:          correlationsService,
 		pluginsSettings:              pluginSettings,
 		searchService:                searchService,
 		quotaService:                 quotaService,
@@ -75,7 +67,6 @@ func ProvideService(
 type ProvisioningService interface {
 	registry.BackgroundService
 	RunInitProvisioners(ctx context.Context) error
-	ProvisionDatasources(ctx context.Context) error
 	ProvisionPlugins(ctx context.Context) error
 	ProvisionNotifications(ctx context.Context) error
 	ProvisionDashboards(ctx context.Context) error
@@ -90,7 +81,6 @@ func NewProvisioningServiceImpl() *ProvisioningServiceImpl {
 		log:                     logger,
 		newDashboardProvisioner: dashboards.New,
 		provisionNotifiers:      notifiers.Provision,
-		provisionDatasources:    datasources.Provision,
 		provisionPlugins:        plugins.Provision,
 	}
 }
@@ -99,14 +89,12 @@ func NewProvisioningServiceImpl() *ProvisioningServiceImpl {
 func newProvisioningServiceImpl(
 	newDashboardProvisioner dashboards.DashboardProvisionerFactory,
 	provisionNotifiers func(context.Context, string, org.Service, encryption.Internal, *notifications.NotificationService) error,
-	provisionDatasources func(context.Context, string, datasources.Store, datasources.CorrelationsStore, org.Service) error,
 	provisionPlugins func(context.Context, string, plugifaces.Store, pluginsettings.Service, org.Service) error,
 ) *ProvisioningServiceImpl {
 	return &ProvisioningServiceImpl{
 		log:                     log.New("provisioning"),
 		newDashboardProvisioner: newDashboardProvisioner,
 		provisionNotifiers:      provisionNotifiers,
-		provisionDatasources:    provisionDatasources,
 		provisionPlugins:        provisionPlugins,
 	}
 }
@@ -124,13 +112,10 @@ type ProvisioningServiceImpl struct {
 	newDashboardProvisioner      dashboards.DashboardProvisionerFactory
 	dashboardProvisioner         dashboards.DashboardProvisioner
 	provisionNotifiers           func(context.Context, string, org.Service, encryption.Internal, *notifications.NotificationService) error
-	provisionDatasources         func(context.Context, string, datasources.Store, datasources.CorrelationsStore, org.Service) error
 	provisionPlugins             func(context.Context, string, plugifaces.Store, pluginsettings.Service, org.Service) error
 	mutex                        sync.Mutex
 	dashboardProvisioningService dashboardservice.DashboardProvisioningService
 	dashboardService             dashboardservice.DashboardService
-	datasourceService            datasourceservice.DataSourceService
-	correlationsService          correlations.Service
 	pluginsSettings              pluginsettings.Service
 	searchService                searchV2.SearchService
 	quotaService                 quota.Service
@@ -138,12 +123,7 @@ type ProvisioningServiceImpl struct {
 }
 
 func (ps *ProvisioningServiceImpl) RunInitProvisioners(ctx context.Context) error {
-	err := ps.ProvisionDatasources(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = ps.ProvisionPlugins(ctx)
+	err := ps.ProvisionPlugins(ctx)
 	if err != nil {
 		return err
 	}
@@ -186,16 +166,6 @@ func (ps *ProvisioningServiceImpl) Run(ctx context.Context) error {
 			return ctx.Err()
 		}
 	}
-}
-
-func (ps *ProvisioningServiceImpl) ProvisionDatasources(ctx context.Context) error {
-	datasourcePath := filepath.Join(ps.Cfg.ProvisioningPath, "datasources")
-	if err := ps.provisionDatasources(ctx, datasourcePath, ps.datasourceService, ps.correlationsService, ps.orgService); err != nil {
-		err = fmt.Errorf("%v: %w", "Datasource provisioning error", err)
-		ps.log.Error("Failed to provision data sources", "error", err)
-		return err
-	}
-	return nil
 }
 
 func (ps *ProvisioningServiceImpl) ProvisionPlugins(ctx context.Context) error {

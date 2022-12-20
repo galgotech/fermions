@@ -75,10 +75,6 @@ func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewDat
 		return nil, err
 	}
 
-	if c.IsPublicDashboardView {
-		settings["isPublicDashboardView"] = true
-	}
-
 	weekStart := ""
 	if prefs.WeekStart != nil {
 		weekStart = *prefs.WeekStart
