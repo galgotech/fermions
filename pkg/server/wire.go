@@ -85,7 +85,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts/database"
 	serviceaccountsmanager "github.com/grafana/grafana/pkg/services/serviceaccounts/manager"
-	"github.com/grafana/grafana/pkg/services/shorturls"
 	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/services/star/starimpl"
 	"github.com/grafana/grafana/pkg/services/stats/statsimpl"
@@ -126,8 +125,6 @@ var wireBasicSet = wire.NewSet(
 	wire.Bind(new(httpclient.Provider), new(*sdkhttpclient.Provider)),
 	serverlock.ProvideService,
 	cleanup.ProvideService,
-	shorturls.ProvideService,
-	wire.Bind(new(shorturls.Service), new(*shorturls.ShortURLService)),
 	quotaimpl.ProvideService,
 	remotecache.ProvideService,
 	loginservice.ProvideService,

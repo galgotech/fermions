@@ -15,19 +15,17 @@ import (
 	"github.com/grafana/grafana/pkg/infra/tracing"
 	"github.com/grafana/grafana/pkg/models"
 	dashver "github.com/grafana/grafana/pkg/services/dashboardversion"
-	"github.com/grafana/grafana/pkg/services/shorturls"
 	tempuser "github.com/grafana/grafana/pkg/services/temp_user"
 	"github.com/grafana/grafana/pkg/setting"
 )
 
 func ProvideService(cfg *setting.Cfg, serverLockService *serverlock.ServerLockService,
-	shortURLService shorturls.Service, sqlstore db.DB,
+	sqlstore db.DB,
 	dashboardVersionService dashver.Service,
 	tempUserService tempuser.Service, tracer tracing.Tracer) *CleanUpService {
 	s := &CleanUpService{
 		Cfg:                     cfg,
 		ServerLockService:       serverLockService,
-		ShortURLService:         shortURLService,
 		store:                   sqlstore,
 		log:                     log.New("cleanup"),
 		dashboardVersionService: dashboardVersionService,
@@ -43,7 +41,6 @@ type CleanUpService struct {
 	store                   db.DB
 	Cfg                     *setting.Cfg
 	ServerLockService       *serverlock.ServerLockService
-	ShortURLService         shorturls.Service
 	dashboardVersionService dashver.Service
 	tempUserService         tempuser.Service
 }
@@ -80,7 +77,6 @@ func (srv *CleanUpService) clean(ctx context.Context) {
 	cleanupJobs := []cleanUpJob{
 		{"delete expired dashboard versions", srv.deleteExpiredDashboardVersions},
 		{"expire old user invites", srv.expireOldUserInvites},
-		{"delete stale short URLs", srv.deleteStaleShortURLs},
 	}
 
 	logger := srv.log.FromContext(ctx)
@@ -167,17 +163,5 @@ func (srv *CleanUpService) expireOldUserInvites(ctx context.Context) {
 		logger.Error("Problem expiring user invites", "error", err.Error())
 	} else {
 		logger.Debug("Expired user invites", "rows affected", cmd.NumExpired)
-	}
-}
-
-func (srv *CleanUpService) deleteStaleShortURLs(ctx context.Context) {
-	logger := srv.log.FromContext(ctx)
-	cmd := models.DeleteShortUrlCommand{
-		OlderThan: time.Now().Add(-time.Hour * 24 * 7),
-	}
-	if err := srv.ShortURLService.DeleteStaleShortURLs(ctx, &cmd); err != nil {
-		logger.Error("Problem deleting stale short urls", "error", err.Error())
-	} else {
-		logger.Debug("Deleted short urls", "rows affected", cmd.NumDeleted)
 	}
 }

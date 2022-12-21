@@ -43,7 +43,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addServerlockMigrations(mg)
 	addUserAuthTokenMigrations(mg)
 	addCacheMigration(mg)
-	addShortURLMigrations(mg)
 	addLibraryElementsMigrations(mg)
 	if mg.Cfg != nil && mg.Cfg.IsFeatureToggleEnabled != nil {
 		if mg.Cfg.IsFeatureToggleEnabled(featuremgmt.FlagLiveConfig) {

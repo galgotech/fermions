@@ -128,7 +128,6 @@ func (hs *HTTPServer) registerRoutes() {
 	r.Get("/import/dashboard", reqSignedIn, hs.Index)
 	r.Get("/dashboards/", reqSignedIn, hs.Index)
 	r.Get("/dashboards/*", reqSignedIn, hs.Index)
-	r.Get("/goto/:uid", reqSignedIn, hs.redirectFromShortURL, hs.Index)
 
 	if hs.Features.IsEnabled(featuremgmt.FlagDashboardsFromStorage) {
 		r.Get("/g/*", reqSignedIn, hs.Index)
@@ -435,9 +434,6 @@ func (hs *HTTPServer) registerRoutes() {
 				liveRoute.Delete("/write-configs", routing.Wrap(hs.Live.HandleWriteConfigsDeleteHTTP), reqOrgAdmin)
 			}
 		})
-
-		// short urls
-		apiRoute.Post("/short-urls", routing.Wrap(hs.createShortURL))
 
 		apiRoute.Group("/comments", func(commentRoute routing.RouteRegister) {
 			commentRoute.Post("/get", routing.Wrap(hs.commentsGet))

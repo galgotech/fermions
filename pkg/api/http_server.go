@@ -69,7 +69,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/search"
 	"github.com/grafana/grafana/pkg/services/searchusers"
 	"github.com/grafana/grafana/pkg/services/serviceaccounts"
-	"github.com/grafana/grafana/pkg/services/shorturls"
 	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/services/star"
 	"github.com/grafana/grafana/pkg/services/store"
@@ -114,7 +113,6 @@ type HTTPServer struct {
 	pluginStaticRouteResolver    plugins.StaticRouteResolver
 	pluginErrorResolver          plugins.ErrorResolver
 	SearchService                search.Service
-	ShortURLService              shorturls.Service
 	Live                         *live.GrafanaLive
 	LivePushGateway              *pushhttp.Gateway
 	StorageService               store.StorageService
@@ -178,7 +176,7 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 	pluginDashboardService plugindashboards.Service, pluginStore plugins.Store,
 	pluginErrorResolver plugins.ErrorResolver, pluginInstaller plugins.Installer, settingsProvider setting.Provider,
 	userTokenService auth.UserTokenService,
-	cleanUpService *cleanup.CleanUpService, shortURLService shorturls.Service,
+	cleanUpService *cleanup.CleanUpService,
 	remoteCache *remotecache.RemoteCache, provisioningService provisioning.ProvisioningService,
 	loginService login.Service, authenticator loginpkg.Authenticator, accessControl accesscontrol.AccessControl,
 	searchService *search.SearchService,
@@ -227,7 +225,6 @@ func ProvideHTTPServer(opts ServerOptions, cfg *setting.Cfg, routeRegister routi
 		SettingsProvider:             settingsProvider,
 		AuthTokenService:             userTokenService,
 		cleanUpService:               cleanUpService,
-		ShortURLService:              shortURLService,
 		Features:                     features,
 		StorageService:               storageService,
 		RemoteCacheService:           remoteCache,
