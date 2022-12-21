@@ -28,8 +28,6 @@ const (
 	documentFieldLocation    = "location" // parent path
 	documentFieldPanelType   = "panel_type"
 	documentFieldTransformer = "transformer"
-	documentFieldDSUID       = "ds_uid"
-	documentFieldDSType      = "ds_type"
 	DocumentFieldCreatedAt   = "created_at"
 	DocumentFieldUpdatedAt   = "updated_at"
 )
@@ -167,23 +165,6 @@ func getNonFolderDashboardDoc(dash dashboard, location string) *bluge.Document {
 			SearchTermPositions())
 	}
 
-	for _, ref := range dash.summary.References {
-		if ref.Kind == models.StandardKindDataSource {
-			if ref.Type != "" {
-				doc.AddField(bluge.NewKeywordField(documentFieldDSType, ref.Type).
-					StoreValue().
-					Aggregatable().
-					SearchTermPositions())
-			}
-			if ref.UID != "" {
-				doc.AddField(bluge.NewKeywordField(documentFieldDSUID, ref.UID).
-					StoreValue().
-					Aggregatable().
-					SearchTermPositions())
-			}
-		}
-	}
-
 	return doc
 }
 
@@ -201,18 +182,6 @@ func getDashboardPanelDocs(dash dashboard, location string) []*bluge.Document {
 		for _, ref := range dash.summary.References {
 			switch ref.Kind {
 			case models.StandardKindDashboard:
-				if ref.Type != "" {
-					doc.AddField(bluge.NewKeywordField(documentFieldDSType, ref.Type).
-						StoreValue().
-						Aggregatable().
-						SearchTermPositions())
-				}
-				if ref.UID != "" {
-					doc.AddField(bluge.NewKeywordField(documentFieldDSUID, ref.UID).
-						StoreValue().
-						Aggregatable().
-						SearchTermPositions())
-				}
 			case models.ExternalEntityReferencePlugin:
 				if ref.Type == models.StandardKindPanel && ref.UID != "" {
 					doc.AddField(bluge.NewKeywordField(documentFieldPanelType, ref.UID).Aggregatable().StoreValue())
@@ -550,8 +519,6 @@ func doSearchQuery(
 				url = appSubUrl + string(value)
 			case documentFieldLocation:
 				loc = string(value)
-			case documentFieldDSUID:
-				dsUIDs = append(dsUIDs, string(value))
 			case documentFieldTag:
 				tags = append(tags, string(value))
 			default:

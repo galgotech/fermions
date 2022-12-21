@@ -234,8 +234,6 @@ var wireSet = wire.NewSet(
 	wireBasicSet,
 	sqlstore.ProvideService,
 	wire.Bind(new(notifications.Service), new(*notifications.NotificationService)),
-	wire.Bind(new(notifications.WebhookSender), new(*notifications.NotificationService)),
-	wire.Bind(new(notifications.EmailSender), new(*notifications.NotificationService)),
 	wire.Bind(new(sqlstore.Store), new(*sqlstore.SQLStore)),
 	wire.Bind(new(db.DB), new(*sqlstore.SQLStore)),
 	prefimpl.ProvideService,
@@ -246,10 +244,6 @@ var wireSet = wire.NewSet(
 var wireTestSet = wire.NewSet(
 	wireBasicSet,
 
-	notifications.MockNotificationService,
-	wire.Bind(new(notifications.Service), new(*notifications.NotificationServiceMock)),
-	wire.Bind(new(notifications.WebhookSender), new(*notifications.NotificationServiceMock)),
-	wire.Bind(new(notifications.EmailSender), new(*notifications.NotificationServiceMock)),
 	wire.Bind(new(sqlstore.Store), new(*sqlstore.SQLStore)),
 	wire.Bind(new(db.DB), new(*sqlstore.SQLStore)),
 	prefimpl.ProvideService,

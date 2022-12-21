@@ -34,11 +34,6 @@ type UpdateInfo struct {
 	PluginZipURL string
 }
 
-type SecretsPluginManager interface {
-	// SecretsManager returns a secretsmanager plugin
-	SecretsManager(ctx context.Context) *Plugin
-}
-
 type StaticRouteResolver interface {
 	Routes() []*StaticRoute
 }

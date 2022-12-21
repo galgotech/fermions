@@ -19,11 +19,10 @@ type PermissionFilter struct {
 type entityKind string
 
 const (
-	entityKindPanel      entityKind = models.StandardKindPanel
-	entityKindDashboard  entityKind = models.StandardKindDashboard
-	entityKindFolder     entityKind = models.StandardKindFolder
-	entityKindDatasource entityKind = models.StandardKindDataSource
-	entityKindQuery      entityKind = models.StandardKindQuery
+	entityKindPanel     entityKind = models.StandardKindPanel
+	entityKindDashboard entityKind = models.StandardKindDashboard
+	entityKindFolder    entityKind = models.StandardKindFolder
+	entityKindQuery     entityKind = models.StandardKindQuery
 )
 
 func (r entityKind) IsValid() bool {

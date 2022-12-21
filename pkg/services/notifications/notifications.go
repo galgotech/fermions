@@ -19,15 +19,11 @@ import (
 	"github.com/grafana/grafana/pkg/util"
 )
 
-type WebhookSender interface {
-	SendWebhookSync(ctx context.Context, cmd *models.SendWebhookSync) error
-}
 type EmailSender interface {
 	SendEmailCommandHandlerSync(ctx context.Context, cmd *models.SendEmailCommandSync) error
 	SendEmailCommandHandler(ctx context.Context, cmd *models.SendEmailCommand) error
 }
 type Service interface {
-	WebhookSender
 	EmailSender
 }
 
@@ -114,23 +110,6 @@ func (ns *NotificationService) Run(ctx context.Context) error {
 			return ctx.Err()
 		}
 	}
-}
-
-func (ns *NotificationService) GetMailer() Mailer {
-	return ns.mailer
-}
-
-func (ns *NotificationService) SendWebhookSync(ctx context.Context, cmd *models.SendWebhookSync) error {
-	return ns.sendWebRequestSync(ctx, &Webhook{
-		Url:         cmd.Url,
-		User:        cmd.User,
-		Password:    cmd.Password,
-		Body:        cmd.Body,
-		HttpMethod:  cmd.HttpMethod,
-		HttpHeader:  cmd.HttpHeader,
-		ContentType: cmd.ContentType,
-		Validation:  cmd.Validation,
-	})
 }
 
 func subjectTemplateFunc(obj map[string]interface{}, value string) string {

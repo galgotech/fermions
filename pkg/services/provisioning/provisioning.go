@@ -18,7 +18,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/pluginsettings"
 	"github.com/grafana/grafana/pkg/services/provisioning/dashboards"
-	"github.com/grafana/grafana/pkg/services/provisioning/notifiers"
 	"github.com/grafana/grafana/pkg/services/provisioning/plugins"
 	"github.com/grafana/grafana/pkg/services/quota"
 	"github.com/grafana/grafana/pkg/services/searchV2"
@@ -48,7 +47,6 @@ func ProvideService(
 		EncryptionService:            encryptionService,
 		NotificationService:          notificatonService,
 		newDashboardProvisioner:      dashboards.New,
-		provisionNotifiers:           notifiers.Provision,
 		provisionPlugins:             plugins.Provision,
 		dashboardProvisioningService: dashboardProvisioningService,
 		dashboardService:             dashboardService,
@@ -65,7 +63,6 @@ type ProvisioningService interface {
 	registry.BackgroundService
 	RunInitProvisioners(ctx context.Context) error
 	ProvisionPlugins(ctx context.Context) error
-	ProvisionNotifications(ctx context.Context) error
 	ProvisionDashboards(ctx context.Context) error
 	GetDashboardProvisionerResolvedPath(name string) string
 	GetAllowUIUpdatesFromConfig(name string) bool
@@ -77,7 +74,6 @@ func NewProvisioningServiceImpl() *ProvisioningServiceImpl {
 	return &ProvisioningServiceImpl{
 		log:                     logger,
 		newDashboardProvisioner: dashboards.New,
-		provisionNotifiers:      notifiers.Provision,
 		provisionPlugins:        plugins.Provision,
 	}
 }
@@ -85,13 +81,11 @@ func NewProvisioningServiceImpl() *ProvisioningServiceImpl {
 // Used for testing purposes
 func newProvisioningServiceImpl(
 	newDashboardProvisioner dashboards.DashboardProvisionerFactory,
-	provisionNotifiers func(context.Context, string, org.Service, encryption.Internal, *notifications.NotificationService) error,
 	provisionPlugins func(context.Context, string, plugifaces.Store, pluginsettings.Service, org.Service) error,
 ) *ProvisioningServiceImpl {
 	return &ProvisioningServiceImpl{
 		log:                     log.New("provisioning"),
 		newDashboardProvisioner: newDashboardProvisioner,
-		provisionNotifiers:      provisionNotifiers,
 		provisionPlugins:        provisionPlugins,
 	}
 }
@@ -120,11 +114,6 @@ type ProvisioningServiceImpl struct {
 
 func (ps *ProvisioningServiceImpl) RunInitProvisioners(ctx context.Context) error {
 	err := ps.ProvisionPlugins(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = ps.ProvisionNotifications(ctx)
 	if err != nil {
 		return err
 	}
@@ -169,16 +158,6 @@ func (ps *ProvisioningServiceImpl) ProvisionPlugins(ctx context.Context) error {
 	if err := ps.provisionPlugins(ctx, appPath, ps.pluginStore, ps.pluginsSettings, ps.orgService); err != nil {
 		err = fmt.Errorf("%v: %w", "app provisioning error", err)
 		ps.log.Error("Failed to provision plugins", "error", err)
-		return err
-	}
-	return nil
-}
-
-func (ps *ProvisioningServiceImpl) ProvisionNotifications(ctx context.Context) error {
-	alertNotificationsPath := filepath.Join(ps.Cfg.ProvisioningPath, "notifiers")
-	if err := ps.provisionNotifiers(ctx, alertNotificationsPath, ps.orgService, ps.EncryptionService, ps.NotificationService); err != nil {
-		err = fmt.Errorf("%v: %w", "Alert notification provisioning error", err)
-		ps.log.Error("Failed to provision alert notifications", "error", err)
 		return err
 	}
 	return nil

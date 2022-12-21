@@ -86,10 +86,6 @@ func (p PluginDTO) IsExternalPlugin() bool {
 	return p.Class == External
 }
 
-func (p PluginDTO) IsSecretsManager() bool {
-	return p.JSONData.Type == SecretsManager
-}
-
 func (p PluginDTO) File(name string) (fs.File, error) {
 	cleanPath, err := util.CleanRelativePath(name)
 	if err != nil {
@@ -224,10 +220,6 @@ func (p *Plugin) ExecutablePath() string {
 		extension = ".exe"
 	}
 
-	if p.IsSecretsManager() {
-		return filepath.Join(p.PluginDir, fmt.Sprintf("%s_%s_%s%s", "secrets_plugin_start", os, strings.ToLower(arch), extension))
-	}
-
 	return filepath.Join(p.PluginDir, fmt.Sprintf("%s_%s_%s%s", p.Executable, os, strings.ToLower(arch), extension))
 }
 
@@ -264,10 +256,6 @@ func (p *Plugin) StaticRoute() *StaticRoute {
 	}
 
 	return &StaticRoute{Directory: p.PluginDir, PluginID: p.ID}
-}
-
-func (p *Plugin) IsSecretsManager() bool {
-	return p.Type == "secretsmanager"
 }
 
 func (p *Plugin) IsPanel() bool {
@@ -308,24 +296,20 @@ const (
 )
 
 var PluginTypes = []Type{
-	DataSource,
 	Panel,
 	App,
-	SecretsManager,
 }
 
 type Type string
 
 const (
-	DataSource     Type = "datasource"
-	Panel          Type = "panel"
-	App            Type = "app"
-	SecretsManager Type = "secretsmanager"
+	Panel Type = "panel"
+	App   Type = "app"
 )
 
 func (pt Type) IsValid() bool {
 	switch pt {
-	case DataSource, Panel, App, SecretsManager:
+	case Panel, App:
 		return true
 	}
 	return false

@@ -63,15 +63,6 @@ func (s *Service) Plugins(ctx context.Context, pluginTypes ...plugins.Type) []pl
 	return pluginsList
 }
 
-func (s *Service) SecretsManager(ctx context.Context) *plugins.Plugin {
-	for _, p := range s.availablePlugins(ctx) {
-		if p.IsSecretsManager() {
-			return p
-		}
-	}
-	return nil
-}
-
 // plugin finds a plugin with `pluginID` from the registry that is not decommissioned
 func (s *Service) plugin(ctx context.Context, pluginID string) (*plugins.Plugin, bool) {
 	p, exists := s.pluginRegistry.Plugin(ctx, pluginID)

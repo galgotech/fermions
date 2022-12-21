@@ -58,14 +58,6 @@ func (s *StandardSearchService) createAllowedActions(ctx context.Context, orgId 
 		}
 
 		uidsPerKind[refs.entityKind] = append(uidsPerKind[refs.entityKind], refs.uid)
-
-		if len(refs.dsUids) > 0 {
-			if _, ok := uidsPerKind[entityKindDatasource]; !ok {
-				uidsPerKind[entityKindDatasource] = []string{}
-			}
-
-			uidsPerKind[entityKindDatasource] = append(uidsPerKind[entityKindDatasource], refs.dsUids...)
-		}
 	}
 
 	allowedActionsByUid := make(map[entityKind]map[string][]string)
@@ -92,11 +84,6 @@ func (s *StandardSearchService) createAllowedActions(ctx context.Context, orgId 
 		allowedActionsByUid[entKind] = s.getAllowedActionsByUid(ctx, user, orgId, prefix, uids)
 	}
 
-	dsActionsByUid, ok := allowedActionsByUid[entityKindDatasource]
-	if !ok {
-		dsActionsByUid = make(map[string][]string)
-	}
-
 	var out [][]allowedActions
 	for _, ref := range references {
 		var actions []allowedActions
@@ -113,19 +100,6 @@ func (s *StandardSearchService) createAllowedActions(ctx context.Context, orgId 
 			UID:        ref.uid,
 			Actions:    selfActions,
 		})
-
-		for _, dsUid := range ref.dsUids {
-			dsActions := make([]string, 0)
-			if dsAct, ok := dsActionsByUid[dsUid]; ok {
-				dsActions = dsAct
-			}
-
-			actions = append(actions, allowedActions{
-				EntityKind: entityKindDatasource,
-				UID:        dsUid,
-				Actions:    dsActions,
-			})
-		}
 
 		out = append(out, actions)
 	}

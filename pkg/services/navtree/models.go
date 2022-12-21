@@ -193,7 +193,6 @@ func ApplyAdminIA(root *NavTreeRoot) {
 		generalNodeLinks = AppendIfNotNil(generalNodeLinks, root.FindById("server-settings"))
 
 		pluginsNodeLinks = AppendIfNotNil(pluginsNodeLinks, root.FindById("plugins"))
-		pluginsNodeLinks = AppendIfNotNil(pluginsNodeLinks, root.FindById("datasources"))
 		pluginsNodeLinks = AppendIfNotNil(pluginsNodeLinks, root.FindById("plugin-page-grafana-cloud-link-app"))
 		pluginsNodeLinks = AppendIfNotNil(pluginsNodeLinks, root.FindById("recordedQueries")) // enterprise only
 

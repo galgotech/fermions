@@ -105,12 +105,6 @@ func (s *service) updateQueriesRecursively(loader queryLoader, parent *simplejso
 			queriesAsMap = append(queriesAsMap, query.Queries[idx].MustMap())
 		}
 		panelAsJSON.Set("targets", queriesAsMap)
-
-		panelAsJSON.Set("datasource", map[string]interface{}{
-			"uid":  "-- Mixed --",
-			"type": "datasource",
-		})
-
 	}
 
 	return nil
@@ -162,16 +156,6 @@ func asQueryInfo(queries []*querylibrary.Query) []querylibrary.QueryInfo {
 		})
 	}
 	return res
-}
-
-func getDatasourceUID(q *simplejson.Json) string {
-	uid := q.Get("datasource").Get("uid").MustString()
-
-	if uid == "" {
-		uid = q.Get("datasource").MustString()
-	}
-
-	return uid
 }
 
 func (s *service) GetBatch(ctx context.Context, user *user.SignedInUser, uids []string) ([]*querylibrary.Query, error) {

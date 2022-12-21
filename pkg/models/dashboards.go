@@ -12,8 +12,7 @@ import (
 const RootFolderName = "General"
 
 const (
-	DashTypeDB       = "db"
-	DashTypeSnapshot = "snapshot"
+	DashTypeDB = "db"
 )
 
 // Dashboard model

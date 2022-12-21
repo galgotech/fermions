@@ -364,9 +364,6 @@ type Cfg struct {
 	// GrafanaJavascriptAgent config
 	GrafanaJavascriptAgent GrafanaJavascriptAgent
 
-	// Data sources
-	DataSourceLimit int
-
 	ErrTemplateName string
 
 	Env string
@@ -978,8 +975,6 @@ func (cfg *Cfg) Load(args CommandLineArgs) error {
 		return err
 	}
 
-	cfg.readDataSourcesSettings()
-
 	cfg.Search = readSearchSettings(iniFile)
 
 	cfg.SecureSocksDSProxy, err = readSecureSocksDSProxySettings(iniFile)
@@ -1547,11 +1542,6 @@ func (cfg *Cfg) GetContentDeliveryURL(prefix string) string {
 	}
 
 	return ""
-}
-
-func (cfg *Cfg) readDataSourcesSettings() {
-	datasources := cfg.Raw.Section("datasources")
-	cfg.DataSourceLimit = datasources.Key("datasource_limit").MustInt(5000)
 }
 
 func GetAllowedOriginGlobs(originPatterns []string) ([]glob.Glob, error) {

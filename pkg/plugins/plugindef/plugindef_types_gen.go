@@ -52,8 +52,6 @@ const (
 const (
 	DependencyTypeApp DependencyType = "app"
 
-	DependencyTypeDatasource DependencyType = "datasource"
-
 	DependencyTypePanel DependencyType = "panel"
 )
 

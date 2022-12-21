@@ -24,12 +24,6 @@ var (
 		Namespace: "grafana",
 	}, []string{"name"})
 
-	infoDatasourceUsage = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name:      "panel_datasource_usage",
-		Help:      "indicates how many panels across all dashboards reference each datasource type",
-		Namespace: "grafana",
-	}, []string{"name"})
-
 	infoTransformerUsage = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name:      "panel_transformer_usage",
 		Help:      "indicates how many panels use each transformer type",
@@ -37,7 +31,6 @@ var (
 	}, []string{"name"})
 
 	panelUsage = []usageGauge{
-		{field: documentFieldDSType, gauge: infoDatasourceUsage},
 		{field: documentFieldPanelType, gauge: infoPanelUsage},
 		{field: documentFieldTransformer, gauge: infoTransformerUsage},
 	}

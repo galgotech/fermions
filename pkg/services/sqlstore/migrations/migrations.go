@@ -28,7 +28,6 @@ func (*OSSMigrations) AddMigration(mg *Migrator) {
 	addStarMigrations(mg)
 	addOrgMigrations(mg)
 	addDashboardMigration(mg) // Do NOT add more migrations to this function.
-	addDataSourceMigration(mg)
 	addApiKeyMigrations(mg)
 	addQuotaMigration(mg)
 	addAppSettingsMigration(mg)

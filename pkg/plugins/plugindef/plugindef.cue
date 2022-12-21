@@ -193,8 +193,8 @@ seqs: [
 				// The id refers to the plugin package identifier, as given on
 				// the grafana.com plugin marketplace.
 				#Dependency: {
-					id:      =~"^[0-9a-z]+\\-([0-9a-z]+\\-)?(app|panel|datasource)$"
-					type:    "app" | "datasource" | "panel"
+					id:      =~"^[0-9a-z]+\\-([0-9a-z]+\\-)?(app|panel)$"
+					type:    "app" | "panel"
 					name:    string
 					version: string
 					...
