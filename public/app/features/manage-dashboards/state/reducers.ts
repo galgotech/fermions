@@ -1,6 +1,6 @@
 import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
 
-import { DataSourceInstanceSettings, LoadingState } from '@grafana/data';
+import { LoadingState } from '@grafana/data';
 
 import { LibraryElementDTO } from '../../library-panels/types';
 
@@ -14,7 +14,6 @@ export interface ImportDashboardDTO {
   uid: string;
   gnetId: string;
   constants: string[];
-  dataSources: DataSourceInstanceSettings[];
   elements: LibraryElementDTO[];
   folder: { uid: string; title?: string };
 }
@@ -49,7 +48,6 @@ export interface LibraryPanelInput {
 }
 
 export interface DashboardInputs {
-  dataSources: DataSourceInput[];
   constants: DashboardInput[];
   libraryPanels: LibraryPanelInput[];
 }
@@ -98,7 +96,6 @@ const importDashboardSlice = createSlice({
     },
     setInputs: (state: Draft<ImportDashboardState>, action: PayloadAction<any[]>) => {
       state.inputs = {
-        dataSources: action.payload.filter((p) => p.type === InputType.DataSource),
         constants: action.payload.filter((p) => p.type === InputType.Constant),
         libraryPanels: [],
       };

@@ -33,17 +33,6 @@ type SendEmailCommandSync struct {
 	SendEmailCommand
 }
 
-type SendWebhookSync struct {
-	Url         string
-	User        string
-	Password    string
-	Body        string
-	HttpMethod  string
-	HttpHeader  map[string]string
-	ContentType string
-	Validation  func(body []byte, statusCode int) error
-}
-
 type SendResetPasswordEmailCommand struct {
 	User *user.User
 }

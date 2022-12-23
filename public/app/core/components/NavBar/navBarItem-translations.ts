@@ -61,8 +61,6 @@ export function getNavTitle(navId: string | undefined) {
       return t('nav.admin-plugins.title', 'Plugins and data');
     case 'admin/access':
       return t('nav.admin-access.title', 'Users and access');
-    case 'datasources':
-      return t('nav.datasources.title', 'Data sources');
     case 'correlations':
       return t('nav.correlations.title', 'Correlations');
     case 'users':
@@ -91,8 +89,6 @@ export function getNavTitle(navId: string | undefined) {
       return t('nav.server-settings.title', 'Settings');
     case 'storage':
       return t('nav.storage.title', 'Storage');
-    case 'upgrading':
-      return t('nav.upgrading.title', 'Stats and license');
     case 'live':
       return t('nav.live.title', 'Event streaming');
     case 'live-status':
@@ -146,8 +142,6 @@ export function getNavSubTitle(navId: string | undefined) {
       return t('nav.alerting-silences.subtitle', 'Stop notifications from one or more alerting rules');
     case 'groups':
       return t('nav.alerting-groups.subtitle', 'See grouped alerts from an Alertmanager instance');
-    case 'datasources':
-      return t('nav.datasources.subtitle', 'Add and configure data sources');
     case 'correlations':
       return t('nav.correlations.subtitle', 'Add and configure correlations');
     case 'users':

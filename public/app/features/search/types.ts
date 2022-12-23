@@ -77,7 +77,6 @@ export interface SearchState {
   tag: string[];
   starred: boolean;
   explain?: boolean; // adds debug info
-  datasource?: string;
   sort: SelectableValue | null;
   // Save sorting data between layouts
   prevSort: SelectableValue | null;

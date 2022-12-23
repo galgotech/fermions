@@ -41,21 +41,11 @@ type GetSystemStatsQuery struct {
 	Result *SystemStats
 }
 
-type NotifierUsageStats struct {
-	Type  string
-	Count int64
-}
-
-type GetAlertNotifierUsageStatsQuery struct {
-	Result []*NotifierUsageStats
-}
-
 type AdminStats struct {
 	Orgs                int64 `json:"orgs"`
 	Dashboards          int64 `json:"dashboards"`
 	Tags                int64 `json:"tags"`
 	Stars               int64 `json:"stars"`
-	Alerts              int64 `json:"alerts"`
 	Users               int64 `json:"users"`
 	Admins              int64 `json:"admins"`
 	Editors             int64 `json:"editors"`

@@ -54,7 +54,6 @@ export class DashboardModel implements TimeModel {
   style: any;
   timezone: any;
   weekStart: any;
-  editable: any;
   time: any;
   liveNow: boolean;
   private originalTime: any;
@@ -110,7 +109,6 @@ export class DashboardModel implements TimeModel {
     this.style = data.style ?? 'dark';
     this.timezone = data.timezone ?? '';
     this.weekStart = data.weekStart ?? '';
-    this.editable = data.editable !== false;
     this.time = data.time ?? { from: 'now-6h', to: 'now' };
     this.timepicker = data.timepicker ?? {};
     this.liveNow = Boolean(data.liveNow);
@@ -143,14 +141,7 @@ export class DashboardModel implements TimeModel {
     meta.canDelete = meta.canDelete !== false;
 
     meta.showSettings = meta.canEdit;
-    meta.canMakeEditable = meta.canSave && !this.editable;
     meta.hasUnsavedFolderChange = false;
-
-    if (!this.editable) {
-      meta.canEdit = false;
-      meta.canDelete = false;
-      meta.canSave = false;
-    }
 
     this.meta = meta;
   }
@@ -499,7 +490,7 @@ export class DashboardModel implements TimeModel {
   }
 
   canEditDashboard() {
-    return Boolean(this.meta.canEdit || this.meta.canMakeEditable);
+    return Boolean(this.meta.canEdit);
   }
 
   shouldUpdateDashboardPanelFromJSON(updatedPanel: PanelModel, panel: PanelModel) {

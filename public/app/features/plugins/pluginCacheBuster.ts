@@ -1,5 +1,3 @@
-import { clearPluginSettingsCache } from './pluginSettings';
-
 const cache: Record<string, string> = {};
 const initializedAt: number = Date.now();
 
@@ -14,13 +12,6 @@ export function registerPluginInCache({ path, version }: CacheablePlugin): void 
   }
 }
 
-export function invalidatePluginInCache(pluginId: string): void {
-  const path = `plugins/${pluginId}/module`;
-  if (cache[path]) {
-    delete cache[path];
-  }
-  clearPluginSettingsCache(pluginId);
-}
 
 export function locateWithCache(load: { address: string }, defaultBust = initializedAt): string {
   const { address } = load;

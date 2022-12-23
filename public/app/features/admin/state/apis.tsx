@@ -9,7 +9,6 @@ export interface ServerStat {
   admins: number;
   alerts: number;
   dashboards: number;
-  datasources: number;
   editors: number;
   orgs: number;
   stars: number;

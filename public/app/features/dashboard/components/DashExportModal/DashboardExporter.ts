@@ -1,4 +1,4 @@
-import { defaults, each, sortBy } from 'lodash';
+import { defaults, sortBy } from 'lodash';
 
 import { PanelPluginMeta } from '@grafana/data';
 import config from 'app/core/config';
@@ -47,17 +47,6 @@ function isExportableLibraryPanel(p: any): p is PanelWithExportableLibraryPanel 
   return p.libraryPanel && typeof p.libraryPanel.name === 'string' && typeof p.libraryPanel.uid === 'string';
 }
 
-interface DataSources {
-  [key: string]: {
-    name: string;
-    label: string;
-    description: string;
-    type: string;
-    pluginId: string;
-    pluginName: string;
-  };
-}
-
 export interface LibraryElementExport {
   name: string;
   uid: string;
@@ -72,7 +61,6 @@ export class DashboardExporter {
 
     const inputs: Input[] = [];
     const requires: Requires = {};
-    const datasources: DataSources = {};
     const libraryPanels: Map<string, LibraryElementExport> = new Map<string, LibraryElementExport>();
 
     const processPanel = async (panel: PanelModel) => {
@@ -126,9 +114,7 @@ export class DashboardExporter {
         version: config.buildInfo.version,
       };
 
-      each(datasources, (value: any) => {
-        inputs.push(value);
-      });
+
 
       // we need to process all panels again after all the promises are resolved
       // so all data sources, variables and targets have been templateized when we process library panels

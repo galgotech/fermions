@@ -87,9 +87,6 @@ export const SearchView = ({ showManage, folderDTO, hidePseudoFolders, keyboardE
               if (state.tag?.length) {
                 stateManager.onTagFilterChange([]);
               }
-              if (state.datasource) {
-                stateManager.onDatasourceChange(undefined);
-              }
             }}
           >
             Clear search and filters
@@ -140,7 +137,6 @@ export const SearchView = ({ showManage, folderDTO, hidePseudoFolders, keyboardE
               height: height,
               onTagSelected: stateManager.onAddTag,
               keyboardEvents,
-              onDatasourceChange: state.datasource ? stateManager.onDatasourceChange : undefined,
               onClickItem: stateManager.onSearchItemClicked,
             };
 
@@ -188,7 +184,6 @@ export const SearchView = ({ showManage, folderDTO, hidePseudoFolders, keyboardE
           getTagOptions={stateManager.getTagOptions}
           getSortOptions={getGrafanaSearcher().getSortOptions}
           sortPlaceholder={getGrafanaSearcher().sortPlaceholder}
-          onDatasourceChange={stateManager.onDatasourceChange}
           state={state}
           includePanels={state.includePanels!}
           onSetIncludePanels={stateManager.onSetIncludePanels}

@@ -25,7 +25,6 @@ export type SearchResultsProps = {
   selectionToggle?: SelectionToggle;
   clearSelection: () => void;
   onTagSelected: (tag: string) => void;
-  onDatasourceChange?: (datasource?: string) => void;
   onClickItem?: (event: React.MouseEvent<HTMLElement>) => void;
   keyboardEvents: Observable<React.KeyboardEvent>;
 };
@@ -45,7 +44,6 @@ export const SearchResultsTable = React.memo(
     selectionToggle,
     clearSelection,
     onTagSelected,
-    onDatasourceChange,
     onClickItem,
     keyboardEvents,
   }: SearchResultsProps) => {
@@ -87,10 +85,9 @@ export const SearchResultsTable = React.memo(
         clearSelection,
         columnStyles,
         onTagSelected,
-        onDatasourceChange,
         response.view?.length >= response.totalRows
       );
-    }, [response, width, columnStyles, selection, selectionToggle, clearSelection, onTagSelected, onDatasourceChange]);
+    }, [response, width, columnStyles, selection, selectionToggle, clearSelection, onTagSelected]);
 
     const options: TableOptions<{}> = useMemo(
       () => ({

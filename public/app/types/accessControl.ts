@@ -44,15 +44,6 @@ export enum AccessControlAction {
   LDAPUsersSync = 'ldap.user:sync',
   LDAPStatusRead = 'ldap.status:read',
 
-  DataSourcesExplore = 'datasources:explore',
-  DataSourcesRead = 'datasources:read',
-  DataSourcesCreate = 'datasources:create',
-  DataSourcesWrite = 'datasources:write',
-  DataSourcesDelete = 'datasources:delete',
-  DataSourcesPermissionsRead = 'datasources.permissions:read',
-  DataSourcesCachingRead = 'datasources.caching:read',
-  DataSourcesInsightsRead = 'datasources.insights:read',
-
   ActionServerStatsRead = 'server.stats:read',
 
   ActionTeamsCreate = 'teams:create',

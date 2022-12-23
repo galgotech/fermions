@@ -31,7 +31,7 @@ import {
   parseResponseBody,
   parseUrlFromOptions,
 } from '../utils/fetch';
-import { isDataQuery, isLocalUrl } from '../utils/query';
+import { isLocalUrl } from '../utils/query';
 
 import { FetchQueue } from './FetchQueue';
 import { FetchQueueWorker } from './FetchQueueWorker';
@@ -198,7 +198,7 @@ export class BackendSrv implements BackendService {
 
     if (options.hideFromInspector === undefined) {
       // Hide all local non data query calls
-      options.hideFromInspector = isLocalUrl(options.url) && !isDataQuery(options.url);
+      options.hideFromInspector = isLocalUrl(options.url);
     }
 
     return options;
@@ -292,7 +292,7 @@ export class BackendSrv implements BackendService {
     // is showSuccessAlert is undefined we only show alerts non GET request, non data query and local api requests
     if (
       config.showSuccessAlert === undefined &&
-      (config.method === 'GET' || isDataQuery(config.url) || !isLocalUrl(config.url))
+      (config.method === 'GET' || !isLocalUrl(config.url))
     ) {
       return;
     }
@@ -310,7 +310,7 @@ export class BackendSrv implements BackendService {
     }
 
     // is showErrorAlert is undefined we only show alerts non data query and local api requests
-    if (config.showErrorAlert === undefined && (isDataQuery(config.url) || !isLocalUrl(config.url))) {
+    if (config.showErrorAlert === undefined && (!isLocalUrl(config.url))) {
       return;
     }
 

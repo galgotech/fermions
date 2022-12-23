@@ -3,7 +3,7 @@ import React, { FC, FormEvent } from 'react';
 
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { HorizontalGroup, RadioButtonGroup, useStyles2, Checkbox, Button } from '@grafana/ui';
+import { HorizontalGroup, RadioButtonGroup, useStyles2, Checkbox } from '@grafana/ui';
 import { SortPicker } from 'app/core/components/Select/SortPicker';
 import { TagFilter, TermCount } from 'app/core/components/TagFilter/TagFilter';
 
@@ -26,7 +26,6 @@ interface Props {
   getTagOptions: () => Promise<TermCount[]>;
   getSortOptions: () => Promise<SelectableValue[]>;
   sortPlaceholder?: string;
-  onDatasourceChange: (ds?: string) => void;
   includePanels: boolean;
   onSetIncludePanels: (v: boolean) => void;
   state: SearchState;
@@ -58,7 +57,6 @@ export const ActionRow: FC<Props> = ({
   getTagOptions,
   getSortOptions,
   sortPlaceholder,
-  onDatasourceChange,
   onSetIncludePanels,
   state,
   showStarredFilter,
@@ -88,11 +86,6 @@ export const ActionRow: FC<Props> = ({
           <div className={styles.checkboxWrapper}>
             <Checkbox label="Starred" onChange={onStarredFilterChange} value={state.starred} />
           </div>
-        )}
-        {state.datasource && (
-          <Button icon="times" variant="secondary" onClick={() => onDatasourceChange(undefined)}>
-            Datasource: {state.datasource}
-          </Button>
         )}
       </HorizontalGroup>
       <div className={styles.rowContainer}>

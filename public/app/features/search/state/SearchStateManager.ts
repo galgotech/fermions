@@ -63,7 +63,6 @@ export class SearchStateManager extends StateManagerBase<SearchState> {
     this.updateLocation({
       query: this.state.query.length === 0 ? null : this.state.query,
       tag: this.state.tag,
-      datasource: this.state.datasource,
       starred: this.state.starred ? this.state.starred : null,
       sort: this.state.sort,
     });
@@ -98,10 +97,6 @@ export class SearchStateManager extends StateManagerBase<SearchState> {
     }
 
     this.setStateAndDoSearch({ tag: [...this.state.tag, newTag] });
-  };
-
-  onDatasourceChange = (datasource: string | undefined) => {
-    this.setStateAndDoSearch({ datasource });
   };
 
   onStarredFilterChange = (e: FormEvent<HTMLInputElement>) => {
@@ -140,7 +135,6 @@ export class SearchStateManager extends StateManagerBase<SearchState> {
     const q: SearchQuery = {
       query: this.state.query,
       tags: this.state.tag as string[],
-      ds_uid: this.state.datasource as string,
       location: this.state.folderUid, // This will scope all results to the prefix
       sort: this.state.sort?.value,
       explain: this.state.explain,

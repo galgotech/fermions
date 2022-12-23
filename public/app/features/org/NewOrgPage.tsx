@@ -37,7 +37,7 @@ export const NewOrgPage: FC<Props> = ({ createOrganization }) => {
     <Page navId="global-orgs" pageNav={pageNav}>
       <Page.Contents>
         <p className="muted">
-          Each organization contains their own dashboards, data sources, and configuration, which cannot be shared
+          Each organization contains their own dashboards, and configuration, which cannot be shared
           shared between organizations. While users might belong to more than one organization, multiple organizations
           are most frequently used in multi-tenant deployments.
         </p>

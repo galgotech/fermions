@@ -18,10 +18,6 @@ func ProvideService() *HooksService {
 	return &HooksService{}
 }
 
-func (srv *HooksService) AddIndexDataHook(hook IndexDataHook) {
-	srv.indexDataHooks = append(srv.indexDataHooks, hook)
-}
-
 func (srv *HooksService) RunIndexDataHooks(indexData *dtos.IndexViewData, req *models.ReqContext) {
 	for _, hook := range srv.indexDataHooks {
 		hook(indexData, req)

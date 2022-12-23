@@ -9,7 +9,6 @@ import { contextSrv } from 'app/core/services/context_srv';
 import UserAdminPage from 'app/features/admin/UserAdminPage';
 import LdapPage from 'app/features/admin/ldap/LdapPage';
 import { getLiveRoutes } from 'app/features/live/pages/routes';
-import { getRoutes as getPluginCatalogRoutes } from 'app/features/plugins/admin/routes';
 import { getAppPluginRoutes } from 'app/features/plugins/routes';
 import { getProfileRoutes } from 'app/features/profile/routes';
 import { getRoutes as getQueryLibraryRoutes } from 'app/features/query-library/routes';
@@ -271,10 +270,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       ),
     },
     {
-      path: '/admin/upgrading',
-      component: SafeDynamicImport(() => import('app/features/admin/UpgradePage')),
-    },
-    {
       path: '/admin/users',
       component: config.featureToggles.topnav
         ? SafeDynamicImport(() => import(/* webpackChunkName: "UserListPage" */ 'app/features/admin/UserListPage'))
@@ -399,7 +394,6 @@ export function getAppRoutes(): RouteDescriptor[] {
       ),
     },
     ...getBrowseStorageRoutes(),
-    ...getPluginCatalogRoutes(),
     ...getLiveRoutes(),
     ...getProfileRoutes(),
     ...getQueryLibraryRoutes(),

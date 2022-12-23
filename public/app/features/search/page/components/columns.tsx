@@ -22,7 +22,6 @@ import { ExplainScorePopup } from './ExplainScorePopup';
 import { TableColumn } from './SearchResultsTable';
 
 const TYPE_COLUMN_WIDTH = 175;
-const DATASOURCE_COLUMN_WIDTH = 200;
 
 export const generateColumns = (
   response: QueryResponse,
@@ -32,7 +31,6 @@ export const generateColumns = (
   clearSelection: () => void,
   styles: { [key: string]: string },
   onTagSelected: (tag: string) => void,
-  onDatasourceChange?: (datasource?: string) => void,
   showingEverything?: boolean
 ): TableColumn[] => {
   const columns: TableColumn[] = [];
@@ -143,22 +141,6 @@ export const generateColumns = (
   columns.push(makeTypeColumn(access.kind, access.panel_type, width, styles));
   availableWidth -= width;
 
-  // Show datasources if we have any
-  if (access.ds_uid && onDatasourceChange) {
-    width = Math.min(availableWidth / 2.5, DATASOURCE_COLUMN_WIDTH);
-    columns.push(
-      makeDataSourceColumn(
-        access.ds_uid,
-        width,
-        styles.typeIcon,
-        styles.datasourceItem,
-        styles.invalidDatasourceItem,
-        onDatasourceChange
-      )
-    );
-    availableWidth -= width;
-  }
-
   const showTags = !showingEverything || hasValue(response.view.fields.tags);
   const meta = response.view.dataFrame.meta?.custom as SearchResultMeta;
   if (meta?.locationInfo && availableWidth > 0) {
@@ -267,40 +249,6 @@ function hasValue(f: Field): boolean {
     }
   }
   return false;
-}
-
-function makeDataSourceColumn(
-  field: Field<string[]>,
-  width: number,
-  iconClass: string,
-  datasourceItemClass: string,
-  invalidDatasourceItemClass: string,
-  onDatasourceChange: (datasource?: string) => void
-): TableColumn {
-  return {
-    id: `column-datasource`,
-    field,
-    Header: 'Data source',
-    Cell: (p) => {
-      const dslist = field.values.get(p.row.index);
-      if (!dslist?.length) {
-        return null;
-      }
-      return (
-        <div {...p.cellProps} className={cx(datasourceItemClass)}>
-          {dslist.map((v, i) => {
-    
-            return (
-              <span className={invalidDatasourceItemClass} key={i}>
-                {v}
-              </span>
-            );
-          })}
-        </div>
-      );
-    },
-    width,
-  };
 }
 
 function makeTypeColumn(

@@ -27,7 +27,7 @@ export class FetchQueueWorker {
         // https://rxjs.dev/api/operators/concatMap
         concatMap(({ state, noOfInProgress }) => {
           const apiRequests = Object.keys(state)
-            .filter((k) => state[k].state === FetchStatus.Pending && !isDataQuery(state[k].options.url))
+            .filter((k) => state[k].state === FetchStatus.Pending)
             .reduce<WorkerEntry[]>((all, key) => {
               const entry = { id: key, options: state[key].options };
               all.push(entry);
