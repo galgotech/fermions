@@ -54,7 +54,8 @@ export const PanelEditorTabs: FC<PanelEditorTabsProps> = React.memo(({ panel, da
       </TabsBar>
       <TabContent className={styles.tabContent}>
         {activeTab.id === PanelEditorTabId.Panel && <VisualizationSelectPane panel={panel} />}
-        {activeTab.id === PanelEditorTabId.Code && <PanelEditorCode panel={panel} queries={panel.targets} />}
+        {activeTab.id === PanelEditorTabId.Theme && <PanelEditorCode panel={panel} queries={panel.targets} />}
+        {activeTab.id === PanelEditorTabId.Function && <PanelEditorCode panel={panel} queries={panel.targets} />}
         {activeTab.id === PanelEditorTabId.Workflow && <PanelEditorWorkflow panel={panel} workflow={null} />}
       </TabContent>
     </div>

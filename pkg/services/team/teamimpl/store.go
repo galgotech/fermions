@@ -226,14 +226,12 @@ func (ss *xormStore) Search(ctx context.Context, query *models.SearchTeamsQuery)
 			acFilter ac.SQLFilter
 			err      error
 		)
-		if !ac.IsDisabled(ss.cfg) {
-			acFilter, err = ac.Filter(query.SignedInUser, "team.id", "teams:id:", ac.ActionTeamsRead)
-			if err != nil {
-				return err
-			}
-			sql.WriteString(` and` + acFilter.Where)
-			params = append(params, acFilter.Args...)
+		acFilter, err = ac.Filter(query.SignedInUser, "team.id", "teams:id:", ac.ActionTeamsRead)
+		if err != nil {
+			return err
 		}
+		sql.WriteString(` and` + acFilter.Where)
+		params = append(params, acFilter.Args...)
 
 		sql.WriteString(` order by team.name asc`)
 
@@ -271,9 +269,7 @@ func (ss *xormStore) Search(ctx context.Context, query *models.SearchTeamsQuery)
 		}
 
 		// Only count teams user can see
-		if !ac.IsDisabled(ss.cfg) {
-			countSess.Where(acFilter.Where, acFilter.Args...)
-		}
+		countSess.Where(acFilter.Where, acFilter.Args...)
 
 		count, err := countSess.Count(&team)
 		query.Result.TotalCount = count
@@ -330,16 +326,14 @@ func (ss *xormStore) GetByUser(ctx context.Context, query *models.GetTeamsByUser
 		sql.WriteString(` INNER JOIN team_member on team.id = team_member.team_id`)
 		sql.WriteString(` WHERE team.org_id = ? and team_member.user_id = ?`)
 
-		if !ac.IsDisabled(ss.cfg) {
-			acFilter, err := ac.Filter(query.SignedInUser, "team.id", "teams:id:", ac.ActionTeamsRead)
-			if err != nil {
-				return err
-			}
-			sql.WriteString(` and` + acFilter.Where)
-			params = append(params, acFilter.Args...)
+		acFilter, err := ac.Filter(query.SignedInUser, "team.id", "teams:id:", ac.ActionTeamsRead)
+		if err != nil {
+			return err
 		}
+		sql.WriteString(` and` + acFilter.Where)
+		params = append(params, acFilter.Args...)
 
-		err := sess.SQL(sql.String(), params...).Find(&query.Result)
+		err = sess.SQL(sql.String(), params...).Find(&query.Result)
 		return err
 	})
 }
@@ -505,12 +499,10 @@ func (ss *xormStore) GetMembers(ctx context.Context, query *models.GetTeamMember
 	// With accesscontrol we filter out users based on the SignedInUser's permissions
 	// Note we assume that checking SignedInUser is allowed to see team members for this team has already been performed
 	// If the signed in user is not set no member will be returned
-	if !ac.IsDisabled(ss.cfg) {
-		sqlID := fmt.Sprintf("%s.%s", ss.db.GetDialect().Quote("user"), ss.db.GetDialect().Quote("id"))
-		*acFilter, err = ac.Filter(query.SignedInUser, sqlID, "users:id:", ac.ActionOrgUsersRead)
-		if err != nil {
-			return err
-		}
+	sqlID := fmt.Sprintf("%s.%s", ss.db.GetDialect().Quote("user"), ss.db.GetDialect().Quote("id"))
+	*acFilter, err = ac.Filter(query.SignedInUser, sqlID, "users:id:", ac.ActionOrgUsersRead)
+	if err != nil {
+		return err
 	}
 
 	return ss.getTeamMembers(ctx, query, acFilter)

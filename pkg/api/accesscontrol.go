@@ -174,7 +174,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 				{Action: dashboards.ActionDashboardsCreate, Scope: dashboards.ScopeFoldersProvider.GetResourceScopeUID(ac.GeneralFolderUID)},
 			},
 		},
-		Grants: []string{"Editor"},
+		Grants: []string{string(org.RoleEditor)},
 	}
 
 	dashboardsReaderRole := ac.RoleRegistration{
@@ -187,7 +187,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 				{Action: dashboards.ActionDashboardsRead, Scope: dashboards.ScopeDashboardsAll},
 			},
 		},
-		Grants: []string{"Admin"},
+		Grants: []string{string(org.RoleAdmin)},
 	}
 
 	dashboardsWriterRole := ac.RoleRegistration{
@@ -204,7 +204,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 				{Action: dashboards.ActionDashboardsPermissionsWrite, Scope: dashboards.ScopeDashboardsAll},
 			}),
 		},
-		Grants: []string{"Admin"},
+		Grants: []string{string(org.RoleAdmin)},
 	}
 
 	foldersCreatorRole := ac.RoleRegistration{
@@ -217,7 +217,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 				{Action: dashboards.ActionFoldersCreate},
 			},
 		},
-		Grants: []string{"Editor"},
+		Grants: []string{string(org.RoleEditor)},
 	}
 
 	foldersReaderRole := ac.RoleRegistration{
@@ -231,7 +231,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 				{Action: dashboards.ActionDashboardsRead, Scope: dashboards.ScopeFoldersAll},
 			},
 		},
-		Grants: []string{"Admin"},
+		Grants: []string{string(org.RoleAdmin)},
 	}
 
 	foldersWriterRole := ac.RoleRegistration{
@@ -253,7 +253,7 @@ func (hs *HTTPServer) declareFixedRoles() error {
 					{Action: dashboards.ActionDashboardsPermissionsWrite, Scope: dashboards.ScopeFoldersAll},
 				}),
 		},
-		Grants: []string{"Admin"},
+		Grants: []string{string(org.RoleAdmin)},
 	}
 
 	return hs.accesscontrolService.DeclareFixedRoles(
@@ -276,7 +276,7 @@ func (hs *HTTPServer) getAccessControlMetadata(c *models.ReqContext,
 // Context must contain permissions in the given org (see LoadPermissionsMiddleware or AuthorizeInOrgMiddleware)
 func (hs *HTTPServer) getMultiAccessControlMetadata(c *models.ReqContext,
 	orgID int64, prefix string, resourceIDs map[string]bool) map[string]ac.Metadata {
-	if hs.AccessControl.IsDisabled() || !c.QueryBool("accesscontrol") {
+	if !c.QueryBool("accesscontrol") {
 		return map[string]ac.Metadata{}
 	}
 

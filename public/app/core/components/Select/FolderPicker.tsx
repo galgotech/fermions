@@ -93,8 +93,8 @@ export function FolderPicker(props: Props) {
       const options: Array<SelectableValue<string>> = mapSearchHitsToOptions(searchHits, filter);
 
       const hasAccess =
-        contextSrv.hasAccess(AccessControlAction.DashboardsWrite, contextSrv.isEditor) ||
-        contextSrv.hasAccess(AccessControlAction.DashboardsCreate, contextSrv.isEditor);
+        contextSrv.hasAccess(AccessControlAction.DashboardsWrite) ||
+        contextSrv.hasAccess(AccessControlAction.DashboardsCreate);
 
       if (hasAccess && rootName?.toLowerCase().startsWith(query.toLowerCase()) && showRoot) {
         options.unshift({ label: rootName, value: '' });

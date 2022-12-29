@@ -74,7 +74,7 @@ func (s *ServiceImpl) GetNavTree(c *models.ReqContext, hasEditPerm bool, prefs *
 
 	treeRoot.AddSection(s.getHomeNode(c, prefs))
 
-	if hasAccess(ac.ReqSignedIn, ac.EvalPermission(dashboards.ActionDashboardsRead)) {
+	if hasAccess(ac.EvalPermission(dashboards.ActionDashboardsRead)) {
 		starredItemsLinks, err := s.buildStarredItemsNavLinks(c)
 		if err != nil {
 			return nil, err
@@ -91,7 +91,7 @@ func (s *ServiceImpl) GetNavTree(c *models.ReqContext, hasEditPerm bool, prefs *
 		})
 	}
 
-	if hasAccess(ac.ReqSignedIn, ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsRead), ac.EvalPermission(dashboards.ActionDashboardsCreate))) {
+	if hasAccess(ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsRead), ac.EvalPermission(dashboards.ActionDashboardsCreate))) {
 		dashboardChildLinks := s.buildDashboardNavLinks(c, hasEditPerm)
 
 		dashboardLink := &navtree.NavLink{
@@ -324,10 +324,6 @@ func (s *ServiceImpl) buildStarredItemsNavLinks(c *models.ReqContext) ([]*navtre
 
 func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm bool) []*navtree.NavLink {
 	hasAccess := ac.HasAccess(s.accessControl, c)
-	hasEditPermInAnyFolder := func(c *models.ReqContext) bool {
-		return hasEditPerm
-	}
-
 	dashboardChildNavs := []*navtree.NavLink{}
 
 	if !s.features.IsEnabled(featuremgmt.FlagTopnav) {
@@ -362,7 +358,7 @@ func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm b
 	}
 
 	if hasEditPerm {
-		if hasAccess(hasEditPermInAnyFolder, ac.EvalPermission(dashboards.ActionDashboardsCreate)) {
+		if hasAccess(ac.EvalPermission(dashboards.ActionDashboardsCreate)) {
 			dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
 				Text: "New dashboard", Icon: "plus", Url: s.cfg.AppSubURL + "/dashboard/new", HideFromTabs: true, Id: "dashboards/new", ShowIconInNavbar: true, IsCreateAction: true,
 			})
@@ -370,14 +366,14 @@ func (s *ServiceImpl) buildDashboardNavLinks(c *models.ReqContext, hasEditPerm b
 	}
 
 	if hasEditPerm && !s.features.IsEnabled(featuremgmt.FlagTopnav) {
-		if hasAccess(ac.ReqOrgAdminOrEditor, ac.EvalPermission(dashboards.ActionFoldersCreate)) {
+		if hasAccess(ac.EvalPermission(dashboards.ActionFoldersCreate)) {
 			dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
 				Text: "New folder", SubTitle: "Create a new folder to organize your dashboards", Id: "dashboards/folder/new",
 				Icon: "plus", Url: s.cfg.AppSubURL + "/dashboards/folder/new", HideFromTabs: true, ShowIconInNavbar: true,
 			})
 		}
 
-		if hasAccess(hasEditPermInAnyFolder, ac.EvalPermission(dashboards.ActionDashboardsCreate)) {
+		if hasAccess(ac.EvalPermission(dashboards.ActionDashboardsCreate)) {
 			dashboardChildNavs = append(dashboardChildNavs, &navtree.NavLink{
 				Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "dashboards/import", Icon: "plus",
 				Url: s.cfg.AppSubURL + "/dashboard/import", HideFromTabs: true, ShowIconInNavbar: true,

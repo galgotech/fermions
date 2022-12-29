@@ -18,7 +18,6 @@ import { useBusEvent } from 'app/core/hooks/useBusEvent';
 import { t } from 'app/core/internationalization';
 import { DashboardCommentsModal } from 'app/features/dashboard/components/DashboardComments/DashboardCommentsModal';
 import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardDrawer';
-import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { DashboardMetaChangedEvent } from 'app/types/events';
 
 import { setStarred } from '../../../../core/reducers/navBarTree';
@@ -29,14 +28,12 @@ import { DashNavButton } from './DashNavButton';
 
 const mapDispatchToProps = {
   setStarred,
-  updateTimeZoneForSession,
 };
 
 const connector = connect(null, mapDispatchToProps);
 
 export interface OwnProps {
   dashboard: DashboardModel;
-  isFullscreen: boolean;
   folderTitle?: string;
   title: string;
   onAddPanel: () => void;
@@ -76,10 +73,6 @@ export const DashNav = React.memo<Props>((props) => {
       dashboard.meta.isStarred = newState;
       forceUpdate();
     });
-  };
-
-  const onClose = () => {
-    locationService.partial({ viewPanel: null });
   };
 
   const onOpenSettings = () => {
@@ -140,11 +133,11 @@ export const DashNav = React.memo<Props>((props) => {
   };
 
   const renderRightActions = () => {
-    const { dashboard, onAddPanel, isFullscreen } = props;
+    const { dashboard, onAddPanel } = props;
     const { canSave, canEdit, showSettings } = dashboard.meta;
     const buttons: ReactNode[] = [];
 
-    if (canEdit && !isFullscreen) {
+    if (canEdit) {
       buttons.push(
         <ToolbarButton
           tooltip={t('dashboard.toolbar.add-panel', 'Add panel')}
@@ -155,7 +148,7 @@ export const DashNav = React.memo<Props>((props) => {
       );
     }
 
-    if (canSave && !isFullscreen) {
+    if (canSave) {
       buttons.push(
         <ModalsController key="button-save">
           {({ showModal, hideModal }) => (
@@ -190,12 +183,12 @@ export const DashNav = React.memo<Props>((props) => {
     return buttons;
   };
 
-  const { isFullscreen, title, folderTitle } = props;
+  const { title, folderTitle } = props;
   // this ensures the component rerenders when the location changes
   const location = useLocation();
   const titleHref = locationUtil.getUrlForPartial(location, { search: 'open' });
   const parentHref = locationUtil.getUrlForPartial(location, { search: 'open', query: 'folder:current' });
-  const onGoBack = isFullscreen ? onClose : undefined;
+  const onGoBack = undefined;
 
   if (config.featureToggles.topnav) {
     return (
@@ -213,7 +206,7 @@ export const DashNav = React.memo<Props>((props) => {
 
   return (
     <PageToolbar
-      pageIcon={isFullscreen ? undefined : 'apps'}
+      pageIcon={'apps'}
       title={title}
       parent={folderTitle}
       titleHref={titleHref}

@@ -22,12 +22,8 @@ import (
 	"github.com/grafana/grafana/pkg/web"
 )
 
-func Middleware(ac AccessControl) func(web.Handler, Evaluator) web.Handler {
-	return func(fallback web.Handler, evaluator Evaluator) web.Handler {
-		if ac.IsDisabled() {
-			return fallback
-		}
-
+func Middleware(ac AccessControl) func(Evaluator) web.Handler {
+	return func(evaluator Evaluator) web.Handler {
 		return func(c *models.ReqContext) {
 			if c.AllowAnonymous {
 				forceLogin, _ := strconv.ParseBool(c.Req.URL.Query().Get("forceLogin")) // ignoring error, assuming false for non-true values is ok.
@@ -164,12 +160,8 @@ type userCache interface {
 	GetSignedInUserWithCacheCtx(ctx context.Context, query *user.GetSignedInUserQuery) (*user.SignedInUser, error)
 }
 
-func AuthorizeInOrgMiddleware(ac AccessControl, service Service, cache userCache) func(web.Handler, OrgIDGetter, Evaluator) web.Handler {
-	return func(fallback web.Handler, getTargetOrg OrgIDGetter, evaluator Evaluator) web.Handler {
-		if ac.IsDisabled() {
-			return fallback
-		}
-
+func AuthorizeInOrgMiddleware(ac AccessControl, service Service, cache userCache) func(OrgIDGetter, Evaluator) web.Handler {
+	return func(getTargetOrg OrgIDGetter, evaluator Evaluator) web.Handler {
 		return func(c *models.ReqContext) {
 			// using a copy of the user not to modify the signedInUser, yet perform the permission evaluation in another org
 			userCopy := *(c.SignedInUser)
@@ -227,10 +219,6 @@ func UseGlobalOrg(c *models.ReqContext) (int64, error) {
 
 func LoadPermissionsMiddleware(service Service) web.Handler {
 	return func(c *models.ReqContext) {
-		if service.IsDisabled() {
-			return
-		}
-
 		permissions, err := service.GetUserPermissions(c.Req.Context(), c.SignedInUser,
 			Options{ReloadCache: false})
 		if err != nil {

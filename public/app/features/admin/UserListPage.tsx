@@ -17,7 +17,7 @@ const views = [
 ];
 
 export default function UserListPage() {
-  const hasAccessToAdminUsers = contextSrv.hasAccess(AccessControlAction.UsersRead, contextSrv.isGrafanaAdmin);
+  const hasAccessToAdminUsers = contextSrv.hasAccess(AccessControlAction.UsersRead);
   const hasAccessToOrgUsers = contextSrv.hasPermission(AccessControlAction.OrgUsersRead);
   const styles = useStyles2(getStyles);
   const [view, setView] = useState(() => {

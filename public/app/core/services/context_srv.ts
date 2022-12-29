@@ -28,7 +28,6 @@ export class User implements CurrentUserInternal {
   helpFlags1: number;
   hasEditPermissionInFolders: boolean;
   permissions?: UserPermission;
-  fiscalYearStartMonth: number;
 
   constructor() {
     this.id = 0;
@@ -41,7 +40,6 @@ export class User implements CurrentUserInternal {
     this.externalUserId = '';
     this.orgCount = 0;
     this.timezone = '';
-    this.fiscalYearStartMonth = 0;
     this.helpFlags1 = 0;
     this.lightTheme = false;
     this.hasEditPermissionInFolders = false;
@@ -84,11 +82,9 @@ export class ContextSrv {
 
   async fetchUserPermissions() {
     try {
-      if (this.accessControlEnabled()) {
-        this.user.permissions = await getBackendSrv().get('/api/access-control/user/actions', {
-          reloadcache: true,
-        });
-      }
+      this.user.permissions = await getBackendSrv().get('/api/access-control/user/actions', {
+        reloadcache: true,
+      });
     } catch (e) {
       console.error(e);
     }
@@ -110,31 +106,19 @@ export class ContextSrv {
     }
   }
 
-  accessControlEnabled(): boolean {
-    return config.rbacEnabled;
-  }
-
   licensedAccessControlEnabled(): boolean {
-    return featureEnabled('accesscontrol') && config.rbacEnabled;
+    console.log('---', featureEnabled('accesscontrol'));
+
+    return featureEnabled('accesscontrol');
   }
 
   // Checks whether user has required permission
   hasPermissionInMetadata(action: AccessControlAction | string, object: WithAccessControlMetadata): boolean {
-    // Fallback if access control disabled
-    if (!this.accessControlEnabled()) {
-      return true;
-    }
-
     return !!object.accessControl?.[action];
   }
 
   // Checks whether user has required permission
   hasPermission(action: AccessControlAction | string): boolean {
-    // Fallback if access control disabled
-    if (!this.accessControlEnabled()) {
-      return true;
-    }
-
     return !!this.user.permissions?.[action];
   }
 
@@ -157,25 +141,16 @@ export class ContextSrv {
     return interval;
   }
 
-  hasAccess(action: string, fallBack: boolean): boolean {
-    if (!this.accessControlEnabled()) {
-      return fallBack;
-    }
+  hasAccess(action: string): boolean {
     return this.hasPermission(action);
   }
 
-  hasAccessInMetadata(action: string, object: WithAccessControlMetadata, fallBack: boolean): boolean {
-    if (!this.accessControlEnabled()) {
-      return fallBack;
-    }
+  hasAccessInMetadata(action: string, object: WithAccessControlMetadata): boolean {
     return this.hasPermissionInMetadata(action, object);
   }
 
-  // evaluates access control permissions, granting access if the user has any of them; uses fallback if access control is disabled
-  evaluatePermission(fallback: () => string[], actions: string[]) {
-    if (!this.accessControlEnabled()) {
-      return fallback();
-    }
+  // evaluates access control permissions, granting access if the user has any of them
+  evaluatePermission(actions: string[]) {
     if (actions.some((action) => this.hasPermission(action))) {
       return [];
     }

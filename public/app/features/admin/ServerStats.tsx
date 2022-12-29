@@ -15,10 +15,10 @@ export const ServerStats = () => {
   const [isLoading, setIsLoading] = useState(false);
   const styles = useStyles2(getStyles);
 
-  const hasAccessToAdminUsers = contextSrv.hasAccess(AccessControlAction.UsersRead, contextSrv.isGrafanaAdmin);
+  const hasAccessToAdminUsers = contextSrv.hasAccess(AccessControlAction.UsersRead);
 
   useEffect(() => {
-    if (contextSrv.hasAccess(AccessControlAction.ActionServerStatsRead, contextSrv.isGrafanaAdmin)) {
+    if (contextSrv.hasAccess(AccessControlAction.ActionServerStatsRead)) {
       setIsLoading(true);
       getServerStats().then((stats) => {
         setStats(stats);
@@ -27,7 +27,7 @@ export const ServerStats = () => {
     }
   }, []);
 
-  if (!contextSrv.hasAccess(AccessControlAction.ActionServerStatsRead, contextSrv.isGrafanaAdmin)) {
+  if (!contextSrv.hasAccess(AccessControlAction.ActionServerStatsRead)) {
     return null;
   }
 

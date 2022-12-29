@@ -258,24 +258,19 @@ func (s *Service) Create(ctx context.Context, cmd *folder.CreateFolderCommand) (
 		return nil, err
 	}
 
-	var permissionErr error
-	if !accesscontrol.IsDisabled(s.cfg) {
-		var permissions []accesscontrol.SetResourcePermissionCommand
-		if user.IsRealUser() && !user.IsAnonymous {
-			permissions = append(permissions, accesscontrol.SetResourcePermissionCommand{
-				UserID: userID, Permission: models.PERMISSION_ADMIN.String(),
-			})
-		}
-
-		permissions = append(permissions, []accesscontrol.SetResourcePermissionCommand{
-			{BuiltinRole: string(org.RoleEditor), Permission: models.PERMISSION_EDIT.String()},
-			{BuiltinRole: string(org.RoleViewer), Permission: models.PERMISSION_VIEW.String()},
-		}...)
-
-		_, permissionErr = s.permissions.SetPermissions(ctx, cmd.OrgID, createdFolder.UID, permissions...)
-	} else if s.cfg.EditorsCanAdmin && user.IsRealUser() && !user.IsAnonymous {
-		permissionErr = s.MakeUserAdmin(ctx, cmd.OrgID, userID, createdFolder.ID, true)
+	var permissions []accesscontrol.SetResourcePermissionCommand
+	if user.IsRealUser() && !user.IsAnonymous {
+		permissions = append(permissions, accesscontrol.SetResourcePermissionCommand{
+			UserID: userID, Permission: models.PERMISSION_ADMIN.String(),
+		})
 	}
+
+	permissions = append(permissions, []accesscontrol.SetResourcePermissionCommand{
+		{BuiltinRole: string(org.RoleEditor), Permission: models.PERMISSION_EDIT.String()},
+		{BuiltinRole: string(org.RoleViewer), Permission: models.PERMISSION_VIEW.String()},
+	}...)
+
+	_, permissionErr := s.permissions.SetPermissions(ctx, cmd.OrgID, createdFolder.UID, permissions...)
 
 	if permissionErr != nil {
 		logger.Error("Could not make user admin", "folder", createdFolder.Title, "user", userID, "error", permissionErr)

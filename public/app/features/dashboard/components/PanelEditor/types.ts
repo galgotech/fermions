@@ -11,7 +11,8 @@ export interface PanelEditorTab {
 
 export enum PanelEditorTabId {
   Panel = 'panel',
-  Code = 'code',
+  Theme = 'code',
+  Function = 'function',
   Workflow = 'workflow',
 }
 

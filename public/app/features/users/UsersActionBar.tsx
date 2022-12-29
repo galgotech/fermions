@@ -24,7 +24,6 @@ export interface Props {
 export class UsersActionBar extends PureComponent<Props> {
   render() {
     const {
-      canInvite,
       externalUserMngLinkName,
       externalUserMngLinkUrl,
       searchQuery,
@@ -37,7 +36,7 @@ export class UsersActionBar extends PureComponent<Props> {
       { label: 'Users', value: 'users' },
       { label: `Pending Invites (${pendingInvitesCount})`, value: 'invites' },
     ];
-    const canAddToOrg: boolean = contextSrv.hasAccess(AccessControlAction.OrgUsersAdd, canInvite);
+    const canAddToOrg: boolean = contextSrv.hasAccess(AccessControlAction.OrgUsersAdd);
 
     return (
       <div className="page-action-bar" data-testid="users-action-bar">

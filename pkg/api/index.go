@@ -29,7 +29,7 @@ func (hs *HTTPServer) editorInAnyFolder(c *models.ReqContext) bool {
 
 func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewData, error) {
 	hasAccess := ac.HasAccess(hs.AccessControl, c)
-	hasEditPerm := hasAccess(hs.editorInAnyFolder, ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsCreate), ac.EvalPermission(dashboards.ActionFoldersCreate)))
+	hasEditPerm := hasAccess(ac.EvalAny(ac.EvalPermission(dashboards.ActionDashboardsCreate), ac.EvalPermission(dashboards.ActionFoldersCreate)))
 
 	settings, err := hs.getFrontendSettingsMap(c)
 	if err != nil {
@@ -65,6 +65,10 @@ func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewDat
 	navTree, err := hs.navTreeService.GetNavTree(c, hasEditPerm, prefs)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.IsPublicDashboardView {
+		settings["isPublicDashboardView"] = true
 	}
 
 	weekStart := ""
@@ -118,14 +122,12 @@ func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewDat
 		LoadingLogo:                         "public/img/grafana_icon.svg",
 	}
 
-	if !hs.AccessControl.IsDisabled() {
-		userPermissions, err := hs.accesscontrolService.GetUserPermissions(c.Req.Context(), c.SignedInUser, ac.Options{ReloadCache: false})
-		if err != nil {
-			return nil, err
-		}
-
-		data.User.Permissions = ac.BuildPermissionsMap(userPermissions)
+	userPermissions, err := hs.accesscontrolService.GetUserPermissions(c.Req.Context(), c.SignedInUser, ac.Options{ReloadCache: false})
+	if err != nil {
+		return nil, err
 	}
+
+	data.User.Permissions = ac.BuildPermissionsMap(userPermissions)
 
 	if setting.DisableGravatar {
 		data.User.GravatarUrl = hs.Cfg.AppSubURL + "/public/img/user_profile.png"

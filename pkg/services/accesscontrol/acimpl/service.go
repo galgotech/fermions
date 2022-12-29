@@ -34,11 +34,9 @@ func ProvideService(cfg *setting.Cfg, store db.DB, routeRegister routing.RouteRe
 	accessControl accesscontrol.AccessControl, features *featuremgmt.FeatureManager) (*Service, error) {
 	service := ProvideOSSService(cfg, database.ProvideService(store), cache, features)
 
-	if !accesscontrol.IsDisabled(cfg) {
-		api.NewAccessControlAPI(routeRegister, accessControl, service, features).RegisterAPIEndpoints()
-		if err := accesscontrol.DeclareFixedRoles(service); err != nil {
-			return nil, err
-		}
+	api.NewAccessControlAPI(routeRegister, accessControl, service, features).RegisterAPIEndpoints()
+	if err := accesscontrol.DeclareFixedRoles(service); err != nil {
+		return nil, err
 	}
 
 	return service, nil
@@ -76,13 +74,8 @@ type Service struct {
 }
 
 func (s *Service) GetUsageStats(_ context.Context) map[string]interface{} {
-	enabled := 0
-	if !accesscontrol.IsDisabled(s.cfg) {
-		enabled = 1
-	}
-
 	return map[string]interface{}{
-		"stats.oss.accesscontrol.enabled.count": enabled,
+		"stats.oss.accesscontrol.enabled.count": 1,
 	}
 }
 
@@ -161,11 +154,6 @@ func (s *Service) DeleteUserPermissions(ctx context.Context, orgID int64, userID
 // DeclareFixedRoles allow the caller to declare, to the service, fixed roles and their assignments
 // to organization roles ("Viewer", "Editor", "Admin") or "Grafana Admin"
 func (s *Service) DeclareFixedRoles(registrations ...accesscontrol.RoleRegistration) error {
-	// If accesscontrol is disabled no need to register roles
-	if accesscontrol.IsDisabled(s.cfg) {
-		return nil
-	}
-
 	for _, r := range registrations {
 		err := accesscontrol.ValidateFixedRole(r.Role)
 		if err != nil {
@@ -185,10 +173,6 @@ func (s *Service) DeclareFixedRoles(registrations ...accesscontrol.RoleRegistrat
 
 // RegisterFixedRoles registers all declared roles in RAM
 func (s *Service) RegisterFixedRoles(ctx context.Context) error {
-	// If accesscontrol is disabled no need to register roles
-	if accesscontrol.IsDisabled(s.cfg) {
-		return nil
-	}
 	s.registrations.Range(func(registration accesscontrol.RoleRegistration) bool {
 		for br := range accesscontrol.BuiltInRolesWithParents(registration.Grants) {
 			if basicRole, ok := s.roles[br]; ok {
@@ -202,10 +186,6 @@ func (s *Service) RegisterFixedRoles(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) IsDisabled() bool {
-	return accesscontrol.IsDisabled(s.cfg)
-}
-
 func permissionCacheKey(user *user.SignedInUser) (string, error) {
 	key, err := user.GetCacheKey()
 	if err != nil {
@@ -217,11 +197,6 @@ func permissionCacheKey(user *user.SignedInUser) (string, error) {
 // DeclarePluginRoles allow the caller to declare, to the service, plugin roles and their assignments
 // to organization roles ("Viewer", "Editor", "Admin") or "Grafana Admin"
 func (s *Service) DeclarePluginRoles(_ context.Context, ID, name string, regs []plugins.RoleRegistration) error {
-	// If accesscontrol is disabled no need to register roles
-	if accesscontrol.IsDisabled(s.cfg) {
-		return nil
-	}
-
 	// Protect behind feature toggle
 	if !s.features.IsEnabled(featuremgmt.FlagAccessControlOnCall) {
 		return nil

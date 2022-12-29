@@ -26,7 +26,7 @@ export class TextPanel extends PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      html: this.processContent(props.options),
+      html: "00",
     };
   }
 

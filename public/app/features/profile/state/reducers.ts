@@ -1,16 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { isEmpty, isString, set } from 'lodash';
 
-import { dateTimeFormatTimeAgo, setWeekStart, TimeZone } from '@grafana/data';
+import { dateTimeFormatTimeAgo, TimeZone } from '@grafana/data';
 import config from 'app/core/config';
-import { contextSrv } from 'app/core/core';
-import { Team, ThunkResult, UserDTO, UserOrg, UserSession } from 'app/types';
+import { Team, UserDTO, UserOrg, UserSession } from 'app/types';
 
 export interface UserState {
   orgId: number;
   timeZone: TimeZone;
   weekStart: string;
-  fiscalYearStartMonth: number;
   user: UserDTO | null;
   teams: Team[];
   orgs: UserOrg[];
@@ -25,7 +22,6 @@ export const initialUserState: UserState = {
   orgId: config.bootData.user.orgId,
   timeZone: config.bootData.user.timezone,
   weekStart: config.bootData.user.weekStart,
-  fiscalYearStartMonth: 0,
   orgsAreLoading: false,
   sessionsAreLoading: false,
   teamsAreLoading: false,
@@ -40,15 +36,6 @@ export const slice = createSlice({
   name: 'user/profile',
   initialState: initialUserState,
   reducers: {
-    updateTimeZone: (state, action: PayloadAction<{ timeZone: TimeZone }>) => {
-      state.timeZone = action.payload.timeZone;
-    },
-    updateWeekStart: (state, action: PayloadAction<{ weekStart: string }>) => {
-      state.weekStart = action.payload.weekStart;
-    },
-    updateFiscalYearStartMonth: (state, action: PayloadAction<{ fiscalYearStartMonth: number }>) => {
-      state.fiscalYearStartMonth = action.payload.fiscalYearStartMonth;
-    },
     setUpdating: (state, action: PayloadAction<{ updating: boolean }>) => {
       state.isUpdating = action.payload.updating;
     },
@@ -97,36 +84,6 @@ export const slice = createSlice({
   },
 });
 
-export const updateFiscalYearStartMonthForSession = (fiscalYearStartMonth: number): ThunkResult<void> => {
-  return async (dispatch) => {
-    set(contextSrv, 'user.fiscalYearStartMonth', fiscalYearStartMonth);
-    dispatch(updateFiscalYearStartMonth({ fiscalYearStartMonth }));
-  };
-};
-
-export const updateTimeZoneForSession = (timeZone: TimeZone): ThunkResult<void> => {
-  return async (dispatch) => {
-    if (!isString(timeZone) || isEmpty(timeZone)) {
-      timeZone = config?.bootData?.user?.timezone;
-    }
-
-    set(contextSrv, 'user.timezone', timeZone);
-    dispatch(updateTimeZone({ timeZone }));
-  };
-};
-
-export const updateWeekStartForSession = (weekStart: string): ThunkResult<void> => {
-  return async (dispatch) => {
-    if (!isString(weekStart) || isEmpty(weekStart)) {
-      weekStart = config?.bootData?.user?.weekStart;
-    }
-
-    set(contextSrv, 'user.weekStart', weekStart);
-    dispatch(updateWeekStart({ weekStart }));
-    setWeekStart(weekStart);
-  };
-};
-
 export const {
   setUpdating,
   initLoadOrgs,
@@ -137,9 +94,6 @@ export const {
   userSessionRevoked,
   initLoadSessions,
   sessionsLoaded,
-  updateTimeZone,
-  updateWeekStart,
-  updateFiscalYearStartMonth,
 } = slice.actions;
 
 export const userReducer = slice.reducer;

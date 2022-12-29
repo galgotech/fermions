@@ -12,7 +12,6 @@ import (
 	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/folder"
 	"github.com/grafana/grafana/pkg/services/guardian"
-	"github.com/grafana/grafana/pkg/util"
 	"github.com/grafana/grafana/pkg/web"
 )
 
@@ -138,37 +137,14 @@ func (hs *HTTPServer) UpdateFolderPermissions(c *models.ReqContext) response.Res
 		return response.Error(403, "Cannot remove own admin permission for a folder", nil)
 	}
 
-	if !hs.AccessControl.IsDisabled() {
-		old, err := g.GetACL()
-		if err != nil {
-			return response.Error(500, "Error while checking dashboard permissions", err)
-		}
-		if err := hs.updateDashboardAccessControl(c.Req.Context(), c.OrgID, folder.UID, true, items, old); err != nil {
-			return response.Error(500, "Failed to create permission", err)
-		}
-		return response.Success("Dashboard permissions updated")
+	old, err := g.GetACL()
+	if err != nil {
+		return response.Error(500, "Error while checking dashboard permissions", err)
 	}
-
-	if err := hs.DashboardService.UpdateDashboardACL(c.Req.Context(), folder.ID, items); err != nil {
-		if errors.Is(err, models.ErrDashboardACLInfoMissing) {
-			err = models.ErrFolderACLInfoMissing
-		}
-		if errors.Is(err, models.ErrDashboardPermissionDashboardEmpty) {
-			err = models.ErrFolderPermissionFolderEmpty
-		}
-
-		if errors.Is(err, models.ErrFolderACLInfoMissing) || errors.Is(err, models.ErrFolderPermissionFolderEmpty) {
-			return response.Error(409, err.Error(), err)
-		}
-
+	if err := hs.updateDashboardAccessControl(c.Req.Context(), c.OrgID, folder.UID, true, items, old); err != nil {
 		return response.Error(500, "Failed to create permission", err)
 	}
-
-	return response.JSON(http.StatusOK, util.DynMap{
-		"message": "Folder permissions updated",
-		"id":      folder.ID,
-		"title":   folder.Title,
-	})
+	return response.Success("Folder permissions updated")
 }
 
 // swagger:parameters getFolderPermissionList

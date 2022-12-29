@@ -55,10 +55,6 @@ func (hs *HTTPServer) AdminGetStats(c *models.ReqContext) response.Response {
 }
 
 func (hs *HTTPServer) getAuthorizedSettings(ctx context.Context, user *user.SignedInUser, bag setting.SettingsBag) (setting.SettingsBag, error) {
-	if hs.AccessControl.IsDisabled() {
-		return bag, nil
-	}
-
 	eval := func(scope string) (bool, error) {
 		return hs.AccessControl.Evaluate(ctx, user, ac.EvalPermission(ac.ActionSettingsRead, scope))
 	}

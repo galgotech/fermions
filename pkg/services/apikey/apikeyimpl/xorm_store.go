@@ -40,13 +40,11 @@ func (ss *sqlStore) GetAPIKeys(ctx context.Context, query *apikey.GetApiKeysQuer
 
 		sess = sess.Where("service_account_id IS NULL")
 
-		if !accesscontrol.IsDisabled(ss.cfg) {
-			filter, err := accesscontrol.Filter(query.User, "id", "apikeys:id:", accesscontrol.ActionAPIKeyRead)
-			if err != nil {
-				return err
-			}
-			sess.And(filter.Where, filter.Args...)
+		filter, err := accesscontrol.Filter(query.User, "id", "apikeys:id:", accesscontrol.ActionAPIKeyRead)
+		if err != nil {
+			return err
 		}
+		sess.And(filter.Where, filter.Args...)
 
 		query.Result = make([]*apikey.APIKey, 0)
 		return sess.Find(&query.Result)

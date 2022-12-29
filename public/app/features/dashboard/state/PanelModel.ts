@@ -39,13 +39,6 @@ export interface GridPos {
   static?: boolean;
 }
 
-type RunPanelQueryOptions = {
-  /** @deprecate */
-  dashboardId: number;
-  dashboardUID: string;
-  dashboardTimezone: string;
-  width: number;
-};
 const notPersistedProperties: { [str: string]: boolean } = {
   events: true,
   isViewing: true,
@@ -69,7 +62,6 @@ const mustKeepProps: { [str: string]: boolean } = {
   minSpan: true,
   panels: true,
   targets: true,
-  fullscreen: true,
   isEditing: true,
   events: true,
   cacheTimeout: true,
@@ -93,48 +85,48 @@ const defaults: any = {
     overrides: [],
   },
   savedQueryLink: null,
-  workflow: `{
-    "id": "",
-    "version": "1.0",
-    "specVersion": "0.8",
-    "name": "",
-    "description": "",
-    "start": "start",
-    "functions": [
+  workflow: {
+    id: "",
+    version: "1.0",
+    specVersion: "0.8",
+    name: "",
+    description: "",
+    start: "start",
+    functions: [
       {
-        "name": "start",
-        "operation": "http://fhub.dev/start"
+        name: "start",
+        operation: "http://fhub.dev/start"
       }
     ],
-    "states": [
+    states: [
       {
-        "name": "start",
-        "type": "operation",
-        "actions":
+        name: "start",
+        type: "operation",
+        actions:
         [
           {
-            "functionRef": "start"
+            functionRef: "start"
           }
         ],
-        "end": {
-          "terminate": true,
-          "produceEvents":
+        end: {
+          terminate: true,
+          produceEvents:
           [
             {
-              "eventRef": "PanelRender"
+              eventRef: "PanelState"
             }
           ]
         }
       }
     ]
-  }
-  `,
+  },
 };
 
 export class PanelModel implements DataConfigSource, IPanelModel {
   /* persisted id, used in URL to identify a panel */
   gridPos!: GridPos;
   type!: string;
+  workflow!: Specification.Workflow;
 
   panels?: PanelModel[];
   declare targets: DataQuery[];
@@ -173,8 +165,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
 
   private queryRunner?: PanelQueryRunner;
 
-  declare workflow: string;
-
   constructor(model: any) {
     this.events = new EventBusSrv();
     this.restoreModel(model);
@@ -204,13 +194,13 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       delete (this as any)[property];
     }
 
+    // defaults
+    defaultsDeep(this, cloneDeep(defaults));
+
     // copy properties from persisted model
     for (const property in model) {
       (this as any)[property] = model[property];
     }
-
-    // defaults
-    defaultsDeep(this, cloneDeep(defaults));
   }
 
   generateNewKey() {
@@ -271,19 +261,6 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     if (manuallyUpdated) {
       this.configRev++;
     }
-  }
-
-  runAllPanelQueries({
-    dashboardId,
-    dashboardUID,
-  }: RunPanelQueryOptions) {
-    this.getQueryRunner().run({
-      queries: this.targets,
-      panelId: this.id,
-      dashboardId: dashboardId,
-      dashboardUID: dashboardUID,
-      cacheTimeout: this.cacheTimeout,
-    });
   }
 
   render() {
@@ -426,7 +403,7 @@ export class PanelModel implements DataConfigSource, IPanelModel {
       this.savedQueryLink = null;
     }
 
-    this.workflow = options.workflow;
+    this.setWorkflowText(options.workflow);
     this.cacheTimeout = options.cacheTimeout;
     this.configRev++;
 
@@ -500,61 +477,50 @@ export class PanelModel implements DataConfigSource, IPanelModel {
     this.render();
   }
 
-  set id(id: number) {
-    this.updateWorkflowSource("id", String(id));
+  set id(value: number) {
+    this.workflow.id = String(value);
   }
 
   get id(): number {
-    return parseInt(this.getWorkflowObject().id!, 10);
+    return parseInt(this.workflow.id!, 10);
   }
 
   set title(value: string) {
-    this.updateWorkflowSource("name", value);
+    this.workflow.name = value;
   }
 
   get title(): string {
-    return this.getWorkflowObject().name || "";
+    return this.workflow.name || "";
   }
 
   set description(value: string) {
-    this.updateWorkflowSource("description", value);
+    this.workflow.description = value;
   }
 
   get description(): string {
-    return this.getWorkflowObject().description || "";
+    return this.workflow.description || "";
   }
 
   runWorkflow() {
-    const runner = new PanelWorkflowRunner(this.getWorkflow(), this.events);
-    runner.start();
-  }
-
-  getWorkflow(): Specification.Workflow {
-    const workflow = new Specification.Workflow(this.getWorkflowObject());
+    const workflow = new Specification.Workflow(this.workflow);
     const workflowValidator = new WorkflowValidator(workflow);
     if (!workflowValidator.isValid) {
         workflowValidator.errors.forEach(error => console.error((error as ValidationError).message));
         throw Error("Invalid workflow");
     }
 
-    return workflow;
+    const runner = new PanelWorkflowRunner(workflow, this.events);
+    runner.start();
   }
 
   getWorkflowText(): string {
-    return JSON.stringify(this.getWorkflowObject(), undefined, 2);
+    return JSON.stringify(this.workflow, undefined, 2);
   }
 
-  updateWorkflowSource(name: string, value: string | number) {
-    const workflow = this.getWorkflowObject();
-    workflow[name] = value;
-    return this.workflow = JSON.stringify(workflow);
-  }
-
-  private getWorkflowObject(): any {
-    return JSON.parse(this.workflow);
+  setWorkflowText(workflow: string) {
+    this.workflow = JSON.parse(workflow);
   }
 }
-
 
 function getPluginVersion(plugin: PanelPlugin): string {
   return plugin && plugin.meta.info.version ? plugin.meta.info.version : config.buildInfo.version;

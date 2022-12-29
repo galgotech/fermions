@@ -511,6 +511,9 @@ func saveDashboard(sess *db.Session, cmd *models.SaveDashboardCommand, emitEntit
 		affectedRows, err = sess.Insert(dash)
 	} else {
 		dash.SetVersion(dash.Version + 1)
+		if cmd.Publish {
+			dash.VersionPublished = dash.Version
+		}
 
 		if !cmd.UpdatedAt.IsZero() {
 			dash.Updated = cmd.UpdatedAt
@@ -540,6 +543,7 @@ func saveDashboard(sess *db.Session, cmd *models.SaveDashboardCommand, emitEntit
 		CreatedBy:     dash.UpdatedBy,
 		Message:       cmd.Message,
 		Data:          dash.Data,
+		IsPublished:   cmd.Publish,
 	}
 
 	// insert version entry
@@ -641,7 +645,6 @@ func (d *DashboardStore) deleteDashboard(cmd *models.DeleteDashboardCommand, ses
 	deletes := []string{
 		"DELETE FROM dashboard_tag WHERE dashboard_id = ? ",
 		"DELETE FROM star WHERE dashboard_id = ? ",
-		"DELETE FROM dashboard_public WHERE dashboard_uid = (SELECT uid FROM dashboard WHERE id = ?)",
 		"DELETE FROM dashboard WHERE id = ?",
 		"DELETE FROM dashboard_version WHERE dashboard_id = ?",
 		"DELETE FROM dashboard_provisioning WHERE dashboard_id = ?",
@@ -681,7 +684,6 @@ func (d *DashboardStore) deleteDashboard(cmd *models.DeleteDashboardCommand, ses
 				"DELETE FROM dashboard_version WHERE dashboard_id IN (SELECT id FROM dashboard WHERE org_id = ? AND folder_id = ?)",
 				"DELETE FROM dashboard_provisioning WHERE dashboard_id IN (SELECT id FROM dashboard WHERE org_id = ? AND folder_id = ?)",
 				"DELETE FROM dashboard_acl WHERE dashboard_id IN (SELECT id FROM dashboard WHERE org_id = ? AND folder_id = ?)",
-				"DELETE FROM dashboard_public WHERE dashboard_uid IN (SELECT uid FROM dashboard WHERE org_id = ? AND folder_id = ?)",
 			}
 			for _, sql := range childrenDeletes {
 				_, err := sess.Exec(sql, dashboard.OrgId, dashboard.Id)
@@ -791,21 +793,9 @@ func (d *DashboardStore) GetDashboards(ctx context.Context, query *models.GetDas
 }
 
 func (d *DashboardStore) FindDashboards(ctx context.Context, query *models.FindPersistedDashboardsQuery) ([]dashboards.DashboardSearchProjection, error) {
+	// if access control is enabled, overwrite the filters so far
 	filters := []interface{}{
-		permissions.DashboardPermissionFilter{
-			OrgRole:         query.SignedInUser.OrgRole,
-			OrgId:           query.SignedInUser.OrgID,
-			Dialect:         d.store.GetDialect(),
-			UserId:          query.SignedInUser.UserID,
-			PermissionLevel: query.Permission,
-		},
-	}
-
-	if !ac.IsDisabled(d.cfg) {
-		// if access control is enabled, overwrite the filters so far
-		filters = []interface{}{
-			permissions.NewAccessControlDashboardPermissionFilter(query.SignedInUser, query.Permission, query.Type),
-		}
+		permissions.NewAccessControlDashboardPermissionFilter(query.SignedInUser, query.Permission, query.Type),
 	}
 
 	for _, filter := range query.Sort.Filter {

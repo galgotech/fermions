@@ -57,10 +57,6 @@ func (a *AccessControl) RegisterScopeAttributeResolver(prefix string, resolver a
 	a.resolvers.AddScopeAttributeResolver(prefix, resolver)
 }
 
-func (a *AccessControl) IsDisabled() bool {
-	return accesscontrol.IsDisabled(a.cfg)
-}
-
 func verifyPermissions(u *user.SignedInUser) bool {
 	return u.Permissions != nil || u.Permissions[u.OrgID] != nil
 }

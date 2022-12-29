@@ -526,7 +526,7 @@ func (ss *sqlStore) GetOrgUsers(ctx context.Context, query *org.GetOrgUsersQuery
 			ss.log.Warn("Query user not set for filtering.")
 		}
 
-		if !query.DontEnforceAccessControl && !accesscontrol.IsDisabled(ss.cfg) {
+		if !query.DontEnforceAccessControl {
 			acFilter, err := accesscontrol.Filter(query.User, "org_user.user_id", "users:id:", accesscontrol.ActionOrgUsersRead)
 			if err != nil {
 				return err
@@ -614,14 +614,12 @@ func (ss *sqlStore) SearchOrgUsers(ctx context.Context, query *org.SearchOrgUser
 
 		whereConditions = append(whereConditions, fmt.Sprintf("%s.is_service_account = %s", ss.dialect.Quote("user"), ss.dialect.BooleanStr(false)))
 
-		if !accesscontrol.IsDisabled(ss.cfg) {
-			acFilter, err := accesscontrol.Filter(query.User, "org_user.user_id", "users:id:", accesscontrol.ActionOrgUsersRead)
-			if err != nil {
-				return err
-			}
-			whereConditions = append(whereConditions, acFilter.Where)
-			whereParams = append(whereParams, acFilter.Args...)
+		acFilter, err := accesscontrol.Filter(query.User, "org_user.user_id", "users:id:", accesscontrol.ActionOrgUsersRead)
+		if err != nil {
+			return err
 		}
+		whereConditions = append(whereConditions, acFilter.Where)
+		whereParams = append(whereParams, acFilter.Args...)
 
 		if query.Query != "" {
 			queryWithWildcards := "%" + query.Query + "%"

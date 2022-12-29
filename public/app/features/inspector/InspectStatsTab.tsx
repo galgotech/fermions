@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { PanelData, QueryResultMetaStat, TimeZone } from '@grafana/data';
+import { PanelData, QueryResultMetaStat } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t } from 'app/core/internationalization';
 
@@ -8,10 +8,9 @@ import { InspectStatsTable } from './InspectStatsTable';
 
 interface InspectStatsTabProps {
   data: PanelData;
-  timeZone: TimeZone;
 }
 
-export const InspectStatsTab: React.FC<InspectStatsTabProps> = ({ data, timeZone }) => {
+export const InspectStatsTab: React.FC<InspectStatsTabProps> = ({ data }) => {
   if (!data.request) {
     return null;
   }
@@ -51,8 +50,8 @@ export const InspectStatsTab: React.FC<InspectStatsTabProps> = ({ data, timeZone
 
   return (
     <div aria-label={selectors.components.PanelInspector.Stats.content}>
-      <InspectStatsTable timeZone={timeZone} name={statsTableName} stats={stats} />
-      <InspectStatsTable timeZone={timeZone} name={dataStatsTableName} stats={dataStats} />
+      <InspectStatsTable name={statsTableName} stats={stats} />
+      <InspectStatsTable name={dataStatsTableName} stats={dataStats} />
     </div>
   );
 };

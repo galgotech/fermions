@@ -49,10 +49,7 @@ export class DashboardMigrator {
     // version 2 schema changes
     if (oldVersion < 2) {
       if (old.services) {
-        if (old.services.filter) {
-          this.dashboard.time = old.services.filter.time;
-          this.dashboard.templating.list = old.services.filter.list || [];
-        }
+
       }
 
       panelUpgrades.push((panel: any) => {
@@ -153,10 +150,6 @@ export class DashboardMigrator {
     }
 
     if (oldVersion < 7) {
-      if (old.nav && old.nav.length) {
-        this.dashboard.timepicker = old.nav[0];
-      }
-
       // ensure query refIds
       panelUpgrades.push((panel: any) => {
         each(panel.targets, (target) => {
@@ -557,10 +550,6 @@ export class DashboardMigrator {
       for (const variable of this.dashboard.templating.list) {
         if (variable.type !== 'query') {
           continue;
-        }
-
-        if (variable.refresh !== 1 && variable.refresh !== 2) {
-          variable.refresh = 1;
         }
 
         if (variable.options?.length) {

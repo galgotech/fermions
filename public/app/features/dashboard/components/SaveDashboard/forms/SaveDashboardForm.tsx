@@ -19,6 +19,7 @@ export type SaveProps = {
   onSubmit?: (clone: DashboardModel, options: SaveDashboardOptions, dashboard: DashboardModel) => Promise<any>;
   options: SaveDashboardOptions;
   onOptionsChange: (opts: SaveDashboardOptions) => void;
+  isPublish?: boolean;
 };
 
 export const SaveDashboardForm = ({
@@ -29,8 +30,10 @@ export const SaveDashboardForm = ({
   onCancel,
   onSuccess,
   onOptionsChange,
+  isPublish,
 }: SaveProps) => {
   const [saving, setSaving] = useState(false);
+  const hasChanges = !isPublish && !saveModel.hasChanges;
 
   return (
     <Form
@@ -39,7 +42,7 @@ export const SaveDashboardForm = ({
           return;
         }
         setSaving(true);
-        options = { ...options, message: data.message };
+        options = { ...options, message: data.message, publish: isPublish, };
         const result = await onSubmit(saveModel.clone, options, dashboard);
         if (result.status === 'success') {
           onSuccess();
@@ -74,13 +77,13 @@ export const SaveDashboardForm = ({
               </Button>
               <Button
                 type="submit"
-                disabled={!saveModel.hasChanges}
+                disabled={hasChanges}
                 icon={saving ? 'fa fa-spinner' : undefined}
                 aria-label={selectors.pages.SaveDashboardModal.save}
               >
-                Save
+                {isPublish ? 'Publish' : 'Save'}
               </Button>
-              {!saveModel.hasChanges && <div>No changes to save</div>}
+              {hasChanges && <div>No changes to save</div>}
             </Stack>
           </Stack>
         );

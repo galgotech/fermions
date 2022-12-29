@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
 import { config } from '@grafana/runtime';
-import { Field, Input, RadioButtonGroup, TagsInput } from '@grafana/ui';
+import { Field, Input, TagsInput } from '@grafana/ui';
 import { Page } from 'app/core/components/PageNew/Page';
 import { FolderPicker } from 'app/core/components/Select/FolderPicker';
-import { updateTimeZoneDashboard, updateWeekStartDashboard } from 'app/features/dashboard/state/actions';
 
 import { DeleteDashboardButton } from '../DeleteDashboard/DeleteDashboardButton';
 
@@ -37,16 +36,6 @@ export function GeneralSettingsUnconnected({
     setRenderCounter(renderCounter + 1);
   };
 
-  const onEditableChange = (value: boolean) => {
-    dashboard.editable = value;
-    setRenderCounter(renderCounter + 1);
-  };
-
-  const editableOptions = [
-    { label: 'Editable', value: true },
-    { label: 'Read-only', value: false },
-  ];
-
   return (
     <Page navModel={sectionNav}>
       <div style={{ maxWidth: '600px' }}>
@@ -71,13 +60,6 @@ export function GeneralSettingsUnconnected({
               skipInitialLoad={true}
             />
           </Field>
-
-          <Field
-            label="Editable"
-            description="Set to read-only to disable all editing. Reload the dashboard for changes to take effect"
-          >
-            <RadioButtonGroup value={dashboard.editable} options={editableOptions} onChange={onEditableChange} />
-          </Field>
         </div>
 
         {config.featureToggles.dashboardPreviews && config.featureToggles.dashboardPreviewsAdmin && (
@@ -93,8 +75,6 @@ export function GeneralSettingsUnconnected({
 }
 
 const mapDispatchToProps = {
-  updateTimeZone: updateTimeZoneDashboard,
-  updateWeekStart: updateWeekStartDashboard,
 };
 
 const connector = connect(null, mapDispatchToProps);

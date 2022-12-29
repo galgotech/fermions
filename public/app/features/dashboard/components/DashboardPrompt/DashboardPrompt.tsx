@@ -171,10 +171,7 @@ function cleanDashboardFromIgnoredChanges(dashData: unknown) {
   const dash = model.getSaveModelClone();
 
   // ignore time and refresh
-  dash.time = 0;
-  dash.refresh = 0;
   dash.schemaVersion = 0;
-  dash.timezone = 0;
   dash.panels = [];
 
   return dash;

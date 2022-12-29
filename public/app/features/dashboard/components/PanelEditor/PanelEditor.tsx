@@ -27,7 +27,6 @@ import { appEvents } from 'app/core/core';
 import { SaveLibraryPanelModal } from 'app/features/library-panels/components/SaveLibraryPanelModal/SaveLibraryPanelModal';
 import { PanelModelWithLibraryPanel } from 'app/features/library-panels/types';
 import { getPanelStateForModel } from 'app/features/panel/state/selectors';
-import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { StoreState } from 'app/types';
 import { PanelOptionsChangedEvent, ShowModalReactEvent } from 'app/types/events';
 
@@ -71,7 +70,6 @@ const mapDispatchToProps = {
   initPanelEditor,
   discardPanelChanges,
   updatePanelEditorUIState,
-  updateTimeZoneForSession,
   notifyApp,
 };
 

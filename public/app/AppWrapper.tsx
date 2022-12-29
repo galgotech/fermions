@@ -1,5 +1,5 @@
 import { Action, KBarProvider } from 'kbar';
-import React, { ComponentType } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { Router, Route, Redirect, Switch } from 'react-router-dom';
 
@@ -27,18 +27,6 @@ interface AppWrapperProps {
 
 interface AppWrapperState {
   ready?: boolean;
-}
-
-/** Used by enterprise */
-let bodyRenderHooks: ComponentType[] = [];
-let pageBanners: ComponentType[] = [];
-
-export function addBodyRenderHook(fn: ComponentType) {
-  bodyRenderHooks.push(fn);
-}
-
-export function addPageBanner(fn: ComponentType) {
-  pageBanners.push(fn);
 }
 
 export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState> {
@@ -123,19 +111,17 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
                     {this.commandPaletteEnabled() && <CommandPalette />}
                     <div className="grafana-app">
                       <Router history={locationService.getHistory()}>
-                        {this.renderNavBar()}
-                        <AppChrome>
-                          {pageBanners.map((Banner, index) => (
-                            <Banner key={index.toString()} />
-                          ))}
-
-                          <AppNotificationList />
-                          {this.searchBarEnabled() && <SearchWrapper />}
+                        {config.isPublicDashboardView && (<>
                           {ready && this.renderRoutes()}
-                          {bodyRenderHooks.map((Hook, index) => (
-                            <Hook key={index.toString()} />
-                          ))}
-                        </AppChrome>
+                        </>)}
+                        {!config.isPublicDashboardView && (<>
+                          {this.renderNavBar()}
+                          <AppChrome>
+                            <AppNotificationList />
+                            {this.searchBarEnabled() && <SearchWrapper />}
+                            {ready && this.renderRoutes()}
+                          </AppChrome>
+                        </>)}
                       </Router>
                     </div>
                     <LiveConnectionWarning />

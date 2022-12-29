@@ -7,14 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/middleware/cookies"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/services/auth"
-	"github.com/grafana/grafana/pkg/services/dashboards"
 	"github.com/grafana/grafana/pkg/services/org"
-	"github.com/grafana/grafana/pkg/services/team"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/web"
 )
@@ -145,25 +142,6 @@ func Auth(options *AuthOptions) web.Handler {
 	}
 }
 
-// AdminOrEditorAndFeatureEnabled creates a middleware that allows
-// access if the signed in user is either an Org Admin or if they
-// are an Org Editor and the feature flag is enabled.
-// Intended for when feature flags open up access to APIs that
-// are otherwise only available to admins.
-func AdminOrEditorAndFeatureEnabled(enabled bool) web.Handler {
-	return func(c *models.ReqContext) {
-		if c.OrgRole == org.RoleAdmin {
-			return
-		}
-
-		if c.OrgRole == org.RoleEditor && enabled {
-			return
-		}
-
-		accessForbidden(c)
-	}
-}
-
 func ReqNotSignedIn(c *models.ReqContext) {
 	if c.IsSignedIn {
 		c.Redirect(setting.AppSubUrl + "/")
@@ -191,32 +169,4 @@ func shouldForceLogin(c *models.ReqContext) bool {
 	}
 
 	return forceLogin
-}
-
-func OrgAdminDashOrFolderAdminOrTeamAdmin(ss db.DB, ds dashboards.DashboardService, ts team.Service) func(c *models.ReqContext) {
-	return func(c *models.ReqContext) {
-		if c.OrgRole == org.RoleAdmin {
-			return
-		}
-
-		hasAdminPermissionInDashOrFoldersQuery := models.HasAdminPermissionInDashboardsOrFoldersQuery{SignedInUser: c.SignedInUser}
-		if err := ds.HasAdminPermissionInDashboardsOrFolders(c.Req.Context(), &hasAdminPermissionInDashOrFoldersQuery); err != nil {
-			c.JsonApiErr(500, "Failed to check if user is a folder admin", err)
-		}
-
-		if hasAdminPermissionInDashOrFoldersQuery.Result {
-			return
-		}
-
-		isAdminOfTeamsQuery := models.IsAdminOfTeamsQuery{SignedInUser: c.SignedInUser}
-		if err := ts.IsAdminOfTeams(c.Req.Context(), &isAdminOfTeamsQuery); err != nil {
-			c.JsonApiErr(500, "Failed to check if user is a team admin", err)
-		}
-
-		if isAdminOfTeamsQuery.Result {
-			return
-		}
-
-		accessForbidden(c)
-	}
 }

@@ -9,13 +9,14 @@ import (
 type RoleType string
 
 const (
+	RolePublic RoleType = "Public"
 	RoleViewer RoleType = "Viewer"
 	RoleEditor RoleType = "Editor"
 	RoleAdmin  RoleType = "Admin"
 )
 
 func (r RoleType) IsValid() bool {
-	return r == RoleViewer || r == RoleAdmin || r == RoleEditor
+	return r == RolePublic || r == RoleViewer || r == RoleAdmin || r == RoleEditor
 }
 
 func (r RoleType) Includes(other RoleType) bool {

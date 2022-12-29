@@ -14,7 +14,7 @@ export interface SaveDashboardOptions extends CloneOptions {
   folderUid?: string;
   overwrite?: boolean;
   message?: string;
-  makeEditable?: boolean;
+  publish?: boolean;
 }
 
 export interface SaveDashboardCommand {
@@ -22,6 +22,7 @@ export interface SaveDashboardCommand {
   message?: string;
   folderUid?: string;
   overwrite?: boolean;
+  publish?: boolean;
 }
 
 export interface SaveDashboardFormProps {
@@ -36,4 +37,5 @@ export interface SaveDashboardModalProps {
   onDismiss: () => void;
   onSaveSuccess?: () => void;
   isCopy?: boolean;
+  isPublish?: boolean;
 }

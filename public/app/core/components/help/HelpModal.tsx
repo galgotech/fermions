@@ -27,7 +27,6 @@ const shortcuts = {
   ],
   'Focused Panel': [
     { keys: ['e'], description: 'Toggle panel edit view' },
-    { keys: ['v'], description: 'Toggle panel fullscreen view' },
     { keys: ['p', 's'], description: 'Open Panel Share Modal' },
     { keys: ['p', 'd'], description: 'Duplicate Panel' },
     { keys: ['p', 'r'], description: 'Remove Panel' },

@@ -4,21 +4,19 @@ import { useLocation } from 'react-router-dom';
 
 import { locationUtil, NavModel, NavModelItem } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { Button, PageToolbar } from '@grafana/ui';
+import { PageToolbar } from '@grafana/ui';
 import { AppChromeUpdate } from 'app/core/components/AppChrome/AppChromeUpdate';
 import config from 'app/core/config';
 import { contextSrv } from 'app/core/services/context_srv';
-import { AccessControlAction } from 'app/types';
 
 import { DashboardModel } from '../../state/DashboardModel';
 import { AccessControlDashboardPermissions } from '../DashboardPermissions/AccessControlDashboardPermissions';
-import { DashboardPermissions } from '../DashboardPermissions/DashboardPermissions';
-import { SaveDashboardAsButton, SaveDashboardButton } from '../SaveDashboard/SaveDashboardButton';
+import { SaveDashboardAsButton, SaveDashboardButton, PublishDashboardButton } from '../SaveDashboard/SaveDashboardButton';
 
 import { GeneralSettings } from './GeneralSettings';
 import { JsonEditorSettings } from './JsonEditorSettings';
 import { VersionsSettings } from './VersionsSettings';
-import { SettingsPage, SettingsPageProps } from './types';
+import { SettingsPage } from './types';
 
 export interface Props {
   dashboard: DashboardModel;
@@ -56,6 +54,7 @@ export function DashboardSettings({ dashboard, editview, pageNav, sectionNav }: 
       />
     ),
     canSave && <SaveDashboardButton dashboard={dashboard} onSaveSuccess={onPostSave} key="Save" size={size} />,
+    <PublishDashboardButton dashboard={dashboard} onSaveSuccess={onPostSave} key="Publish" size={size} />,
   ];
 
   return (
@@ -84,15 +83,6 @@ function getSettingsPages(dashboard: DashboardModel) {
     });
   }
 
-  if (dashboard.meta.canMakeEditable) {
-    pages.push({
-      title: 'General',
-      icon: 'sliders-v-alt',
-      id: 'settings',
-      component: MakeEditable,
-    });
-  }
-
   if (dashboard.id && dashboard.meta.canSave) {
     pages.push({
       title: 'Versions',
@@ -103,21 +93,13 @@ function getSettingsPages(dashboard: DashboardModel) {
   }
 
   if (dashboard.id && dashboard.meta.canAdmin) {
-    if (!config.rbacEnabled) {
-      pages.push({
-        title: 'Permissions',
-        id: 'permissions',
-        icon: 'lock',
-        component: DashboardPermissions,
-      });
-    } else if (contextSrv.hasPermission(AccessControlAction.DashboardsPermissionsRead)) {
-      pages.push({
-        title: 'Permissions',
-        id: 'permissions',
-        icon: 'lock',
-        component: AccessControlDashboardPermissions,
-      });
-    }
+    pages.push({
+      title: 'Permissions',
+      id: 'permissions',
+      icon: 'lock',
+      component: AccessControlDashboardPermissions,
+    });
+  
   }
 
   pages.push({
@@ -175,25 +157,6 @@ function getSectionNav(
     main,
     node: main.children.find((x) => x.active)!,
   };
-}
-
-function MakeEditable({ dashboard }: SettingsPageProps) {
-  const onMakeEditable = () => {
-    dashboard.editable = true;
-    dashboard.meta.canMakeEditable = false;
-    dashboard.meta.canEdit = true;
-    dashboard.meta.canSave = true;
-    // TODO add some kind of reload
-  };
-
-  return (
-    <div>
-      <div className="dashboard-settings__header">Dashboard not editable</div>
-      <Button type="submit" onClick={onMakeEditable}>
-        Make editable
-      </Button>
-    </div>
-  );
 }
 
 function getEditIndex(location: H.Location): number | undefined {

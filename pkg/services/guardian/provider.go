@@ -17,19 +17,9 @@ func ProvideService(
 	folderPermissionsService accesscontrol.FolderPermissionsService, dashboardPermissionsService accesscontrol.DashboardPermissionsService,
 	dashboardService dashboards.DashboardService, teamService team.Service,
 ) *Provider {
-	if !ac.IsDisabled() {
-		// TODO: Fix this hack, see https://github.com/grafana/grafana-enterprise/issues/2935
-		InitAccessControlGuardian(store, ac, folderPermissionsService, dashboardPermissionsService, dashboardService)
-	} else {
-		InitLegacyGuardian(store, dashboardService, teamService)
-	}
+	// TODO: Fix this hack, see https://github.com/grafana/grafana-enterprise/issues/2935
+	InitAccessControlGuardian(store, ac, folderPermissionsService, dashboardPermissionsService, dashboardService)
 	return &Provider{}
-}
-
-func InitLegacyGuardian(store db.DB, dashSvc dashboards.DashboardService, teamSvc team.Service) {
-	New = func(ctx context.Context, dashId int64, orgId int64, user *user.SignedInUser) DashboardGuardian {
-		return newDashboardGuardian(ctx, dashId, orgId, user, store, dashSvc, teamSvc)
-	}
 }
 
 func InitAccessControlGuardian(

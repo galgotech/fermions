@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, locationUtil } from '@grafana/data';
+import { locationUtil } from '@grafana/data';
 import { locationService, getBackendSrv, isFetchError } from '@grafana/runtime';
 import { notifyApp } from 'app/core/actions';
 import { createErrorNotification } from 'app/core/copy/appNotification';
@@ -136,15 +136,6 @@ export function importDashboard(importDashboardForm: ImportDashboardDTO): ThunkR
     const inputs = getState().importDashboard.inputs;
 
     let inputsToPersist = [] as any[];
-    importDashboardForm.dataSources?.forEach((dataSource: DataSourceInstanceSettings, index: number) => {
-      const input = inputs.dataSources[index];
-      inputsToPersist.push({
-        name: input.name,
-        type: input.type,
-        pluginId: input.pluginId,
-        value: dataSource.uid,
-      });
-    });
 
     importDashboardForm.constants?.forEach((constant: any, index: number) => {
       const input = inputs.constants[index];
@@ -170,8 +161,6 @@ export function importDashboard(importDashboardForm: ImportDashboardDTO): ThunkR
     locationService.push(dashboardUrl);
   };
 }
-
-
 
 export function moveDashboards(dashboardUids: string[], toFolder: FolderInfo) {
   const tasks = [];
@@ -264,6 +253,7 @@ export function saveDashboard(options: SaveDashboardCommand) {
     message: options.message ?? '',
     overwrite: options.overwrite ?? false,
     folderUid: options.folderUid,
+    publish: options.publish ?? false,
   });
 }
 

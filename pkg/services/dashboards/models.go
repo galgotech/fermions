@@ -14,6 +14,7 @@ type SaveDashboardDTO struct {
 	User      *user.SignedInUser
 	Message   string
 	Overwrite bool
+	Publish   bool
 	Dashboard *models.Dashboard
 }
 

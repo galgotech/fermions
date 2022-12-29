@@ -18,7 +18,6 @@ const getSaveAsDashboardClone = (dashboard: DashboardModel) => {
   clone.id = null;
   clone.uid = '';
   clone.title += ' Copy';
-  clone.editable = true;
 
   delete clone.autoUpdate;
   return clone;

@@ -43,7 +43,7 @@ func (hs *HTTPServer) GetPluginList(c *models.ReqContext) response.Response {
 	// Fallback to only letting admins list non-core plugins
 	reqOrgAdmin := ac.ReqHasRole(org.RoleAdmin)
 	hasAccess := ac.HasAccess(hs.AccessControl, c)
-	canListNonCorePlugins := reqOrgAdmin(c) || hasAccess(reqOrgAdmin, ac.EvalAny(
+	canListNonCorePlugins := reqOrgAdmin(c) || hasAccess(ac.EvalAny(
 		ac.EvalPermission(plugins.ActionInstall),
 	))
 
@@ -73,7 +73,7 @@ func (hs *HTTPServer) GetPluginList(c *models.ReqContext) response.Response {
 		//  * anyone that can install a plugin
 		// Should be able to list this installed plugin:
 		//  * anyone that can edit its settings
-		if !pluginDef.IsCorePlugin() && !canListNonCorePlugins && !hasAccess(reqOrgAdmin,
+		if !pluginDef.IsCorePlugin() && !canListNonCorePlugins && !hasAccess(
 			ac.EvalPermission(plugins.ActionWrite, plugins.ScopeProvider.GetResourceScope(pluginDef.ID))) {
 			continue
 		}
@@ -159,8 +159,7 @@ func (hs *HTTPServer) GetPluginSettingByID(c *models.ReqContext) response.Respon
 	// We will need a different permission to allow users to configure the plugin without needing access to it.
 	if plugin.IsApp() {
 		hasAccess := ac.HasAccess(hs.AccessControl, c)
-		if !hasAccess(ac.ReqSignedIn,
-			ac.EvalPermission(plugins.ActionAppAccess, plugins.ScopeProvider.GetResourceScope(plugin.ID))) {
+		if !hasAccess(ac.EvalPermission(plugins.ActionAppAccess, plugins.ScopeProvider.GetResourceScope(plugin.ID))) {
 			return response.Error(http.StatusForbidden, "Access Denied", nil)
 		}
 	}

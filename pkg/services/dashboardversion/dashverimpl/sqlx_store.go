@@ -66,6 +66,7 @@ func (ss *sqlxStore) List(ctx context.Context, query *dashver.ListDashboardVersi
 				dashboard_version.parent_version,
 				dashboard_version.restored_from,
 				dashboard_version.version,
+				dashboard_version.is_published,
 				dashboard_version.created,
 				dashboard_version.message,
 				"user".login as created_by_login

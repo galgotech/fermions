@@ -15,7 +15,7 @@ func (s *ServiceImpl) getOrgAdminNode(c *models.ReqContext) (*navtree.NavLink, e
 	hasAccess := ac.HasAccess(s.accessControl, c)
 
 	if !s.features.IsEnabled(featuremgmt.FlagTopnav) {
-		if hasAccess(ac.ReqOrgAdmin, ac.EvalPermission(ac.ActionOrgUsersRead)) {
+		if hasAccess(ac.EvalPermission(ac.ActionOrgUsersRead)) {
 			configNodes = append(configNodes, &navtree.NavLink{
 				Text:     "Users",
 				Id:       "users",
@@ -26,7 +26,7 @@ func (s *ServiceImpl) getOrgAdminNode(c *models.ReqContext) (*navtree.NavLink, e
 		}
 	}
 
-	if hasAccess(s.ReqCanAdminTeams, ac.TeamsAccessEvaluator) {
+	if hasAccess(ac.TeamsAccessEvaluator) {
 		configNodes = append(configNodes, &navtree.NavLink{
 			Text:     "Teams",
 			Id:       "teams",
@@ -36,7 +36,7 @@ func (s *ServiceImpl) getOrgAdminNode(c *models.ReqContext) (*navtree.NavLink, e
 		})
 	}
 
-	if hasAccess(ac.ReqOrgAdmin, ac.OrgPreferencesAccessEvaluator) {
+	if hasAccess(ac.OrgPreferencesAccessEvaluator) {
 		configNodes = append(configNodes, &navtree.NavLink{
 			Text:     "Preferences",
 			Id:       "org-settings",
@@ -53,7 +53,7 @@ func (s *ServiceImpl) getOrgAdminNode(c *models.ReqContext) (*navtree.NavLink, e
 	}
 
 	apiKeysHidden := hideApiKeys == "1" && len(apiKeys) == 0
-	if hasAccess(ac.ReqOrgAdmin, ac.ApiKeyAccessEvaluator) && !apiKeysHidden {
+	if hasAccess(ac.ApiKeyAccessEvaluator) && !apiKeysHidden {
 		configNodes = append(configNodes, &navtree.NavLink{
 			Text:     "API keys",
 			Id:       "apikeys",
@@ -93,32 +93,32 @@ func (s *ServiceImpl) getServerAdminNode(c *models.ReqContext) *navtree.NavLink 
 	adminNavLinks := []*navtree.NavLink{}
 
 	if s.features.IsEnabled(featuremgmt.FlagTopnav) {
-		if hasAccess(ac.ReqSignedIn, ac.EvalAny(ac.EvalPermission(ac.ActionOrgUsersRead), ac.EvalPermission(ac.ActionUsersRead, ac.ScopeGlobalUsersAll))) {
+		if hasAccess(ac.EvalAny(ac.EvalPermission(ac.ActionOrgUsersRead), ac.EvalPermission(ac.ActionUsersRead, ac.ScopeGlobalUsersAll))) {
 			adminNavLinks = append(adminNavLinks, &navtree.NavLink{
 				Text: "Users", SubTitle: "Manage users in Grafana", Id: "global-users", Url: s.cfg.AppSubURL + "/admin/users", Icon: "user",
 			})
 		}
 	} else {
-		if hasAccess(ac.ReqGrafanaAdmin, ac.EvalPermission(ac.ActionUsersRead, ac.ScopeGlobalUsersAll)) {
+		if hasAccess(ac.EvalPermission(ac.ActionUsersRead, ac.ScopeGlobalUsersAll)) {
 			adminNavLinks = append(adminNavLinks, &navtree.NavLink{
 				Text: "Users", SubTitle: "Manage and create users across the whole Grafana server", Id: "global-users", Url: s.cfg.AppSubURL + "/admin/users", Icon: "user",
 			})
 		}
 	}
 
-	if hasGlobalAccess(ac.ReqGrafanaAdmin, orgsAccessEvaluator) {
+	if hasGlobalAccess(orgsAccessEvaluator) {
 		adminNavLinks = append(adminNavLinks, &navtree.NavLink{
 			Text: "Organizations", SubTitle: "Isolated instances of Grafana running on the same server", Id: "global-orgs", Url: s.cfg.AppSubURL + "/admin/orgs", Icon: "building",
 		})
 	}
 
-	if hasAccess(ac.ReqGrafanaAdmin, ac.EvalPermission(ac.ActionSettingsRead)) {
+	if hasAccess(ac.EvalPermission(ac.ActionSettingsRead)) {
 		adminNavLinks = append(adminNavLinks, &navtree.NavLink{
 			Text: "Settings", SubTitle: "View the settings defined in your Grafana config", Id: "server-settings", Url: s.cfg.AppSubURL + "/admin/settings", Icon: "sliders-v-alt",
 		})
 	}
 
-	if s.cfg.LDAPEnabled && hasAccess(ac.ReqGrafanaAdmin, ac.EvalPermission(ac.ActionLDAPStatusRead)) {
+	if s.cfg.LDAPEnabled && hasAccess(ac.EvalPermission(ac.ActionLDAPStatusRead)) {
 		adminNavLinks = append(adminNavLinks, &navtree.NavLink{
 			Text: "LDAP", Id: "ldap", Url: s.cfg.AppSubURL + "/admin/ldap", Icon: "book",
 		})
@@ -146,5 +146,5 @@ func (s *ServiceImpl) ReqCanAdminTeams(c *models.ReqContext) bool {
 
 func enableServiceAccount(s *ServiceImpl, c *models.ReqContext) bool {
 	hasAccess := ac.HasAccess(s.accessControl, c)
-	return hasAccess(ac.ReqOrgAdmin, serviceaccounts.AccessEvaluator)
+	return hasAccess(serviceaccounts.AccessEvaluator)
 }

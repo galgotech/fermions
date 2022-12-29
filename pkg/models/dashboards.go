@@ -17,13 +17,14 @@ const (
 
 // Dashboard model
 type Dashboard struct {
-	Id       int64
-	Uid      string
-	Slug     string
-	OrgId    int64
-	GnetId   int64
-	Version  int
-	PluginId string
+	Id               int64
+	Uid              string
+	Slug             string
+	OrgId            int64
+	GnetId           int64
+	Version          int
+	VersionPublished int
+	PluginId         string
 
 	Created time.Time
 	Updated time.Time
@@ -192,6 +193,7 @@ type SaveDashboardCommand struct {
 	Dashboard    *simplejson.Json `json:"dashboard" binding:"Required"`
 	UserId       int64            `json:"userId"`
 	Overwrite    bool             `json:"overwrite"`
+	Publish      bool             `json:"publish"`
 	Message      string           `json:"message"`
 	OrgId        int64            `json:"-"`
 	RestoredFrom int              `json:"-"`

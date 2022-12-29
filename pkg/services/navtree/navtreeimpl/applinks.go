@@ -41,7 +41,7 @@ func (s *ServiceImpl) addAppLinks(treeRoot *navtree.NavTreeRoot, c *models.ReqCo
 			continue
 		}
 
-		if !hasAccess(ac.ReqSignedIn,
+		if !hasAccess(
 			ac.EvalPermission(plugins.ActionAppAccess, plugins.ScopeProvider.GetResourceScope(plugin.ID))) {
 			continue
 		}
@@ -241,8 +241,8 @@ func (s *ServiceImpl) hasAccessToInclude(c *models.ReqContext, pluginID string) 
 	hasAccess := ac.HasAccess(s.accessControl, c)
 	return func(include *plugins.Includes) bool {
 		useRBAC := s.features.IsEnabled(featuremgmt.FlagAccessControlOnCall) &&
-			!s.accessControl.IsDisabled() && include.RequiresRBACAction()
-		if useRBAC && !hasAccess(ac.ReqHasRole(include.Role), ac.EvalPermission(include.Action)) {
+			include.RequiresRBACAction()
+		if useRBAC && !hasAccess(ac.EvalPermission(include.Action)) {
 			s.log.Debug("plugin include is covered by RBAC, user doesn't have access",
 				"plugin", pluginID,
 				"include", include.Name)

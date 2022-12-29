@@ -28,10 +28,6 @@ func (hs *HTTPServer) CreateTeam(c *models.ReqContext) response.Response {
 	if err := web.Bind(c.Req, &cmd); err != nil {
 		return response.Error(http.StatusBadRequest, "bad request data", err)
 	}
-	accessControlEnabled := !hs.AccessControl.IsDisabled()
-	if !accessControlEnabled && c.OrgRole == org.RoleViewer {
-		return response.Error(403, "Not allowed to create team.", nil)
-	}
 
 	team, err := hs.teamService.CreateTeam(cmd.Name, cmd.Email, c.OrgID)
 	if err != nil {
@@ -43,11 +39,9 @@ func (hs *HTTPServer) CreateTeam(c *models.ReqContext) response.Response {
 
 	// Clear permission cache for the user who's created the team, so that new permissions are fetched for their next call
 	// Required for cases when caller wants to immediately interact with the newly created object
-	if !hs.AccessControl.IsDisabled() {
-		hs.accesscontrolService.ClearUserPermissionCache(c.SignedInUser)
-	}
+	hs.accesscontrolService.ClearUserPermissionCache(c.SignedInUser)
 
-	if accessControlEnabled || (c.OrgRole == org.RoleEditor && hs.Cfg.EditorsCanAdmin) {
+	if c.OrgRole == org.RoleEditor && hs.Cfg.EditorsCanAdmin {
 		// if the request is authenticated using API tokens
 		// the SignedInUser is an empty struct therefore
 		// an additional check whether it is an actual user is required
@@ -88,12 +82,6 @@ func (hs *HTTPServer) UpdateTeam(c *models.ReqContext) response.Response {
 		return response.Error(http.StatusBadRequest, "teamId is invalid", err)
 	}
 
-	if hs.AccessControl.IsDisabled() {
-		if err := hs.teamGuardian.CanAdmin(c.Req.Context(), cmd.OrgId, cmd.Id, c.SignedInUser); err != nil {
-			return response.Error(403, "Not allowed to update team", err)
-		}
-	}
-
 	if err := hs.teamService.UpdateTeam(c.Req.Context(), &cmd); err != nil {
 		if errors.Is(err, models.ErrTeamNameTaken) {
 			return response.Error(400, "Team name taken", err)
@@ -119,13 +107,6 @@ func (hs *HTTPServer) DeleteTeamByID(c *models.ReqContext) response.Response {
 	teamId, err := strconv.ParseInt(web.Params(c.Req)[":teamId"], 10, 64)
 	if err != nil {
 		return response.Error(http.StatusBadRequest, "teamId is invalid", err)
-	}
-	user := c.SignedInUser
-
-	if hs.AccessControl.IsDisabled() {
-		if err := hs.teamGuardian.CanAdmin(c.Req.Context(), orgId, teamId, user); err != nil {
-			return response.Error(403, "Not allowed to delete team", err)
-		}
 	}
 
 	if err := hs.teamService.DeleteTeam(c.Req.Context(), &models.DeleteTeamCommand{OrgId: orgId, Id: teamId}); err != nil {
@@ -158,9 +139,6 @@ func (hs *HTTPServer) SearchTeams(c *models.ReqContext) response.Response {
 
 	// Using accesscontrol the filtering is done based on user permissions
 	userIdFilter := models.FilterIgnoreUser
-	if hs.AccessControl.IsDisabled() {
-		userIdFilter = userFilter(c)
-	}
 
 	query := models.SearchTeamsQuery{
 		OrgId:        c.OrgID,
@@ -225,9 +203,6 @@ func (hs *HTTPServer) GetTeamByID(c *models.ReqContext) response.Response {
 
 	// Using accesscontrol the filtering has already been performed at middleware layer
 	userIdFilter := models.FilterIgnoreUser
-	if hs.AccessControl.IsDisabled() {
-		userIdFilter = userFilter(c)
-	}
 
 	query := models.GetTeamByIdQuery{
 		OrgId:        c.OrgID,
@@ -268,12 +243,6 @@ func (hs *HTTPServer) GetTeamPreferences(c *models.ReqContext) response.Response
 
 	orgId := c.OrgID
 
-	if hs.AccessControl.IsDisabled() {
-		if err := hs.teamGuardian.CanAdmin(c.Req.Context(), orgId, teamId, c.SignedInUser); err != nil {
-			return response.Error(403, "Not allowed to view team preferences.", err)
-		}
-	}
-
 	return hs.getPreferencesFor(c.Req.Context(), orgId, 0, teamId)
 }
 
@@ -298,12 +267,6 @@ func (hs *HTTPServer) UpdateTeamPreferences(c *models.ReqContext) response.Respo
 	}
 
 	orgId := c.OrgID
-
-	if hs.AccessControl.IsDisabled() {
-		if err := hs.teamGuardian.CanAdmin(c.Req.Context(), orgId, teamId, c.SignedInUser); err != nil {
-			return response.Error(403, "Not allowed to update team preferences.", err)
-		}
-	}
 
 	return hs.updatePreferencesFor(c.Req.Context(), orgId, 0, teamId, &dtoCmd)
 }

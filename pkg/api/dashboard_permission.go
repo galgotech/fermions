@@ -188,25 +188,13 @@ func (hs *HTTPServer) UpdateDashboardPermissions(c *models.ReqContext) response.
 		return response.Error(403, "Cannot remove own admin permission for a folder", nil)
 	}
 
-	if !hs.AccessControl.IsDisabled() {
-		old, err := g.GetACL()
-		if err != nil {
-			return response.Error(500, "Error while checking dashboard permissions", err)
-		}
-		if err := hs.updateDashboardAccessControl(c.Req.Context(), dash.OrgId, dash.Uid, false, items, old); err != nil {
-			return response.Error(500, "Failed to update permissions", err)
-		}
-		return response.Success("Dashboard permissions updated")
+	old, err := g.GetACL()
+	if err != nil {
+		return response.Error(500, "Error while checking dashboard permissions", err)
 	}
-
-	if err := hs.DashboardService.UpdateDashboardACL(c.Req.Context(), dashID, items); err != nil {
-		if errors.Is(err, models.ErrDashboardACLInfoMissing) ||
-			errors.Is(err, models.ErrDashboardPermissionDashboardEmpty) {
-			return response.Error(409, err.Error(), err)
-		}
-		return response.Error(500, "Failed to create permission", err)
+	if err := hs.updateDashboardAccessControl(c.Req.Context(), dash.OrgId, dash.Uid, false, items, old); err != nil {
+		return response.Error(500, "Failed to update permissions", err)
 	}
-
 	return response.Success("Dashboard permissions updated")
 }
 

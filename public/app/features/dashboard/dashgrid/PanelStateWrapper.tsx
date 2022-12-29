@@ -13,7 +13,7 @@ import {
   PluginContextProvider,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { config, locationService } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
 import {
   ErrorBoundary,
   PanelChrome,
@@ -25,7 +25,6 @@ import { PANEL_BORDER } from 'app/core/constants';
 import { profiler } from 'app/core/profiler';
 import { WorkflowEvent } from 'app/types/events';
 
-import { isSoloRoute } from '../../../routes/utils';
 import { DashboardModel, PanelModel } from '../state';
 
 import { PanelHeader } from './PanelHeader/PanelHeader';
@@ -44,6 +43,7 @@ export interface Props {
   height: number;
   onInstanceStateChange: (value: any) => void;
   timezone?: string;
+  isPublic?: boolean;
 }
 
 export interface State {
@@ -269,13 +269,13 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     }
 
     const PanelComponent = plugin.panel!;
-    const headerHeight = this.hasOverlayHeader() ? 0 : theme.panelHeaderHeight;
-    const chromePadding = plugin.noPadding ? 0 : theme.panelPadding;
+    const headerHeight = theme.panelHeaderHeight;
+    const chromePadding = 0;
     const panelWidth = width - chromePadding * 2 - PANEL_BORDER;
     const innerPanelHeight = height - headerHeight - chromePadding * 2 - PANEL_BORDER;
     const panelContentClassNames = classNames({
       'panel-content': true,
-      'panel-content--no-padding': plugin.noPadding,
+      'panel-content--no-padding': true,
     });
     const panelOptions = panel.getOptions();
 
@@ -302,31 +302,18 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
     );
   }
 
-  hasOverlayHeader() {
-    const { panel } = this.props;
-    const { data } = this.state;
-
-    // always show normal header if we have time override
-    if (data.request && data.request.timeInfo) {
-      return false;
-    }
-
-    return !panel.hasTitle();
-  }
-
   render() {
-    const { dashboard, panel, isViewing, isEditing, width, height, plugin } = this.props;
+    const { dashboard, panel, isViewing, isEditing, width, height, plugin, isPublic } = this.props;
     const { errorMessage, data } = this.state;
 
     const containerClassNames = classNames({
       'panel-container': true,
-      'panel-container--absolute': isSoloRoute(locationService.getLocation().pathname),
-      'panel-container--no-title': this.hasOverlayHeader(),
+      'panel-container--transparent': isPublic,
     });
 
     // for new panel header design
     const onCancelQuery = () => panel.getQueryRunner().cancelQuery();
-    const noPadding: PanelPadding = plugin.noPadding ? 'none' : 'md';
+    const noPadding: PanelPadding = 'none';
     const leftItems = [
       <PanelHeaderLoadingIndicator state={data.state} onClick={onCancelQuery} key="loading-indicator" />,
     ];
@@ -358,7 +345,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
           className={containerClassNames}
           aria-label={selectors.components.Panels.Panel.containerByTitle(panel.title)}
         >
-          <PanelHeader
+          {!isPublic && <PanelHeader
             panel={panel}
             dashboard={dashboard}
             title={panel.title}
@@ -367,7 +354,7 @@ export class PanelStateWrapper extends PureComponent<Props, State> {
             isEditing={isEditing}
             isViewing={isViewing}
             data={data}
-          />
+          />}
           <ErrorBoundary
             dependencies={[data, plugin, panel.getOptions()]}
             onError={this.onPanelError}

@@ -18,6 +18,7 @@ type DashboardVersion struct {
 	ParentVersion int   `json:"parentVersion" db:"parent_version"`
 	RestoredFrom  int   `json:"restoredFrom" db:"restored_from"`
 	Version       int   `json:"version" db:"version"`
+	IsPublished   bool  `json:"is_published" db:"is_published"`
 
 	Created   time.Time `json:"created" db:"created"`
 	CreatedBy int64     `json:"createdBy" db:"created_by"`
@@ -51,6 +52,7 @@ type DashboardVersionDTO struct {
 	ParentVersion int       `json:"parentVersion" db:"parent_version"`
 	RestoredFrom  int       `json:"restoredFrom" db:"restored_from"`
 	Version       int       `json:"version" db:"version"`
+	IsPublished   bool      `json:"isPublished" db:"is_published"`
 	Created       time.Time `json:"created" db:"created"`
 	// Since we get created by with left join user table, this can be null technically,
 	// but in reality it will always be set, when database is not corrupted.

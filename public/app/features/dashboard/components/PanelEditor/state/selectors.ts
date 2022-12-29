@@ -14,15 +14,21 @@ export const getPanelEditorTabs = memoizeOne((tab?: string, plugin?: PanelPlugin
   let defaultTab = PanelEditorTabId.Workflow;
   tabs.push({
     id: PanelEditorTabId.Panel,
-    text: 'Panel',
+    text: 'Panels',
     icon: 'database',
     active: false,
   });
 
+  tabs.push({
+    id: PanelEditorTabId.Theme,
+    text: 'Theme',
+    icon: 'database',
+    active: false,
+  });
 
   tabs.push({
-    id: PanelEditorTabId.Code,
-    text: 'Theme',
+    id: PanelEditorTabId.Function,
+    text: 'Functions',
     icon: 'database',
     active: false,
   });

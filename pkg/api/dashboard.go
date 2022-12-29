@@ -92,6 +92,7 @@ func (hs *HTTPServer) TrimDashboard(c *models.ReqContext) response.Response {
 // 500: internalServerError
 func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 	uid := web.Params(c.Req)[":uid"]
+
 	dash, rsp := hs.getDashboardHelper(c.Req.Context(), c.OrgID, 0, uid)
 	if rsp != nil {
 		return rsp
@@ -114,10 +115,12 @@ func (hs *HTTPServer) GetDashboard(c *models.ReqContext) response.Response {
 			return response.Error(500, "Error while loading dashboard, dashboard data is invalid", nil)
 		}
 	}
+
 	guardian := guardian.New(c.Req.Context(), dash.Id, c.OrgID, c.SignedInUser)
 	if canView, err := guardian.CanView(); err != nil || !canView {
 		return dashboardGuardianResponse(err)
 	}
+
 	canEdit, _ := guardian.CanEdit()
 	canSave, _ := guardian.CanSave()
 	canAdmin, _ := guardian.CanAdmin()
@@ -396,6 +399,7 @@ func (hs *HTTPServer) postDashboard(c *models.ReqContext, cmd models.SaveDashboa
 		OrgId:     c.OrgID,
 		User:      c.SignedInUser,
 		Overwrite: cmd.Overwrite,
+		Publish:   cmd.Publish,
 	}
 
 	dashboard, err := hs.DashboardService.SaveDashboard(ctx, dashItem, allowUiUpdate)
@@ -430,7 +434,7 @@ func (hs *HTTPServer) postDashboard(c *models.ReqContext, cmd models.SaveDashboa
 
 	// Clear permission cache for the user who's created the dashboard, so that new permissions are fetched for their next call
 	// Required for cases when caller wants to immediately interact with the newly created object
-	if newDashboard && !hs.accesscontrolService.IsDisabled() {
+	if newDashboard {
 		hs.accesscontrolService.ClearUserPermissionCache(c.SignedInUser)
 	}
 

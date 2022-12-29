@@ -9,7 +9,6 @@ import (
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/services/user"
-	"github.com/grafana/grafana/pkg/setting"
 )
 
 type AccessControl interface {
@@ -18,8 +17,6 @@ type AccessControl interface {
 	// RegisterScopeAttributeResolver allows the caller to register a scope resolver for a
 	// specific scope prefix (ex: datasources:name:)
 	RegisterScopeAttributeResolver(prefix string, resolver ScopeAttributeResolver)
-	//IsDisabled returns if access control is enabled or not
-	IsDisabled() bool
 }
 
 type Service interface {
@@ -36,8 +33,6 @@ type Service interface {
 	// DeclareFixedRoles allows the caller to declare, to the service, fixed roles and their
 	// assignments to organization roles ("Viewer", "Editor", "Admin") or "Grafana Admin"
 	DeclareFixedRoles(registrations ...RoleRegistration) error
-	//IsDisabled returns if access control is enabled or not
-	IsDisabled() bool
 }
 
 type RoleRegistry interface {
@@ -93,12 +88,8 @@ type User struct {
 }
 
 // HasGlobalAccess checks user access with globally assigned permissions only
-func HasGlobalAccess(ac AccessControl, service Service, c *models.ReqContext) func(fallback func(*models.ReqContext) bool, evaluator Evaluator) bool {
-	return func(fallback func(*models.ReqContext) bool, evaluator Evaluator) bool {
-		if ac.IsDisabled() {
-			return fallback(c)
-		}
-
+func HasGlobalAccess(ac AccessControl, service Service, c *models.ReqContext) func(evaluator Evaluator) bool {
+	return func(evaluator Evaluator) bool {
 		userCopy := *c.SignedInUser
 		userCopy.OrgID = GlobalOrgID
 		userCopy.OrgRole = ""
@@ -124,12 +115,8 @@ func HasGlobalAccess(ac AccessControl, service Service, c *models.ReqContext) fu
 	}
 }
 
-func HasAccess(ac AccessControl, c *models.ReqContext) func(fallback func(*models.ReqContext) bool, evaluator Evaluator) bool {
-	return func(fallback func(*models.ReqContext) bool, evaluator Evaluator) bool {
-		if ac.IsDisabled() {
-			return fallback(c)
-		}
-
+func HasAccess(ac AccessControl, c *models.ReqContext) func(evaluator Evaluator) bool {
+	return func(evaluator Evaluator) bool {
 		hasAccess, err := ac.Evaluate(c.Req.Context(), c.SignedInUser, evaluator)
 		if err != nil {
 			c.Logger.Error("Error from access control system", "error", err)
@@ -138,27 +125,6 @@ func HasAccess(ac AccessControl, c *models.ReqContext) func(fallback func(*model
 
 		return hasAccess
 	}
-}
-
-var ReqSignedIn = func(c *models.ReqContext) bool {
-	return c.IsSignedIn
-}
-
-var ReqGrafanaAdmin = func(c *models.ReqContext) bool {
-	return c.IsGrafanaAdmin
-}
-
-// ReqViewer returns true if the current user has org.RoleViewer. Note: this can be anonymous user as well
-var ReqViewer = func(c *models.ReqContext) bool {
-	return c.OrgRole.Includes(org.RoleViewer)
-}
-
-var ReqOrgAdmin = func(c *models.ReqContext) bool {
-	return c.OrgRole == org.RoleAdmin
-}
-
-var ReqOrgAdminOrEditor = func(c *models.ReqContext) bool {
-	return c.OrgRole == org.RoleAdmin || c.OrgRole == org.RoleEditor
 }
 
 // ReqHasRole generates a fallback to check whether the user has a role
@@ -207,10 +173,6 @@ func ManagedTeamRoleName(teamID int64) string {
 
 func ManagedBuiltInRoleName(builtInRole string) string {
 	return fmt.Sprintf("managed:builtins:%s:permissions", strings.ToLower(builtInRole))
-}
-
-func IsDisabled(cfg *setting.Cfg) bool {
-	return !cfg.RBACEnabled
 }
 
 // GetOrgRoles returns legacy org roles for a user

@@ -79,7 +79,6 @@ export const ServiceAccountPageUnconnected = ({
   const canReadPermissions = contextSrv.hasAccessInMetadata(
     AccessControlAction.ServiceAccountsPermissionsRead,
     serviceAccount!,
-    false
   );
 
   const pageNav: NavModelItem = {

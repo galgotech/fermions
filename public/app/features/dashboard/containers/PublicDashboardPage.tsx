@@ -1,13 +1,10 @@
-import { cx } from '@emotion/css';
 import React, { PureComponent } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
-import { NavModel, NavModelItem, PageLayoutType, locationUtil } from '@grafana/data';
-import { selectors } from '@grafana/e2e-selectors';
+import { NavModel, NavModelItem, locationUtil } from '@grafana/data';
 import { config, locationService } from '@grafana/runtime';
-import { Themeable2, withTheme2 } from '@grafana/ui';
+import { CustomScrollbar, Themeable2, withTheme2 } from '@grafana/ui';
 import { notifyApp } from 'app/core/actions';
-import { Page } from 'app/core/components/Page/Page';
 import { GrafanaContext, GrafanaContextType } from 'app/core/context/GrafanaContext';
 import { createErrorNotification } from 'app/core/copy/appNotification';
 import { GrafanaRouteComponentProps } from 'app/core/navigation/types';
@@ -18,14 +15,9 @@ import { getPageNavFromSlug, getRootContentNavModel } from 'app/features/storage
 import { DashboardRoutes, StoreState } from 'app/types';
 import { PanelEditEnteredEvent, PanelEditExitedEvent } from 'app/types/events';
 
-import { DashNav } from '../components/DashNav';
 import { DashboardFailed } from '../components/DashboardLoading/DashboardFailed';
 import { DashboardLoading } from '../components/DashboardLoading/DashboardLoading';
-import { DashboardPrompt } from '../components/DashboardPrompt/DashboardPrompt';
-import { DashboardSettings } from '../components/DashboardSettings';
-import { PanelInspector } from '../components/Inspector/PanelInspector';
-import { PanelEditor } from '../components/PanelEditor/PanelEditor';
-import { DashboardGrid } from '../dashgrid/DashboardGrid';
+import { PublicDashboardGrid } from '../dashgrid/PublicDashboardGrid';
 import { cleanUpDashboardAndVariables } from '../state/actions';
 import { initDashboard } from '../state/initDashboard';
 
@@ -41,7 +33,6 @@ export type DashboardPageRouteSearchParams = {
   folderUid?: string;
   editPanel?: string;
   viewPanel?: string;
-  editview?: string;
   shareView?: string;
   panelType?: string;
   inspect?: string;
@@ -83,7 +74,7 @@ export interface State {
   sectionNav?: NavModel;
 }
 
-export class UnthemedDashboardPage extends PureComponent<Props, State> {
+export class UnthemedPublicDashboardPage extends PureComponent<Props, State> {
   declare context: GrafanaContextType;
   static contextType = GrafanaContext;
 
@@ -129,7 +120,7 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
       urlFolderUid: queryParams.folderUid,
       panelType: queryParams.panelType,
       routeName: this.props.route.routeName,
-      fixUrl: true,
+      fixUrl: false,
       keybindingSrv: this.context.keybindings,
     });
   }
@@ -242,119 +233,24 @@ export class UnthemedDashboardPage extends PureComponent<Props, State> {
     return updateStatePageNavFromProps(props, updatedState);
   }
 
-  onAddPanel = () => {
-    const { dashboard } = this.props;
-
-    if (!dashboard) {
-      return;
-    }
-
-    // Return if the "Add panel" exists already
-    if (dashboard.panels.length > 0 && dashboard.panels[0].type === 'add-panel') {
-      return;
-    }
-
-    // Move all panels down by the height of the "add panel" widget.
-    // This is to work around an issue with react-grid-layout that can mess up the layout
-    // in certain configurations. (See https://github.com/react-grid-layout/react-grid-layout/issues/1787)
-    const addPanelWidgetHeight = 8;
-    for (const panel of dashboard.panels) {
-      panel.gridPos.y += addPanelWidgetHeight;
-    }
-
-    dashboard.addPanel({
-      type: 'add-panel',
-      gridPos: { x: 0, y: 0, w: 12, h: addPanelWidgetHeight },
-      title: 'Panel Title',
-    });
-
-    // scroll to top after adding panel
-    this.setState({ updateScrollTop: 0 });
-  };
-
   setScrollRef = (scrollElement: HTMLDivElement): void => {
     this.setState({ scrollElement });
   };
 
-  getInspectPanel() {
-    const { dashboard, queryParams } = this.props;
-
-    const inspectPanelId = queryParams.inspect;
-
-    if (!dashboard || !inspectPanelId) {
-      return null;
-    }
-
-    const inspectPanel = dashboard.getPanelById(parseInt(inspectPanelId, 10));
-
-    // cannot inspect panels plugin is not already loaded
-    if (!inspectPanel) {
-      return null;
-    }
-
-    return inspectPanel;
-  }
-
   render() {
-    const { dashboard, initError, queryParams } = this.props;
+    const { dashboard, initError } = this.props;
     const { editPanel, viewPanel, updateScrollTop, pageNav, sectionNav } = this.state;
 
     if (!dashboard || !pageNav || !sectionNav) {
       return <DashboardLoading initPhase={this.props.initPhase} />;
     }
 
-    const inspectPanel = this.getInspectPanel();
-
-    const toolbar = !queryParams.editview && (
-      <header data-testid={selectors.pages.Dashboard.DashNav.navV2}>
-        <DashNav
-          dashboard={dashboard}
-          title={dashboard.title}
-          folderTitle={dashboard.meta.folderTitle}
-          onAddPanel={this.onAddPanel}
-        />
-      </header>
-    );
-
-    const pageClassName = cx({
-      'panel-in-fullscreen': Boolean(viewPanel),
-      'page-hidden': Boolean(queryParams.editview || editPanel),
-    });
-
     return (
       <>
-        <Page
-          navModel={sectionNav}
-          pageNav={pageNav}
-          layout={PageLayoutType.Canvas}
-          toolbar={toolbar}
-          className={pageClassName}
-          scrollRef={this.setScrollRef}
-          scrollTop={updateScrollTop}
-        >
-          <DashboardPrompt dashboard={dashboard} />
-
+        <CustomScrollbar autoHeightMin={'100%'} scrollTop={updateScrollTop} scrollRefCallback={this.setScrollRef}>
           {initError && <DashboardFailed />}
-          <DashboardGrid dashboard={dashboard} viewPanel={viewPanel} editPanel={editPanel} />
-          {inspectPanel && <PanelInspector dashboard={dashboard} panel={inspectPanel} />}
-        </Page>
-        {editPanel && (
-          <PanelEditor
-            dashboard={dashboard}
-            sourcePanel={editPanel}
-            tab={this.props.queryParams.tab}
-            sectionNav={sectionNav}
-            pageNav={pageNav}
-          />
-        )}
-        {queryParams.editview && (
-          <DashboardSettings
-            dashboard={dashboard}
-            editview={queryParams.editview}
-            pageNav={pageNav}
-            sectionNav={sectionNav}
-          />
-        )}
+          <PublicDashboardGrid dashboard={dashboard} viewPanel={viewPanel} editPanel={editPanel} />
+        </CustomScrollbar>
       </>
     );
   }
@@ -423,6 +319,6 @@ function updateStatePageNavFromProps(props: Props, state: State): State {
   };
 }
 
-export const DashboardPage = withTheme2(UnthemedDashboardPage);
-DashboardPage.displayName = 'DashboardPage';
+export const DashboardPage = withTheme2(UnthemedPublicDashboardPage);
+DashboardPage.displayName = 'PublicDashboardPage';
 export default connector(DashboardPage);

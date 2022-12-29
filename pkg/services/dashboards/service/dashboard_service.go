@@ -152,6 +152,7 @@ func (dr *DashboardServiceImpl) BuildSaveDashboardCommand(ctx context.Context, d
 		Message:   dto.Message,
 		OrgId:     dto.OrgId,
 		Overwrite: dto.Overwrite,
+		Publish:   dto.Publish,
 		UserId:    dto.User.UserID,
 		FolderId:  dash.FolderId,
 		IsFolder:  dash.IsFolder,
@@ -286,10 +287,6 @@ func (dr *DashboardServiceImpl) DeleteDashboard(ctx context.Context, dashboardId
 	return dr.deleteDashboard(ctx, dashboardId, orgId, true)
 }
 
-func (dr *DashboardServiceImpl) GetDashboardByPublicUid(ctx context.Context, dashboardPublicUid string) (*models.Dashboard, error) {
-	return nil, nil
-}
-
 func (dr *DashboardServiceImpl) MakeUserAdmin(ctx context.Context, orgID int64, userID int64, dashboardID int64, setViewAndEditPermissions bool) error {
 	rtEditor := org.RoleEditor
 	rtViewer := org.RoleViewer
@@ -391,34 +388,29 @@ func (dr *DashboardServiceImpl) GetDashboardsByPluginID(ctx context.Context, que
 
 func (dr *DashboardServiceImpl) setDefaultPermissions(ctx context.Context, dto *dashboards.SaveDashboardDTO, dash *models.Dashboard, provisioned bool) error {
 	inFolder := dash.FolderId > 0
-	if !accesscontrol.IsDisabled(dr.cfg) {
-		var permissions []accesscontrol.SetResourcePermissionCommand
-		if !provisioned && dto.User.IsRealUser() && !dto.User.IsAnonymous {
-			permissions = append(permissions, accesscontrol.SetResourcePermissionCommand{
-				UserID: dto.User.UserID, Permission: models.PERMISSION_ADMIN.String(),
-			})
-		}
+	var permissions []accesscontrol.SetResourcePermissionCommand
+	if !provisioned && dto.User.IsRealUser() && !dto.User.IsAnonymous {
+		permissions = append(permissions, accesscontrol.SetResourcePermissionCommand{
+			UserID: dto.User.UserID, Permission: models.PERMISSION_ADMIN.String(),
+		})
+	}
 
-		if !inFolder {
-			permissions = append(permissions, []accesscontrol.SetResourcePermissionCommand{
-				{BuiltinRole: string(org.RoleEditor), Permission: models.PERMISSION_EDIT.String()},
-				{BuiltinRole: string(org.RoleViewer), Permission: models.PERMISSION_VIEW.String()},
-			}...)
-		}
+	if !inFolder {
+		permissions = append(permissions, []accesscontrol.SetResourcePermissionCommand{
+			{BuiltinRole: string(org.RoleEditor), Permission: models.PERMISSION_EDIT.String()},
+			{BuiltinRole: string(org.RoleViewer), Permission: models.PERMISSION_VIEW.String()},
+			{BuiltinRole: string(org.RolePublic), Permission: models.PERMISSION_VIEW.String()},
+		}...)
+	}
 
-		svc := dr.dashboardPermissions
-		if dash.IsFolder {
-			svc = dr.folderPermissions
-		}
+	svc := dr.dashboardPermissions
+	if dash.IsFolder {
+		svc = dr.folderPermissions
+	}
 
-		_, err := svc.SetPermissions(ctx, dto.OrgId, dash.Uid, permissions...)
-		if err != nil {
-			return err
-		}
-	} else if dr.cfg.EditorsCanAdmin && !provisioned && dto.User.IsRealUser() && !dto.User.IsAnonymous {
-		if err := dr.MakeUserAdmin(ctx, dto.OrgId, dto.User.UserID, dash.Id, !inFolder); err != nil {
-			return err
-		}
+	_, err := svc.SetPermissions(ctx, dto.OrgId, dash.Uid, permissions...)
+	if err != nil {
+		return err
 	}
 
 	return nil

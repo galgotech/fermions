@@ -80,6 +80,7 @@ func (ss *sqlStore) List(ctx context.Context, query *dashver.ListDashboardVersio
 				dashboard_version.parent_version,
 				dashboard_version.restored_from,
 				dashboard_version.version,
+				dashboard_version.is_published,
 				dashboard_version.created,
 				dashboard_version.created_by as created_by_id,
 				dashboard_version.message,

@@ -93,7 +93,6 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		"verifyEmailEnabled":                  setting.VerifyEmailEnabled,
 		"sigV4AuthEnabled":                    setting.SigV4AuthEnabled,
 		"azureAuthEnabled":                    setting.AzureAuthEnabled,
-		"rbacEnabled":                         hs.Cfg.RBACEnabled,
 		"helpEnabled":                         setting.HelpEnabled,
 		"profileEnabled":                      setting.ProfileEnabled,
 		"queryHistoryEnabled":                 hs.Cfg.QueryHistoryEnabled,
@@ -138,7 +137,7 @@ func (hs *HTTPServer) getFrontendSettingsMap(c *models.ReqContext) (map[string]i
 		"licenseInfo": map[string]interface{}{
 			"expiry":          hs.License.Expiry(),
 			"stateInfo":       hs.License.StateInfo(),
-			"licenseUrl":      hs.License.LicenseURL(hasAccess(accesscontrol.ReqGrafanaAdmin, licensing.PageAccess)),
+			"licenseUrl":      hs.License.LicenseURL(hasAccess(licensing.PageAccess)),
 			"edition":         hs.License.Edition(),
 			"enabledFeatures": hs.License.EnabledFeatures(),
 		},

@@ -31,16 +31,6 @@ type dashIdQueryResult struct {
 }
 
 func (a *simpleSQLAuthService) getDashboardTableAuthFilter(user *user.SignedInUser) searchstore.FilterWhere {
-	if a.ac.IsDisabled() {
-		return permissions.DashboardPermissionFilter{
-			OrgRole:         user.OrgRole,
-			OrgId:           user.OrgID,
-			Dialect:         a.sql.GetDialect(),
-			UserId:          user.UserID,
-			PermissionLevel: models.PERMISSION_VIEW,
-		}
-	}
-
 	return permissions.NewAccessControlDashboardPermissionFilter(user, models.PERMISSION_VIEW, searchstore.TypeDashboard)
 }
 

@@ -24,12 +24,12 @@ import { emitDashboardViewEvent } from './analyticsProcessor';
 import { dashboardInitCompleted, dashboardInitFailed, dashboardInitFetching, dashboardInitServices } from './reducers';
 
 export interface InitDashboardArgs {
+  urlOrgId?: string;
   urlUid?: string;
   urlSlug?: string;
   urlType?: string;
   urlFolderUid?: string;
   panelType?: string;
-  accessToken?: string;
   routeName?: string;
   fixUrl: boolean;
   keybindingSrv: KeybindingSrv;
@@ -66,7 +66,7 @@ async function fetchDashboard(
         return dashDTO;
       }
       case DashboardRoutes.Public: {
-        return await dashboardLoaderSrv.loadDashboard('public', args.urlSlug, args.accessToken);
+        // return await dashboardLoaderSrv.loadDashboard('public', args.urlSlug, args.accessToken);
       }
       case DashboardRoutes.Normal: {
         const dashDTO: DashboardDTO = await dashboardLoaderSrv.loadDashboard(args.urlType, args.urlSlug, args.urlUid);
@@ -189,11 +189,7 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
     }
 
     // set week start
-    if (dashboard.weekStart !== '') {
-      setWeekStart(dashboard.weekStart);
-    } else {
-      setWeekStart(config.bootData.user.weekStart);
-    }
+    setWeekStart(config.bootData.user.weekStart);
 
     // Propagate an app-wide event about the dashboard being loaded
     appEvents.publish(

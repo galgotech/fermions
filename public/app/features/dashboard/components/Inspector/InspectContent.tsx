@@ -79,7 +79,7 @@ export const InspectContent = ({
         <InspectJSONTab panel={panel} dashboard={dashboard} data={data} onClose={onClose} />
       )}
       {activeTab === InspectTab.Error && <InspectErrorTab error={error} />}
-      {data && activeTab === InspectTab.Stats && <InspectStatsTab data={data} timeZone={dashboard.getTimezone()} />}
+      {data && activeTab === InspectTab.Stats && <InspectStatsTab data={data} />}
       {data && activeTab === InspectTab.Query && (<></>)}
     </Drawer>
   );

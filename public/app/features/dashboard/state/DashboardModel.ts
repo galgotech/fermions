@@ -3,14 +3,12 @@ import { Subscription } from 'rxjs';
 
 import {
   AppEvent,
-  dateTime,
   dateTimeFormat,
   dateTimeFormatTimeAgo,
   DateTimeInput,
   EventBusExtended,
   EventBusSrv,
   PanelModel as IPanelModel,
-  TimeZone,
 } from '@grafana/data';
 import { GRID_CELL_HEIGHT, GRID_CELL_VMARGIN, GRID_COLUMN_COUNT } from 'app/core/constants';
 import { contextSrv } from 'app/core/services/context_srv';
@@ -22,7 +20,6 @@ import { mergePanels, PanelMergeInfo } from '../utils/panelMerge';
 
 import { DashboardMigrator } from './DashboardMigrator';
 import { GridPos, PanelModel } from './PanelModel';
-import { TimeModel } from './TimeModel';
 
 export interface CloneOptions {
   message?: string;
@@ -44,7 +41,7 @@ export interface DashboardLink {
   includeVars: boolean;
 }
 
-export class DashboardModel implements TimeModel {
+export class DashboardModel {
   id: any;
   uid: string;
   title: string;
@@ -52,11 +49,7 @@ export class DashboardModel implements TimeModel {
   description: any;
   tags: any;
   style: any;
-  timezone: any;
-  weekStart: any;
-  time: any;
   liveNow: boolean;
-  private originalTime: any;
   timepicker: any;
   templating: { list: any[] };
   refresh: any;
@@ -68,7 +61,6 @@ export class DashboardModel implements TimeModel {
   panels: PanelModel[];
   panelInEdit?: PanelModel;
   panelInView?: PanelModel;
-  fiscalYearStartMonth?: number;
   private appEventsSubscription: Subscription;
 
   // ------------------
@@ -107,15 +99,9 @@ export class DashboardModel implements TimeModel {
     this.description = data.description;
     this.tags = data.tags ?? [];
     this.style = data.style ?? 'dark';
-    this.timezone = data.timezone ?? '';
-    this.weekStart = data.weekStart ?? '';
-    this.time = data.time ?? { from: 'now-6h', to: 'now' };
-    this.timepicker = data.timepicker ?? {};
     this.liveNow = Boolean(data.liveNow);
     this.templating = this.ensureListExist(data.templating);
-    this.refresh = data.refresh;
     this.schemaVersion = data.schemaVersion ?? 0;
-    this.fiscalYearStartMonth = data.fiscalYearStartMonth ?? 0;
     this.version = data.version ?? 0;
     this.links = data.links ?? [];
     this.gnetId = data.gnetId || null;
@@ -123,7 +109,6 @@ export class DashboardModel implements TimeModel {
     this.ensurePanelsHaveIds();
     this.formatDate = this.formatDate.bind(this);
 
-    this.resetOriginalTime();
 
     this.initMeta(meta);
     this.updateSchema(data);
@@ -255,7 +240,7 @@ export class DashboardModel implements TimeModel {
 
   private ensurePanelsHaveIds() {
     let nextPanelId = this.getNextPanelId();
-    for (const panel of this.panelIterator()) {
+    for (const panel of this.panels) {
       panel.id ??= nextPanelId++;
     }
   }
@@ -268,24 +253,13 @@ export class DashboardModel implements TimeModel {
   getNextPanelId() {
     let max = 0;
 
-    for (const panel of this.panelIterator()) {
+    for (const panel of this.panels) {
       if (panel.id > max) {
         max = panel.id;
       }
     }
 
     return max + 1;
-  }
-
-  *panelIterator() {
-    for (const panel of this.panels) {
-      yield panel;
-
-      const rowPanels = panel.panels ?? [];
-      for (const rowPanel of rowPanels) {
-        yield rowPanel;
-      }
-    }
   }
 
   forEachPanel(callback: (panel: PanelModel, index: number) => void) {
@@ -392,7 +366,7 @@ export class DashboardModel implements TimeModel {
   formatDate(date: DateTimeInput, format?: string) {
     return dateTimeFormat(date, {
       format,
-      timeZone: this.getTimezone(),
+      timeZone: contextSrv?.user?.timezone,
     });
   }
 
@@ -431,32 +405,13 @@ export class DashboardModel implements TimeModel {
 
   getRelativeTime(date: DateTimeInput) {
     return dateTimeFormatTimeAgo(date, {
-      timeZone: this.getTimezone(),
+      timeZone: contextSrv?.user?.timezone,
     });
-  }
-
-  getTimezone(): TimeZone {
-    return (this.timezone ? this.timezone : contextSrv?.user?.timezone) as TimeZone;
   }
 
   private updateSchema(old: any) {
     const migrator = new DashboardMigrator(this);
     migrator.updateSchema(old);
-  }
-
-  resetOriginalTime() {
-    this.originalTime = cloneDeep(this.time);
-  }
-
-  hasTimeChanged() {
-    const { time, originalTime } = this;
-
-    // Compare moment values vs strings values
-    return !(
-      isEqual(time, originalTime) ||
-      (isEqual(dateTime(time?.from), dateTime(originalTime?.from)) &&
-        isEqual(dateTime(time?.to), dateTime(originalTime?.to)))
-    );
   }
 
   autoFitPanels(viewHeight: number) {
@@ -498,9 +453,5 @@ export class DashboardModel implements TimeModel {
     if (shouldUpdateGridPositionLayout) {
       this.events.publish(new DashboardPanelsChangedEvent());
     }
-  }
-
-  getDefaultTime() {
-    return this.originalTime;
   }
 }

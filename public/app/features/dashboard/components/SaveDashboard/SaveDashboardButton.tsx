@@ -66,3 +66,29 @@ export const SaveDashboardAsButton: React.FC<SaveDashboardButtonProps & { varian
     </ModalsController>
   );
 };
+
+export const PublishDashboardButton: React.FC<SaveDashboardButtonProps> = ({ dashboard, onSaveSuccess, size }) => {
+  return (
+    <ModalsController>
+      {({ showModal, hideModal }) => {
+        return (
+          <Button
+            size={size}
+            variant={"success"}
+            onClick={() => {
+              showModal(SaveDashboardDrawer, {
+                dashboard,
+                onSaveSuccess,
+                onDismiss: hideModal,
+                isPublish: true,
+              });
+            }}
+            aria-label={selectors.pages.Dashboard.Settings.General.saveDashBoard}
+          >
+            Publish dashboard
+          </Button>
+        );
+      }}
+    </ModalsController>
+  );
+};

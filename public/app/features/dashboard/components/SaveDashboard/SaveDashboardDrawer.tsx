@@ -17,7 +17,7 @@ import { SaveToStorageForm } from './forms/SaveToStorageForm';
 import { SaveDashboardData, SaveDashboardModalProps, SaveDashboardOptions } from './types';
 import { useDashboardSave } from './useDashboardSave';
 
-export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCopy }: SaveDashboardModalProps) => {
+export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCopy, isPublish }: SaveDashboardModalProps) => {
   const [options, setOptions] = useState<SaveDashboardOptions>({});
 
   const isFromStorage = config.featureToggles.dashboardsFromStorage && dashboard.uid?.indexOf('/') > 0;
@@ -120,6 +120,7 @@ export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCop
         onSubmit={onDashboardSave}
         options={options}
         onOptionsChange={setOptions}
+        isPublish={isPublish}
       />
     );
   };
@@ -140,6 +141,8 @@ export const SaveDashboardDrawer = ({ dashboard, onDismiss, onSaveSuccess, isCop
     title = 'Save dashboard copy';
   } else if (isProvisioned) {
     title = 'Provisioned dashboard';
+  } else if (isPublish) {
+    title = 'Publish dashboard';
   }
 
   return (
