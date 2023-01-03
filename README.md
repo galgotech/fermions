@@ -4,6 +4,14 @@ The open-source Unified Workflow Remote Development Environment platform.
 
 Fermions allow you to build complex systems using workflows. Develop the front-end components and back-end APIs with workflows using a domain-specific language (DSL). Code any programming language in a remote development environment without losing flexibility.
 
+## Goals
+* Create systems faster, reusing UI components and APIs without losing flexibility
+* Workflows to organize business requirements and model business logic
+* A remote development environment
+* Deploy systems to production in one click
+* Interface to organize UI components and APIs
+
+
 Fermions join the open-source projects:
 * [Serverless Workflow](https://serverlessworkflow.io/) specification is workflow DSL. That gets the capability to create, organize, and reuse UI components and APIs of your business.
 * [Theia-ide](https://theia-ide.org/) is the Remote Development Environment used to code the front-end components and back-end APIs in any language.
