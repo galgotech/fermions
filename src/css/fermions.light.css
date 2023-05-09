@@ -1,0 +1,22 @@
+/* @import url("normalize.css"); */
+
+:root {
+    --font-sans: "Inter", sans-serif;
+    --font-mono: "Roboto Mono", monospace;
+    --font-icon: "Material Icons";
+    --font-size-tiny: calc(var(--font-size-body) - .062rem);
+
+    --line-height-body: 1rem;
+
+    --secondary-dark-color: #111827;
+    --primary-light-color:  #f9fafb;
+
+    --primary-color: #fff;
+    --divider-light-color: #f3f4f6;
+
+    --accent-color: #6366f1;
+}
+
+body {
+    margin: 0px;
+}

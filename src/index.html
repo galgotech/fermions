@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Fermions</title>
+</head>
+<body>
+	<link rel="stylesheet" href="<%= htmlWebpackPlugin.files.cssChunks.light %>">
+	<link
+		rel="stylesheet"
+		href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	/>
+	<script src="wasm_exec.js"></script>
+	<script>
+		const go = new Go();
+		let mod, inst;
+		WebAssembly.instantiateStreaming(fetch("fermions-workflow-standalone.wasm"), go.importObject).then((result) => {
+			mod = result.module;
+			inst = result.instance;
+			console.log('done', mod, inst)
+			run();
+		}).catch((err) => {
+			console.error(err);
+		});
+		async function run() {
+			// console.clear();
+			await go.run(inst);
+			inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
+		};
+
+		async function test() {
+			const spec = `
+			{
+  "id": "helloworld",
+  "version": "1.0.0",
+  "specVersion": "0.8",
+  "name": "Hello World Workflow",
+  "description": "Inject Hello World",
+  "start": "Hello State",
+  "states":[
+    {
+       "name":"Hello State",
+       "type":"inject",
+       "data": {
+          "result": "Hello World!"
+       },
+       "transition": "Hello State Next"
+    },
+    {
+      "name":"Hello State Next",
+      "type":"inject",
+      "data": {
+         "result": "Hello World Next!"
+      },
+      "end": true
+   }
+  ]
+}
+`
+
+			console.log('-', fermions(spec));
+		}
+	</script>
+	<div id="app"></div>
+
+	<% for (index in htmlWebpackPlugin.files.js) { %>
+		<% if (htmlWebpackPlugin.files.jsIntegrity) { %>
+		<script
+		  src="<%= htmlWebpackPlugin.files.js[index] %>"
+		  type="text/javascript"
+		  integrity="<%= htmlWebpackPlugin.files.jsIntegrity[index] %>"
+		  crossorigin="<%= webpackConfig.output.crossOriginLoading %>"
+		></script>
+		<% } else { %>
+		<script
+		  src="<%= htmlWebpackPlugin.files.js[index] %>"
+		  type="text/javascript"
+		></script>
+		<% } %>
+	<% } %>
+</body>
+</html>

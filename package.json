@@ -1,0 +1,53 @@
+{
+  "name": "fermions-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "bra run",
+    "electron": "electron .",
+    "build-dev": "webpack build --mode development"
+  },
+  "author": "André Miranda <andre@galgo.tech>",
+  "license": "ISC",
+  "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/base": "5.0.0-alpha.128",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.12.3",
+    "@mui/types": "^7.2.4",
+    "classnames": "^2.3.2",
+    "cloudevents": "^7.0.0",
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
+    "react-split-pane": "0.1.92"
+  },
+  "devDependencies": {
+    "@emotion/css": "^11.11.0",
+    "@types/lodash": "^4.14.194",
+    "@types/react-dom": "^18.0.11",
+    "@types/react-redux": "^7.1.25",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.7.3",
+    "electron": "^24.2.0",
+    "electron-reload": "^2.0.0-alpha.1",
+    "html-webpack-plugin": "^5.5.1",
+    "mini-css-extract-plugin": "^2.7.5",
+    "style-loader": "^3.3.2",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^4.15.0"
+  },
+  "resolutions": {
+    "react-split-pane@0.1.92": "patch:react-split-pane@npm:0.1.92#.yarn/patches/react-split-pane-npm-0.1.92-93dbf51dff.patch"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "packageManager": "yarn@3.5.1"
+}
